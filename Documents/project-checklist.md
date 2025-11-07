@@ -55,19 +55,29 @@
 - [x] Set up requirements.txt with all dependencies
 - [x] Create DEV-GUIDE.md with comprehensive setup instructions
 
-### 1.2 MongoDB Integration
-- [ ] Create MongoDB Atlas cluster
-- [ ] Set up database: `educhat_db`
-- [ ] Create collections:
-  - [ ] `instellingen` (educational institutions)
-  - [ ] `vragen` (questions/answers log)
-  - [ ] `sessies` (user sessions)
-  - [ ] `kennisbank` (knowledge base - optional for Phase 1)
-  - [ ] `feedback` (user feedback)
-- [ ] Create database connection module (`services/database.py`)
-- [ ] Implement connection pooling
-- [ ] Test CRUD operations locally
-- [ ] Add database indexes for performance
+### 1.2 Supabase Integration ✅ COMPLETE
+- [x] Create Supabase project (free tier) and enable Postgres for the project
+- [x] Set up database/schema: `educhat_db` (using Prisma ORM with Supabase PostgreSQL)
+- [x] Create tables:
+  - [x] `institutions` (educational institutions)
+  - [x] `studies` (study programs)
+  - [x] `events` (important dates/events)
+  - [x] `users` (user accounts)
+  - [x] `sessions` (chat sessions)
+  - [x] `messages` (chat messages with feedback)
+  - [x] `onboarding` (user onboarding state)
+  - [x] `onboarding_questions` (quiz questions)
+  - [x] `onboarding_answers` (quiz answers)
+  - [x] `reminders` (user reminders)
+- [x] Create Supabase service module (`services/supabase.py`) — Prisma-based client wrapper with comprehensive CRUD operations
+- [x] Implement connection pooling / efficient client usage (Prisma manages connections automatically)
+- [x] Configure Row-Level Security (RLS) policies and API permissions (anon vs service role keys)
+- [x] Test CRUD operations locally (comprehensive test suite in `tests/test_supabase.py`)
+- [x] Add Postgres indexes and full-text / search configuration for performance (GIN, trigram, etc.)
+- [x] Update `.env.example` with `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and document recommended usage
+- [x] Created Prisma schema with all relationships and indexes
+- [x] Created RLS policies SQL script for security
+- [x] Created comprehensive setup guide (`Documents/SUPABASE_SETUP.md`)
 
 ### 1.3 AI Integration
 - [ ] Create AI service module (`services/ai_service.py`)

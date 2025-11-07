@@ -1,4 +1,4 @@
-# 🚀 EduChat – Render Deployment Guide
+ 🚀 EduChat – Render Deployment Guide
 
 **Project:** EduChat  
 **Hosting Platform:** Render  
