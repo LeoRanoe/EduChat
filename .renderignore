@@ -1,0 +1,70 @@
+# Renderignore - Files to exclude from Render builds
+# Similar to .gitignore but for Render deployment
+
+# Version Control
+.git/
+.gitignore
+.gitattributes
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Documentation (not needed in production)
+Documents/
+*.md
+!README.md
+
+# Development Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+
+# Build artifacts (will be regenerated)
+.web/
+dist/
+build/
+
+# Test Files
+tests/
+test_*.py
+*_test.py
+
+# Assets (if large, consider CDN)
+# assets/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp

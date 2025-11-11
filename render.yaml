@@ -1,0 +1,71 @@
+# Render Deployment Configuration for EduChat
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # Web Service for Reflex app
+  - type: web
+    name: educhat
+    env: python
+    region: oregon  # Choose: oregon, frankfurt, singapore
+    plan: free  # or 'starter' for $7/mo
+    branch: main  # or feat/supabase
+    
+    # Build command - install dependencies and build frontend
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      reflex init
+    
+    # Start command - run the Reflex app
+    startCommand: reflex run --env prod --loglevel info
+    
+    # Python version
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      
+      # Supabase Configuration (set these in Render dashboard)
+      - key: DATABASE_URL
+        sync: false  # Set manually with your Supabase connection string
+      
+      - key: SUPABASE_URL
+        sync: false  # Set manually
+      
+      - key: SUPABASE_ANON_KEY
+        sync: false  # Set manually
+      
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false  # Set manually
+      
+      # AI Service Configuration
+      - key: OPENAI_API_KEY
+        sync: false  # Set manually if using OpenAI
+      
+      - key: GOOGLE_AI_API_KEY
+        sync: false  # Set manually if using Google AI
+      
+      # Application Configuration
+      - key: APP_ENV
+        value: production
+      
+      - key: DEBUG
+        value: "False"
+      
+      - key: SESSION_SECRET
+        generateValue: true  # Render will generate a secure random value
+    
+    # Health check endpoint
+    healthCheckPath: /
+    
+    # Auto-deploy on push
+    autoDeploy: true
+    
+    # Disk storage (optional, for file uploads)
+    # disk:
+    #   name: educhat-data
+    #   mountPath: /data
+    #   sizeGB: 1
+
+# Database note:
+# Supabase is hosted externally, so no database service needed in render.yaml
+# Just set the DATABASE_URL in the Render dashboard environment variables
