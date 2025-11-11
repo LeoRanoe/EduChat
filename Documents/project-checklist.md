@@ -89,62 +89,62 @@
 - [ ] Test AI responses with educational queries
 - [ ] Add response validation and filtering
 
-### 1.4 Core UI Components (Based on Design)
+### 1.4 Core UI Components (Based on Design) ✅ COMPLETE
 
-#### Shared Components
-- [ ] Create `Logo` component (graduation cap + chat bubble)
-- [ ] Create `Button` component (Primary, Secondary, Icon variants)
-- [ ] Create `Input` component with focus states
-- [ ] Create `Dropdown` component
-- [ ] Create `Avatar` component
-- [ ] Implement color theme variables (green #228B22, etc.)
+#### Shared Components ✅ COMPLETE
+- [x] Create `Logo` component (graduation cap + chat bubble)
+- [x] Create `Button` component (Primary, Secondary, Icon variants)
+- [x] Create `Input` component with focus states
+- [x] Create `Dropdown` component
+- [x] Create `Avatar` component
+- [x] Implement color theme variables (green #228B22, etc.)
 
-#### Chat Interface Components
-- [ ] Create `Sidebar` component:
-  - [ ] Logo section
-  - [ ] "Nieuw gesprek" button
-  - [ ] "Gesprek opzoeken" button
-  - [ ] Conversation list with scroll
-  - [ ] User profile section at bottom
-- [ ] Create `ChatContainer` component:
-  - [ ] Welcome header with centered logo
-  - [ ] Message display area
-  - [ ] Input section at bottom
-- [ ] Create `MessageBubble` component:
-  - [ ] User message variant (right-aligned, green background)
-  - [ ] Bot message variant (left-aligned, white with border)
-  - [ ] Action icons (copy, like, dislike, bookmark, refresh)
-- [ ] Create `ChatInput` component:
-  - [ ] Text input with placeholder
-  - [ ] "Prompts" button
-  - [ ] Send button (circular, green)
-  - [ ] Character counter
-- [ ] Create `ConversationItem` component for sidebar list
+#### Chat Interface Components ✅ COMPLETE
+- [x] Create `Sidebar` component:
+  - [x] Logo section
+  - [x] "Nieuw gesprek" button
+  - [x] "Gesprek opzoeken" button
+  - [x] Conversation list with scroll
+  - [x] User profile section at bottom
+- [x] Create `ChatContainer` component:
+  - [x] Welcome header with centered logo
+  - [x] Message display area
+  - [x] Input section at bottom
+- [x] Create `MessageBubble` component:
+  - [x] User message variant (right-aligned, green background)
+  - [x] Bot message variant (left-aligned, white with border)
+  - [x] Action icons (copy, like, dislike, bookmark, refresh)
+- [x] Create `ChatInput` component:
+  - [x] Text input with placeholder
+  - [x] "Prompts" button
+  - [x] Send button (circular, green)
+  - [x] Character counter
+- [x] Create `ConversationItem` component for sidebar list
 
-### 1.5 State Management
-- [ ] Create `AppState` class in Reflex:
-  - [ ] `messages: List[Dict]` - chat history
-  - [ ] `current_conversation_id: str` - active session
-  - [ ] `conversations: List[Dict]` - sidebar list
-  - [ ] `user_input: str` - current input text
-  - [ ] `is_loading: bool` - AI response loading state
-- [ ] Implement `send_message()` handler
-- [ ] Implement `create_new_conversation()` handler
-- [ ] Implement `load_conversation()` handler
-- [ ] Add session persistence logic
+### 1.5 State Management ✅ COMPLETE
+- [x] Create `AppState` class in Reflex:
+  - [x] `messages: List[Dict]` - chat history
+  - [x] `current_conversation_id: str` - active session
+  - [x] `conversations: List[Dict]` - sidebar list
+  - [x] `user_input: str` - current input text
+  - [x] `is_loading: bool` - AI response loading state
+- [x] Implement `send_message()` handler
+- [x] Implement `create_new_conversation()` handler
+- [x] Implement `load_conversation()` handler
+- [ ] Add session persistence logic (pending database integration)
 
-### 1.6 Core Functionality
-- [ ] Implement message sending flow:
-  1. [ ] User types and clicks send
-  2. [ ] Message stored in state and MongoDB
-  3. [ ] AI request sent with context
-  4. [ ] Response received and displayed
-  5. [ ] Conversation history updated
-- [ ] Add loading indicator (typing dots animation)
-- [ ] Implement conversation switching
-- [ ] Add new conversation creation
-- [ ] Implement conversation history in sidebar
-- [ ] Add timestamp to messages
+### 1.6 Core Functionality ⚠️ PARTIAL
+- [x] Implement message sending flow:
+  1. [x] User types and clicks send
+  2. [ ] Message stored in state and Supabase (state done, DB pending)
+  3. [ ] AI request sent with context (pending AI integration)
+  4. [x] Response received and displayed (placeholder implemented)
+  5. [x] Conversation history updated
+- [x] Add loading indicator (typing dots animation)
+- [x] Implement conversation switching
+- [x] Add new conversation creation
+- [x] Implement conversation history in sidebar
+- [x] Add timestamp to messages
 
 ### 1.7 Responsive Design
 - [ ] Implement mobile layout (<768px):

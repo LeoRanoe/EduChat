@@ -1,0 +1,110 @@
+"""Chat container component for EduChat."""
+
+import reflex as rx
+from typing import List, Dict
+from educhat.styles.theme import COLORS
+from educhat.components.shared import logo
+from educhat.components.chat.message_bubble import message_bubble
+from educhat.components.chat.chat_input import chat_input
+
+
+def welcome_screen() -> rx.Component:
+    """Welcome screen shown when no messages yet."""
+    return rx.box(
+        rx.vstack(
+            logo(size="lg"),
+            rx.text(
+                "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
+                font_size="1.125rem",
+                color=COLORS["dark_gray"],
+                text_align="center",
+                max_width="600px",
+                line_height="1.6",
+            ),
+            rx.text(
+                "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent het is er om het jou simpel uit te leggen, op jouw manier.",
+                font_size="1rem",
+                color=COLORS["gray"],
+                text_align="center",
+                max_width="600px",
+                line_height="1.6",
+            ),
+            spacing="4",
+            align="center",
+            justify="center",
+        ),
+        height="100%",
+        display="flex",
+        align_items="center",
+        justify_content="center",
+        padding="2rem",
+    )
+
+
+def chat_container(
+    messages: List[Dict] = [],
+    user_input: str = "",
+    is_loading: bool = False,
+    on_input_change=None,
+    on_send_message=None,
+    on_prompts_click=None,
+    on_message_action=None,
+) -> rx.Component:
+    """Main chat container with messages and input.
+    
+    Args:
+        messages: List of message dicts with 'content', 'is_user', 'timestamp'
+        user_input: Current input value
+        is_loading: Loading state
+        on_input_change: Handler for input change
+        on_send_message: Handler for sending message
+        on_prompts_click: Handler for prompts button
+        on_message_action: Handler for message actions (copy, like, etc.)
+    """
+    return rx.box(
+        rx.vstack(
+            # Messages area
+            rx.box(
+                rx.cond(
+                    messages.length() == 0,
+                    welcome_screen(),
+                    rx.box(
+                        rx.vstack(
+                            rx.foreach(
+                                messages,
+                                lambda msg: message_bubble(
+                                    content=msg["content"],
+                                    is_user=msg["is_user"],
+                                    timestamp=msg.get("timestamp", ""),
+                                ),
+                            ),
+                            spacing="0",
+                            width="100%",
+                            padding="2rem",
+                        ),
+                        overflow_y="auto",
+                        height="100%",
+                    ),
+                ),
+                flex="1",
+                width="100%",
+                overflow_y="auto",
+            ),
+            
+            # Input area
+            chat_input(
+                value=user_input,
+                on_change=on_input_change,
+                on_submit=on_send_message,
+                is_loading=is_loading,
+            ),
+            
+            spacing="0",
+            height="100vh",
+            width="100%",
+        ),
+        margin_left="280px",  # Sidebar width
+        background=COLORS["light_gray"],
+        height="100vh",
+        width="calc(100vw - 280px)",
+    )

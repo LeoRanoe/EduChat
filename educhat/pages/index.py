@@ -2,28 +2,32 @@
 
 import reflex as rx
 from educhat.state.app_state import AppState
+from educhat.components.chat import sidebar, chat_container
 
 
 def index() -> rx.Component:
-    """Main chat interface page."""
-    return rx.container(
-        rx.vstack(
-            rx.heading("🎓 EduChat", size="9"),
-            rx.text(
-                "Welkom bij EduChat - Jouw AI-assistent voor educatie in Suriname",
-                size="5",
-                color_scheme="gray",
-            ),
-            rx.text(
-                "Chat interface will be built in the next phase...",
-                size="3",
-                color_scheme="gray",
-                style={"font-style": "italic"},
-            ),
-            spacing="4",
-            align="center",
-            min_height="100vh",
-            justify="center",
+    """Main chat interface page with sidebar and chat."""
+    return rx.box(
+        # Sidebar
+        sidebar(
+            conversations=AppState.conversations,
+            current_conversation_id=AppState.current_conversation_id,
+            on_new_conversation=AppState.create_new_conversation,
+            user_name="John Doe",
+            user_email="johndoe@email.com",
         ),
-        size="3",
+        
+        # Chat container
+        chat_container(
+            messages=AppState.messages,
+            user_input=AppState.user_input,
+            is_loading=AppState.is_loading,
+            on_input_change=AppState.set_user_input,
+            on_send_message=AppState.send_message,
+        ),
+        
+        # Full viewport container
+        width="100vw",
+        height="100vh",
+        overflow="hidden",
     )

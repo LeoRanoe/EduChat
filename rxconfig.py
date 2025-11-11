@@ -2,6 +2,7 @@
 
 import os
 import reflex as rx
+from reflex.utils.console import LogLevel
 
 # Determine environment
 app_env = os.getenv("APP_ENV", "development")
@@ -27,5 +28,5 @@ config = rx.Config(
     timeout=120 if is_production else 600,
     
     # Logging
-    loglevel="info" if is_production else "debug",
+    loglevel=LogLevel.INFO if is_production else LogLevel.DEBUG,
 )
