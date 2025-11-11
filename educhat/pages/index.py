@@ -48,6 +48,11 @@ def index() -> rx.Component:
                 is_loading=AppState.is_loading,
                 on_input_change=AppState.set_user_input,
                 on_send_message=AppState.send_message,
+                on_quick_action=AppState.send_quick_action,
+                on_copy=AppState.copy_message,
+                on_like=lambda idx: AppState.handle_message_feedback(idx, "like"),
+                on_dislike=lambda idx: AppState.handle_message_feedback(idx, "dislike"),
+                on_regenerate=AppState.regenerate_response,
             ),
             
             width="100%",

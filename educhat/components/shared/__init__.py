@@ -26,6 +26,18 @@ from educhat.components.shared.mobile_nav import (
     mobile_header,
     sidebar_overlay,
 )
+from educhat.components.shared.quick_actions import (
+    quick_action_button,
+    quick_actions_grid,
+    conversation_template_button,
+    conversation_templates,
+)
+from educhat.components.shared.follow_up_suggestions import (
+    suggestion_chip,
+    follow_up_suggestions,
+    contextual_follow_ups,
+    generate_contextual_suggestions,
+)
 
 __all__ = [
     "logo",
@@ -50,4 +62,12 @@ __all__ = [
     "hamburger_button",
     "mobile_header",
     "sidebar_overlay",
+    "quick_action_button",
+    "quick_actions_grid",
+    "conversation_template_button",
+    "conversation_templates",
+    "suggestion_chip",
+    "follow_up_suggestions",
+    "contextual_follow_ups",
+    "generate_contextual_suggestions",
 ]

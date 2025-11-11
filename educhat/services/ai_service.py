@@ -238,16 +238,20 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
             )
     
     def _call_openai(self, messages: List[Dict[str, str]]) -> str:
-        """Call OpenAI API.
+        """Call OpenAI API with timeout.
         
         Args:
             messages: Messages array
             
         Returns:
             AI response
+            
+        Raises:
+            TimeoutError: If request exceeds 30s
         """
         response = self.client.chat.completions.create(
             model=self.model,
+            timeout=30.0,  # 30 second timeout
             messages=messages,
             temperature=0.7,
             max_tokens=500,

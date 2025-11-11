@@ -18,16 +18,28 @@ class AppState(rx.State):
     user_input: str = ""
     is_loading: bool = False
     
+    # Pagination state
+    messages_page_size: int = 30
+    messages_current_page: int = 1
+    has_more_messages: bool = False
+    
     # UI state
     sidebar_open: bool = False  # For mobile sidebar toggle
     
     # User context for AI (from onboarding)
     user_context: Optional[Dict] = None
     
+    # Performance metrics
+    last_response_time: float = 0.0
+    
     async def send_message(self):
         """Handle sending a message with AI integration."""
         if not self.user_input.strip():
             return
+        
+        # Start performance tracking
+        import time
+        start_time = time.time()
         
         # Add user message
         user_message = {
@@ -65,6 +77,9 @@ class AppState(rx.State):
                 context=self.user_context
             )
             
+            # Track response time
+            self.last_response_time = time.time() - start_time
+            
             # Add AI response
             bot_message = {
                 "content": ai_response,
@@ -73,10 +88,19 @@ class AppState(rx.State):
             }
             self.messages.append(bot_message)
             
+        except TimeoutError:
+            # Handle timeout specifically
+            error_message = {
+                "content": "Het antwoord duurt te lang. Probeer je vraag opnieuw te stellen of maak deze korter.",
+                "is_user": False,
+                "timestamp": datetime.now().strftime("%H:%M"),
+                "is_error": True,
+            }
+            self.messages.append(error_message)
         except Exception as e:
             # Handle errors gracefully
             error_message = {
-                "content": f"Sorry, er is iets misgegaan. Probeer het opnieuw. (Error: {str(e)})",
+                "content": "Sorry, er is iets misgegaan. Probeer het opnieuw of stel een andere vraag.",
                 "is_user": False,
                 "timestamp": datetime.now().strftime("%H:%M"),
             }
@@ -136,5 +160,89 @@ class AppState(rx.State):
                 - formality_preference
         """
         self.user_context = context
-        # TODO: Load messages from database
-        self.messages = []
+    
+    async def send_quick_action(self, prompt: str):
+        """Handle quick action button click.
+        
+        Args:
+            prompt: Pre-defined prompt text
+        """
+        self.user_input = prompt
+        await self.send_message()
+    
+    async def handle_message_feedback(self, message_index: int, feedback_type: str):
+        """Handle user feedback on a message (like/dislike).
+        
+        Args:
+            message_index: Index of the message in messages list
+            feedback_type: 'like' or 'dislike'
+        """
+        if 0 <= message_index < len(self.messages):
+            # Update message with feedback
+            self.messages[message_index]["feedback"] = feedback_type
+            self.messages[message_index]["feedback_timestamp"] = datetime.now().isoformat()
+            
+            # TODO: Store feedback in database for analytics
+            # await self.supabase_client.store_feedback(
+            #     conversation_id=self.current_conversation_id,
+            #     message_index=message_index,
+            #     feedback_type=feedback_type
+            # )
+            
+            # Visual confirmation
+            yield
+    
+    async def copy_message(self, message_index: int):
+        """Copy message content to clipboard.
+        
+        Args:
+            message_index: Index of the message to copy
+        """
+        if 0 <= message_index < len(self.messages):
+            # Note: Actual clipboard copy handled by browser
+            pass
+    
+    async def regenerate_response(self, message_index: int):
+        """Regenerate AI response for the last user message.
+        
+        Args:
+            message_index: Index of the bot message to regenerate
+        """
+        if message_index > 0 and message_index < len(self.messages):
+            # Find the previous user message
+            user_msg_idx = message_index - 1
+            if user_msg_idx >= 0 and self.messages[user_msg_idx]["is_user"]:
+                # Remove the old bot response
+                self.messages.pop(message_index)
+                
+                # Re-send the user message
+                self.user_input = self.messages[user_msg_idx]["content"]
+                await self.send_message()
+    
+    async def load_more_messages(self):
+        """Load older messages (pagination)."""
+        if not self.has_more_messages:
+            return
+        
+        self.messages_current_page += 1
+        
+        # TODO: Load messages from database with pagination
+        # offset = (self.messages_current_page - 1) * self.messages_page_size
+        # older_messages = await self.database.get_messages(
+        #     conversation_id=self.current_conversation_id,
+        #     limit=self.messages_page_size,
+        #     offset=offset
+        # )
+        # self.messages = older_messages + self.messages
+        # self.has_more_messages = len(older_messages) == self.messages_page_size
+        
+        yield
+    
+    def get_visible_messages(self) -> List[Dict]:
+        """Get paginated visible messages.
+        
+        Returns:
+            List of messages for current page
+        """
+        # For now, return all messages (pagination disabled until DB integration)
+        return self.messages

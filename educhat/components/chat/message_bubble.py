@@ -60,8 +60,12 @@ def bot_message(
     on_dislike=None,
     on_bookmark=None,
     on_refresh=None,
+    show_suggestions: bool = False,
+    on_suggestion_click=None,
 ) -> rx.Component:
     """Bot message bubble (left-aligned, white with border)."""
+    from educhat.components.shared import contextual_follow_ups
+    
     return rx.box(
         rx.vstack(
             rx.box(
@@ -115,6 +119,15 @@ def bot_message(
                     }
                 }
             ),
+            # Follow-up suggestions (contextual)
+            rx.cond(
+                show_suggestions,
+                contextual_follow_ups(
+                    last_bot_message=content,
+                    on_suggestion_click=on_suggestion_click,
+                ),
+                rx.fragment(),
+            ),
             spacing="2",
             align_items="flex-start",
         ),
@@ -134,6 +147,8 @@ def message_bubble(
     on_dislike=None,
     on_bookmark=None,
     on_refresh=None,
+    show_suggestions: bool = False,
+    on_suggestion_click=None,
 ) -> rx.Component:
     """Message bubble component for chat messages.
     
@@ -146,9 +161,11 @@ def message_bubble(
         on_dislike: Handler for dislike action
         on_bookmark: Handler for bookmark action
         on_refresh: Handler for refresh/regenerate action
+        show_suggestions: Whether to show follow-up suggestions (only for bot messages)
+        on_suggestion_click: Handler for suggestion click
     """
     return rx.cond(
         is_user,
         user_message(content, timestamp),
-        bot_message(content, timestamp, on_copy, on_like, on_dislike, on_bookmark, on_refresh),
+        bot_message(content, timestamp, on_copy, on_like, on_dislike, on_bookmark, on_refresh, show_suggestions, on_suggestion_click),
     )

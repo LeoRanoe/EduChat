@@ -3,13 +3,17 @@
 import reflex as rx
 from typing import List, Dict
 from educhat.styles.theme import COLORS
-from educhat.components.shared import logo
+from educhat.components.shared import logo, quick_actions_grid, conversation_templates
 from educhat.components.chat.message_bubble import message_bubble
 from educhat.components.chat.chat_input import chat_input
 
 
-def welcome_screen() -> rx.Component:
-    """Welcome screen shown when no messages yet."""
+def welcome_screen(on_quick_action=None) -> rx.Component:
+    """Welcome screen shown when no messages yet.
+    
+    Args:
+        on_quick_action: Handler for quick action clicks
+    """
     return rx.box(
         rx.vstack(
             logo(size="lg"),
@@ -34,6 +38,7 @@ def welcome_screen() -> rx.Component:
                 text_align="center",
                 max_width="600px",
                 line_height="1.6",
+                margin_bottom="2rem",
                 **{
                     "@media (max-width: 768px)": {
                         "font_size": "0.875rem",
@@ -41,6 +46,26 @@ def welcome_screen() -> rx.Component:
                     }
                 }
             ),
+            # Quick action buttons
+            quick_actions_grid(on_action_click=on_quick_action) if on_quick_action else rx.fragment(),
+            
+            # Conversation templates
+            rx.box(
+                rx.vstack(
+                    rx.text(
+                        "Of start met een stap-voor-stap gids:",
+                        font_size="1rem",
+                        color=COLORS["dark_gray"],
+                        font_weight="600",
+                        margin_bottom="0.5rem",
+                    ),
+                    conversation_templates(on_template_click=on_quick_action) if on_quick_action else rx.fragment(),
+                    spacing="3",
+                    align="center",
+                ),
+                margin_top="3rem",
+            ),
+            
             spacing="4",
             align="center",
             justify="center",
@@ -50,6 +75,7 @@ def welcome_screen() -> rx.Component:
         align_items="center",
         justify_content="center",
         padding="2rem",
+        overflow_y="auto",
         **{
             "@media (max-width: 768px)": {
                 "padding": "1rem",
@@ -66,6 +92,11 @@ def chat_container(
     on_send_message=None,
     on_prompts_click=None,
     on_message_action=None,
+    on_quick_action=None,
+    on_copy=None,
+    on_like=None,
+    on_dislike=None,
+    on_regenerate=None,
 ) -> rx.Component:
     """Main chat container with messages and input.
     
@@ -77,6 +108,11 @@ def chat_container(
         on_send_message: Handler for sending message
         on_prompts_click: Handler for prompts button
         on_message_action: Handler for message actions (copy, like, etc.)
+        on_quick_action: Handler for quick action button clicks
+        on_copy: Handler for copy message action
+        on_like: Handler for like message action
+        on_dislike: Handler for dislike message action
+        on_regenerate: Handler for regenerate response action
     """
     return rx.box(
         rx.vstack(
@@ -84,15 +120,21 @@ def chat_container(
             rx.box(
                 rx.cond(
                     messages.length() == 0,
-                    welcome_screen(),
+                    welcome_screen(on_quick_action=on_quick_action),
                     rx.box(
                         rx.vstack(
                             rx.foreach(
                                 messages,
-                                lambda msg: message_bubble(
+                                lambda msg, idx: message_bubble(
                                     content=msg["content"],
                                     is_user=msg["is_user"],
                                     timestamp=msg.get("timestamp", ""),
+                                    on_copy=lambda: on_copy(idx) if on_copy else None,
+                                    on_like=lambda: on_like(idx) if on_like else None,
+                                    on_dislike=lambda: on_dislike(idx) if on_dislike else None,
+                                    on_refresh=lambda: on_regenerate(idx) if on_regenerate else None,
+                                    show_suggestions=(idx == messages.length() - 1) and not msg["is_user"],
+                                    on_suggestion_click=on_quick_action,
                                 ),
                             ),
                             spacing="0",
