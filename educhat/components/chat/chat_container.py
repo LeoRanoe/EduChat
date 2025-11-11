@@ -20,6 +20,12 @@ def welcome_screen() -> rx.Component:
                 text_align="center",
                 max_width="600px",
                 line_height="1.6",
+                **{
+                    "@media (max-width: 768px)": {
+                        "font_size": "1rem",
+                        "max_width": "100%",
+                    }
+                }
             ),
             rx.text(
                 "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent het is er om het jou simpel uit te leggen, op jouw manier.",
@@ -28,6 +34,12 @@ def welcome_screen() -> rx.Component:
                 text_align="center",
                 max_width="600px",
                 line_height="1.6",
+                **{
+                    "@media (max-width: 768px)": {
+                        "font_size": "0.875rem",
+                        "max_width": "100%",
+                    }
+                }
             ),
             spacing="4",
             align="center",
@@ -38,6 +50,11 @@ def welcome_screen() -> rx.Component:
         align_items="center",
         justify_content="center",
         padding="2rem",
+        **{
+            "@media (max-width: 768px)": {
+                "padding": "1rem",
+            }
+        }
     )
 
 
@@ -103,8 +120,18 @@ def chat_container(
             height="100vh",
             width="100%",
         ),
-        margin_left="280px",  # Sidebar width
+        # Responsive layout
+        margin_left="0",  # No margin on mobile
         background=COLORS["light_gray"],
         height="100vh",
-        width="calc(100vw - 280px)",
+        width="100vw",
+        
+        # Desktop: account for sidebar
+        **{
+            "@media (min-width: 1024px)": {
+                "margin_left": "280px",
+                "width": "calc(100vw - 280px)",
+                "max_width": "1200px",
+            }
+        }
     )

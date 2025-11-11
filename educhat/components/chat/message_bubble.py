@@ -16,11 +16,22 @@ def user_message(content: str, timestamp: Optional[str] = None) -> rx.Component:
                     font_size="0.95rem",
                     color=COLORS["white"],
                     line_height="1.5",
+                    **{
+                        "@media (max-width: 768px)": {
+                            "font_size": "0.875rem",
+                        }
+                    }
                 ),
                 background=COLORS["primary_green"],
                 border_radius=RADIUS["lg"],
                 padding="0.875rem 1.25rem",
                 max_width="600px",
+                **{
+                    "@media (max-width: 768px)": {
+                        "padding": "0.75rem 1rem",
+                        "max_width": "90%",
+                    }
+                }
             ),
             rx.cond(
                 timestamp,
@@ -59,12 +70,23 @@ def bot_message(
                     font_size="0.95rem",
                     color=COLORS["dark_gray"],
                     line_height="1.6",
+                    **{
+                        "@media (max-width: 768px)": {
+                            "font_size": "0.875rem",
+                        }
+                    }
                 ),
                 background=COLORS["white"],
                 border=f"1px solid {COLORS['border_gray']}",
                 border_radius=RADIUS["lg"],
                 padding="0.875rem 1.25rem",
                 max_width="600px",
+                **{
+                    "@media (max-width: 768px)": {
+                        "padding": "0.75rem 1rem",
+                        "max_width": "90%",
+                    }
+                }
             ),
             # Action icons
             rx.hstack(
@@ -86,6 +108,12 @@ def bot_message(
                 spacing="1",
                 align="center",
                 width="100%",
+                flex_wrap="wrap",
+                **{
+                    "@media (min-width: 768px)": {
+                        "flex_wrap": "nowrap",
+                    }
+                }
             ),
             spacing="2",
             align_items="flex-start",

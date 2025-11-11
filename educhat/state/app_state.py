@@ -1,9 +1,11 @@
 """Main application state for EduChat."""
 
 import reflex as rx
-from typing import List, Dict
+from typing import List, Dict, Optional
 from datetime import datetime
 import uuid
+import asyncio
+from educhat.services.ai_service import get_ai_service
 
 
 class AppState(rx.State):
@@ -16,8 +18,14 @@ class AppState(rx.State):
     user_input: str = ""
     is_loading: bool = False
     
-    def send_message(self):
-        """Handle sending a message."""
+    # UI state
+    sidebar_open: bool = False  # For mobile sidebar toggle
+    
+    # User context for AI (from onboarding)
+    user_context: Optional[Dict] = None
+    
+    async def send_message(self):
+        """Handle sending a message with AI integration."""
         if not self.user_input.strip():
             return
         
@@ -29,29 +37,55 @@ class AppState(rx.State):
         }
         self.messages.append(user_message)
         
-        # Clear input
+        # Store input and clear
         user_input_text = self.user_input
         self.user_input = ""
         
         # Set loading state
         self.is_loading = True
-        
-        # TODO: Call AI service here
-        # For now, add a placeholder bot response
         yield
         
-        import time
-        time.sleep(1)  # Simulate AI processing
+        try:
+            # Get AI service
+            ai_service = get_ai_service()
+            
+            # Build conversation history (last 10 messages)
+            conversation_history = []
+            for msg in self.messages[-10:]:
+                role = "user" if msg["is_user"] else "assistant"
+                conversation_history.append({
+                    "role": role,
+                    "content": msg["content"]
+                })
+            
+            # Call AI service with context
+            ai_response = await ai_service.chat(
+                message=user_input_text,
+                conversation_history=conversation_history,
+                context=self.user_context
+            )
+            
+            # Add AI response
+            bot_message = {
+                "content": ai_response,
+                "is_user": False,
+                "timestamp": datetime.now().strftime("%H:%M"),
+            }
+            self.messages.append(bot_message)
+            
+        except Exception as e:
+            # Handle errors gracefully
+            error_message = {
+                "content": f"Sorry, er is iets misgegaan. Probeer het opnieuw. (Error: {str(e)})",
+                "is_user": False,
+                "timestamp": datetime.now().strftime("%H:%M"),
+            }
+            self.messages.append(error_message)
         
-        bot_message = {
-            "content": f"Bedankt voor je vraag: '{user_input_text}'. AI integratie komt binnenkort!",
-            "is_user": False,
-            "timestamp": datetime.now().strftime("%H:%M"),
-        }
-        self.messages.append(bot_message)
-        self.is_loading = False
+        finally:
+            self.is_loading = False
         
-        # Update conversation if exists
+        # Update conversation title if exists
         if self.current_conversation_id:
             for conv in self.conversations:
                 if conv["id"] == self.current_conversation_id:
@@ -81,5 +115,26 @@ class AppState(rx.State):
     def load_conversation(self, conversation_id: str):
         """Load a conversation by ID."""
         self.current_conversation_id = conversation_id
+    
+    def toggle_sidebar(self):
+        """Toggle sidebar visibility (for mobile)."""
+        self.sidebar_open = not self.sidebar_open
+    
+    def close_sidebar(self):
+        """Close sidebar (for mobile)."""
+        self.sidebar_open = False
+    
+    def set_user_context(self, context: Dict):
+        """Set user context from onboarding data.
+        
+        Args:
+            context: Dictionary containing onboarding data like:
+                - education_level
+                - age
+                - favorite_subjects
+                - future_plans
+                - formality_preference
+        """
+        self.user_context = context
         # TODO: Load messages from database
         self.messages = []

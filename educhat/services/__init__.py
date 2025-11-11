@@ -1,1 +1,1 @@
-"""Services for external integrations (MongoDB, OpenAI, etc.)."""
+"""Services for external integrations (Supabase/Postgres, OpenAI, etc.)."""

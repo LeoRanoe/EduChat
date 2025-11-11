@@ -50,6 +50,11 @@ def chat_input(
                         _placeholder={
                             "color": COLORS["gray"],
                         },
+                        **{
+                            "@media (max-width: 768px)": {
+                                "font_size": "0.875rem",
+                            }
+                        }
                     ),
                     # Send button
                     rx.box(
@@ -112,4 +117,9 @@ def chat_input(
         padding="1.5rem",
         background=COLORS["white"],
         border_top=f"1px solid {COLORS['border_gray']}",
+        **{
+            "@media (max-width: 768px)": {
+                "padding": "1rem",
+            }
+        }
     )

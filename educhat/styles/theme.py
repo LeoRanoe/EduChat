@@ -13,6 +13,10 @@ COLORS = {
     "dark_gray": "#333333",          # Dark text
     "border_gray": "#E0E0E0",        # Border color
     "black": "#000000",
+    # Additional color aliases for consistency
+    "text_primary": "#2D2D2D",       # Dark gray for primary text
+    "text_secondary": "#666666",     # Medium gray for secondary text
+    "border": "#E0E0E0",             # Border color alias
 }
 
 # Typography
@@ -50,6 +54,7 @@ RADIUS = {
     "lg": "12px",
     "xl": "16px",
     "full": "9999px",
+    "pill": "24px",  # For pill-shaped buttons
 }
 
 # Breakpoints for responsive design

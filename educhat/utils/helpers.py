@@ -22,8 +22,17 @@ def validate_env_vars() -> bool:
     """Validate that required environment variables are set."""
     import os
     
-    required_vars = ["MONGODB_URI", "OPENAI_API_KEY"]
-    missing = [var for var in required_vars if not os.getenv(var)]
+    # Check for either DATABASE_URL (Prisma) or SUPABASE_URL + SUPABASE_ANON_KEY
+    has_database = os.getenv("DATABASE_URL") or (
+        os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_ANON_KEY")
+    )
+    has_openai = os.getenv("OPENAI_API_KEY")
+    
+    missing = []
+    if not has_database:
+        missing.append("DATABASE_URL or (SUPABASE_URL + SUPABASE_ANON_KEY)")
+    if not has_openai:
+        missing.append("OPENAI_API_KEY")
     
     if missing:
         print(f"⚠️  Missing environment variables: {', '.join(missing)}")

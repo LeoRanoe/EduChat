@@ -55,6 +55,7 @@ def sidebar(
     on_conversation_click=None,
     user_name: str = "John Doe",
     user_email: str = "johndoe@email.com",
+    is_open: bool = False,
 ) -> rx.Component:
     """Sidebar component with logo, search, and conversation list.
     
@@ -66,6 +67,7 @@ def sidebar(
         on_conversation_click: Handler for conversation click
         user_name: User's display name
         user_email: User's email
+        is_open: Whether sidebar is open (for mobile)
     """
     return rx.box(
         rx.vstack(
@@ -166,11 +168,25 @@ def sidebar(
             height="100vh",
             width="100%",
         ),
+        # Responsive width and positioning
         width="280px",
         background=COLORS["white"],
         border_right=f"1px solid {COLORS['border_gray']}",
         height="100vh",
         position="fixed",
-        left="0",
+        left=rx.cond(is_open, "0", "-280px"),  # Mobile: slide in/out
         top="0",
+        z_index="1000",
+        transition="left 0.3s ease",
+        box_shadow=rx.cond(is_open, "0 0 10px rgba(0,0,0,0.1)", "none"),
+        
+        # Show sidebar differently on desktop
+        **{
+            "@media (min-width: 1024px)": {
+                "position": "relative",
+                "left": "0",
+                "z_index": "auto",
+                "box_shadow": "none",
+            }
+        }
     )

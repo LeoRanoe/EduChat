@@ -85,7 +85,8 @@ EduChat/
 │   │   ├── onboarding.py   # Quiz interface
 │   │   └── admin.py        # Analytics dashboard
 │   ├── services/           # Backend services
-│   │   ├── database.py     # MongoDB client
+│   │   ├── database.py     # Supabase/Postgres client
+│   │   ├── supabase_client.py  # Supabase SDK wrapper
 │   │   ├── ai_service.py   # OpenAI integratie
 │   │   └── rag_service.py  # RAG implementatie
 │   ├── state/              # State management
@@ -119,7 +120,7 @@ EduChat/
 - Python 3.11+
 - Node.js 18+
 - Git
-- MongoDB Atlas account
+- Supabase account (Postgres database)
 - OpenAI API key
 
 ### Installatie
@@ -193,7 +194,7 @@ Zie [design-requirements.md](docs/design-requirements.md) voor complete design s
 
 - ✅ Alle API keys via environment variables
 - ✅ HTTPS verplicht in productie
-- ✅ MongoDB network access beperkt
+- ✅ Supabase Row Level Security (RLS) policies actief
 - ✅ Input sanitization en validatie
 - ✅ Rate limiting voor API calls
 - ✅ Geen persoonlijke data opslag (GDPR compliant)
@@ -217,7 +218,7 @@ mypy educhat/
 - [x] Project setup
 - [ ] Chat interface
 - [ ] AI integratie
-- [ ] MongoDB logging
+- [ ] Supabase database logging
 - [ ] Render deployment
 
 ### 🔄 Phase 2: UX Improvements (Weken 4-5)
@@ -277,7 +278,7 @@ Dit project is gelicenseerd onder de MIT License - zie [LICENSE](LICENSE) bestan
 
 - **Reflex Framework** - [reflex.dev](https://reflex.dev/)
 - **OpenAI API** - [openai.com](https://openai.com/)
-- **MongoDB Atlas** - [mongodb.com](https://www.mongodb.com/)
+- **Supabase** - [supabase.com](https://supabase.com/)
 - **Render Hosting** - [render.com](https://render.com/)
 
 ---
