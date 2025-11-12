@@ -168,7 +168,9 @@ class AppState(rx.State):
             prompt: Pre-defined prompt text
         """
         self.user_input = prompt
-        await self.send_message()
+        # send_message is an async generator, so we need to iterate through it
+        async for _ in self.send_message():
+            pass
     
     async def handle_message_feedback(self, message_index: int, feedback_type: str):
         """Handle user feedback on a message (like/dislike).

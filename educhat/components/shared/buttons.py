@@ -12,12 +12,12 @@ def primary_button(
     is_loading: bool = False,
     width: str = "auto",
 ) -> rx.Component:
-    """Primary button component with green background.
+    """Modern primary button with gradient background and shadow.
     
     Args:
         text: Button text
         on_click: Click handler function
-        icon: Optional icon (emoji or icon name)
+        icon: Optional icon name from lucide-react icon set
         is_loading: Loading state
         width: Button width
     """
@@ -30,27 +30,32 @@ def primary_button(
             ),
             rx.cond(
                 icon,
-                rx.text(icon, margin_right="0.5rem"),
+                rx.icon(icon, size=18),
                 rx.fragment(),
             ),
-            rx.text(text),
+            rx.text(text, font_size=["0.9375rem", "0.9375rem", "1rem"]),
             spacing="2",
             align="center",
         ),
         on_click=on_click,
-        background=COLORS["primary_green"],
+        background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
         color=COLORS["white"],
         border="none",
-        border_radius=RADIUS["md"],
-        padding="0.75rem 1.5rem",
+        border_radius=RADIUS["2xl"],
+        padding=["0.875rem 1.75rem", "0.875rem 1.75rem", "1rem 2rem"],
         cursor="pointer",
-        font_weight="500",
+        font_weight="600",
         width=width,
+        box_shadow="0 4px 12px rgba(16, 163, 127, 0.3), 0 2px 4px rgba(0,0,0,0.1)",
         _hover={
-            "background": COLORS["dark_green"],
-            "transform": "translateY(-1px)",
+            "transform": "translateY(-2px)",
+            "box_shadow": "0 6px 20px rgba(16, 163, 127, 0.4), 0 3px 6px rgba(0,0,0,0.15)",
         },
-        transition="all 0.2s ease",
+        _active={
+            "transform": "translateY(0)",
+            "box_shadow": "0 2px 8px rgba(16, 163, 127, 0.3), 0 1px 3px rgba(0,0,0,0.1)",
+        },
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     )
 
 
@@ -60,39 +65,49 @@ def secondary_button(
     icon: Optional[str] = None,
     width: str = "auto",
 ) -> rx.Component:
-    """Secondary button component with white background and border.
+    """Modern secondary button with subtle shadow and better spacing.
     
     Args:
         text: Button text
         on_click: Click handler function
-        icon: Optional icon (emoji or icon name)
+        icon: Optional icon name from lucide-react icon set
         width: Button width
     """
     return rx.button(
         rx.hstack(
             rx.cond(
                 icon,
-                rx.text(icon, margin_right="0.5rem"),
+                rx.icon(icon, size=18),
                 rx.fragment(),
             ),
-            rx.text(text),
+            rx.text(
+                text,
+                font_size=["0.875rem", "0.875rem", "0.9375rem"],
+            ),
             spacing="2",
             align="center",
         ),
         on_click=on_click,
         background=COLORS["white"],
         color=COLORS["dark_gray"],
-        border=f"1px solid {COLORS['border_gray']}",
-        border_radius=RADIUS["md"],
-        padding="0.75rem 1.5rem",
+        border=f"1.5px solid {COLORS['border_gray']}",
+        border_radius=RADIUS["xl"],
+        padding=["0.75rem 1.5rem", "0.75rem 1.5rem", "0.875rem 1.75rem"],
         cursor="pointer",
         font_weight="500",
         width=width,
+        min_height=["44px", "44px", "48px"],
+        box_shadow="0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
         _hover={
             "background": COLORS["light_gray"],
             "border_color": COLORS["gray"],
+            "box_shadow": "0 4px 8px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.06)",
+            "transform": "translateY(-1px)",
         },
-        transition="all 0.2s ease",
+        _active={
+            "transform": "translateY(0)",
+        },
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     )
 
 
@@ -105,28 +120,36 @@ def icon_button(
     """Icon-only button component.
     
     Args:
-        icon: Icon emoji or character
+        icon: Icon name from lucide-react icon set
         on_click: Click handler function
         tooltip: Optional tooltip text
         color: Icon color scheme
     """
     button = rx.button(
-        icon,
+        rx.icon(icon, size=18),
         on_click=on_click,
         background="transparent",
         color=COLORS[color] if color in COLORS else color,
         border="none",
-        border_radius=RADIUS["sm"],
-        padding="0.5rem",
+        border_radius=RADIUS["md"],
+        padding=["0.5rem", "0.5rem", "0.625rem"],
         cursor="pointer",
-        font_size="1.2rem",
         width="auto",
         height="auto",
-        min_width="auto",
+        min_width=["36px", "36px", "40px"],
+        min_height=["36px", "36px", "40px"],
+        display="flex",
+        align_items="center",
+        justify_content="center",
         _hover={
             "background": COLORS["light_gray"],
+            "transform": "scale(1.05)",
         },
-        transition="all 0.2s ease",
+        _active={
+            "background": COLORS["border_gray"],
+            "transform": "scale(0.95)",
+        },
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     )
     
     if tooltip:
@@ -139,30 +162,37 @@ def circular_button(
     on_click: Optional[Callable] = None,
     background_color: str = "primary_green",
 ) -> rx.Component:
-    """Circular button for send button.
+    """Modern circular button with gradient for send button.
     
     Args:
-        icon: Icon emoji or character
+        icon: Icon name from lucide-react icon set
         on_click: Click handler function
         background_color: Background color key from COLORS
     """
     return rx.button(
-        icon,
+        rx.icon(icon, size=20),
         on_click=on_click,
-        background=COLORS[background_color],
+        background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
         color=COLORS["white"],
         border="none",
         border_radius=RADIUS["full"],
-        width="40px",
-        height="40px",
+        width=["40px", "40px", "44px"],
+        height=["40px", "40px", "44px"],
+        min_width=["40px", "40px", "44px"],
+        min_height=["40px", "40px", "44px"],
         padding="0",
         cursor="pointer",
         display="flex",
         align_items="center",
         justify_content="center",
+        flex_shrink="0",
+        box_shadow="0 2px 8px rgba(16, 163, 127, 0.3), 0 1px 3px rgba(0,0,0,0.1)",
         _hover={
-            "background": COLORS["dark_green"],
-            "transform": "scale(1.05)",
+            "transform": "scale(1.08) translateY(-1px)",
+            "box_shadow": "0 4px 12px rgba(16, 163, 127, 0.4), 0 2px 4px rgba(0,0,0,0.15)",
         },
-        transition="all 0.2s ease",
+        _active={
+            "transform": "scale(0.96)",
+        },
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     )

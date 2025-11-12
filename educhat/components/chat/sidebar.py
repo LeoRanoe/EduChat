@@ -21,29 +21,43 @@ def conversation_item(
         on_click: Click handler
     """
     return rx.box(
-        rx.text(
-            title,
-            font_size="0.875rem",
-            color=rx.cond(is_active, COLORS["primary_green"], COLORS["dark_gray"]),
-            font_weight=rx.cond(is_active, "500", "400"),
-            white_space="nowrap",
-            overflow="hidden",
-            text_overflow="ellipsis",
+        rx.hstack(
+            rx.icon(
+                "message-circle",
+                size=18,
+                color=rx.cond(is_active, COLORS["primary_green"], COLORS["text_tertiary"]),
+            ),
+            rx.text(
+                title,
+                font_size="0.875rem",
+                color=rx.cond(is_active, COLORS["primary_green"], COLORS["text_primary"]),
+                font_weight=rx.cond(is_active, "600", "500"),
+                white_space="nowrap",
+                overflow="hidden",
+                text_overflow="ellipsis",
+                flex="1",
+                letter_spacing="-0.01em",
+            ),
+            spacing="3",
+            align="center",
+            width="100%",
         ),
-        background=rx.cond(is_active, COLORS["light_gray"], "transparent"),
+        background=rx.cond(is_active, COLORS["light_green"], "transparent"),
+        border_radius=RADIUS["lg"],
+        padding="0.875rem 1rem",
+        margin="0 0.75rem",
+        cursor="pointer",
+        on_click=on_click,
         border_left=rx.cond(
             is_active,
             f"3px solid {COLORS['primary_green']}",
             "3px solid transparent"
         ),
-        padding="0.75rem 1rem",
-        cursor="pointer",
-        border_radius=RADIUS["sm"],
-        on_click=on_click,
         _hover={
-            "background": COLORS["light_gray"],
+            "background": rx.cond(is_active, COLORS["light_green"], COLORS["hover_bg"]),
+            "transform": "translateX(2px)",
         },
-        transition="all 0.2s ease",
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     )
 
 
@@ -74,32 +88,34 @@ def sidebar(
             # Logo section
             rx.box(
                 logo(size="md"),
-                padding="1.5rem",
+                padding=["1.25rem", "1.25rem", "1.5rem"],
                 border_bottom=f"1px solid {COLORS['border_gray']}",
             ),
             
             # Action buttons
             rx.vstack(
                 secondary_button(
-                    text="✏️ Nieuw gesprek",
+                    text="Nieuw gesprek",
+                    icon="pencil",
                     on_click=on_new_conversation,
                     width="100%",
                 ),
                 spacing="2",
-                padding="1rem",
+                padding=["1rem", "1rem", "1.25rem"],
                 width="100%",
             ),
             
             # Conversations header
             rx.box(
                 rx.text(
-                    "Gesprekken ›",
-                    font_size="0.75rem",
-                    color=COLORS["gray"],
+                    "GESPREKKEN",
+                    font_size="0.6875rem",
+                    color=COLORS["text_secondary"],
                     text_transform="uppercase",
-                    font_weight="600",
+                    font_weight="700",
+                    letter_spacing="0.5px",
                 ),
-                padding="0 1rem",
+                padding="0.75rem 1.25rem 0.5rem",
             ),
             
             # Conversation list
@@ -140,53 +156,63 @@ def sidebar(
                             user_name,
                             font_size="0.875rem",
                             font_weight="600",
-                            color=COLORS["dark_gray"],
+                            color=COLORS["text_primary"],
+                            line_height="1.2",
                         ),
                         rx.text(
                             user_email,
                             font_size="0.75rem",
-                            color=COLORS["gray"],
+                            color=COLORS["text_secondary"],
+                            line_height="1.2",
                         ),
-                        spacing="0",
+                        spacing="1",
                         align_items="start",
                     ),
                     rx.box(
-                        rx.text("⚙️", font_size="1.2rem", cursor="pointer"),
-                        _hover={"opacity": "0.7"},
+                        rx.icon("settings", size=18, color=COLORS["text_secondary"]),
+                        cursor="pointer",
+                        padding="0.5rem",
+                        border_radius=RADIUS["sm"],
+                        _hover={
+                            "background": COLORS["light_gray"],
+                        },
+                        transition="all 0.2s ease",
                     ),
                     spacing="3",
                     align="center",
                     justify="between",
                     width="100%",
                 ),
-                padding="1rem",
+                padding=["1rem", "1rem", "1.25rem"],
                 border_top=f"1px solid {COLORS['border_gray']}",
                 width="100%",
+                background=COLORS["white"],
             ),
             
             spacing="0",
             height="100vh",
             width="100%",
         ),
-        # Responsive width and positioning
-        width="280px",
+        # Modern responsive styling
+        width=["280px", "280px", "280px"],
         background=COLORS["white"],
-        border_right=f"1px solid {COLORS['border_gray']}",
+        border_right=f"1px solid {COLORS['border_light']}",
         height="100vh",
         position="fixed",
-        left=rx.cond(is_open, "0", "-280px"),  # Mobile: slide in/out
+        left=rx.cond(is_open, "0", "-280px"),
         top="0",
         z_index="1000",
-        transition="left 0.3s ease",
-        box_shadow=rx.cond(is_open, "0 0 10px rgba(0,0,0,0.1)", "none"),
+        transition="left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        box_shadow=rx.cond(is_open, "0 8px 32px rgba(0,0,0,0.12)", "none"),
+        overflow_y="auto",
         
-        # Show sidebar differently on desktop
+        # Desktop styling
         **{
             "@media (min-width: 1024px)": {
                 "position": "relative",
                 "left": "0",
                 "z_index": "auto",
-                "box_shadow": "none",
+                "box_shadow": "0 0 1px rgba(0,0,0,0.1)",
             }
         }
     )

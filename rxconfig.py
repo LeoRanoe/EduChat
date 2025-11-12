@@ -18,11 +18,11 @@ config = rx.Config(
     # db_url not needed as we use Supabase client directly
     
     # API Configuration
-    api_url="https://educhat.onrender.com" if is_production else "http://localhost:8000",
+    api_url="https://educhat.onrender.com" if is_production else "http://localhost:8001",
     
     # Frontend Configuration
     frontend_port=3000,
-    backend_port=8000,
+    backend_port=8001,
     
     # Production optimizations
     timeout=120 if is_production else 600,

@@ -2,21 +2,34 @@
 
 import reflex as rx
 
-# Color palette (based on design requirements)
+# Color palette (Modern enhanced design)
 COLORS = {
-    "primary_green": "#228B22",      # Forest Green (main brand color)
-    "light_green": "#90EE90",        # Light Green
-    "dark_green": "#006400",         # Dark Green (hover states)
+    "primary_green": "#10A37F",      # Modern teal green (main brand)
+    "light_green": "#E6F7F1",        # Very light green background
+    "dark_green": "#0E8B6A",         # Darker green for hover
     "white": "#FFFFFF",
-    "light_gray": "#F5F5F5",         # Background gray
-    "gray": "#808080",               # Text gray
-    "dark_gray": "#333333",          # Dark text
-    "border_gray": "#E0E0E0",        # Border color
-    "black": "#000000",
-    # Additional color aliases for consistency
-    "text_primary": "#2D2D2D",       # Dark gray for primary text
-    "text_secondary": "#666666",     # Medium gray for secondary text
-    "border": "#E0E0E0",             # Border color alias
+    "background": "#F9FAFB",         # Off-white background
+    "light_gray": "#F3F4F6",         # Light gray background
+    "gray": "#9CA3AF",               # Medium gray text
+    "dark_gray": "#374151",          # Dark gray text
+    "border_gray": "#E5E7EB",        # Border color
+    "border_light": "#F3F4F6",       # Lighter border
+    "black": "#111827",
+    # Text colors for hierarchy
+    "text_primary": "#111827",       # Almost black for primary text
+    "text_secondary": "#6B7280",     # Medium gray for secondary
+    "text_tertiary": "#9CA3AF",      # Light gray for tertiary
+    # Functional colors
+    "success": "#10B981",            # Green for success
+    "error": "#EF4444",              # Red for errors
+    "warning": "#F59E0B",            # Orange for warnings
+    "info": "#3B82F6",               # Blue for info
+    # UI element colors
+    "hover_bg": "#F9FAFB",           # Hover background
+    "active_bg": "#F3F4F6",          # Active/selected background
+    "shadow": "rgba(0, 0, 0, 0.05)", # Subtle shadow
+    "shadow_md": "rgba(0, 0, 0, 0.1)", # Medium shadow
+    "border": "#E5E7EB",             # Border color alias
 }
 
 # Typography
@@ -47,14 +60,16 @@ SPACING = {
     "2xl": "3rem",        # 48px
 }
 
-# Border radius
+# Border radius (Modern, more rounded)
 RADIUS = {
-    "sm": "4px",
-    "md": "8px",
-    "lg": "12px",
-    "xl": "16px",
+    "xs": "4px",
+    "sm": "6px",
+    "md": "10px",
+    "lg": "14px",
+    "xl": "18px",
+    "2xl": "24px",
     "full": "9999px",
-    "pill": "24px",  # For pill-shaped buttons
+    "pill": "28px",  # For pill-shaped buttons
 }
 
 # Breakpoints for responsive design

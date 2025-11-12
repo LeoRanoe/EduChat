@@ -7,26 +7,21 @@ from educhat.styles.theme import COLORS, RADIUS
 
 def suggestion_chip(
     text: str,
-    icon: str = "💬",
+    icon: str = "",
     on_click=None,
 ) -> rx.Component:
     """Individual suggestion chip button.
     
     Args:
         text: Suggestion text
-        icon: Icon emoji
+        icon: Icon (not used in clean design)
         on_click: Click handler
     """
     return rx.button(
-        rx.hstack(
-            rx.text(icon, font_size="0.875rem"),
-            rx.text(
-                text,
-                font_size="0.875rem",
-                color=COLORS["dark_gray"],
-            ),
-            spacing="1",
-            align="center",
+        rx.text(
+            text,
+            font_size="0.85rem",
+            color=COLORS["dark_gray"],
         ),
         background=COLORS["white"],
         border=f"1px solid {COLORS['border']}",
@@ -34,8 +29,8 @@ def suggestion_chip(
         padding="0.5rem 1rem",
         cursor="pointer",
         _hover={
-            "background": COLORS["light_green"],
-            "border_color": COLORS["primary"],
+            "background": "#FAFAFA",
+            "border_color": COLORS["primary_green"],
         },
         on_click=on_click,
     )
@@ -68,7 +63,6 @@ def follow_up_suggestions(
                     *[
                         suggestion_chip(
                             text=suggestion,
-                            icon="💡",
                             on_click=lambda s=suggestion: on_suggestion_click(s) if on_suggestion_click else None,
                         )
                         for suggestion in suggestions

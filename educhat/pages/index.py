@@ -4,6 +4,7 @@ import reflex as rx
 from educhat.state.app_state import AppState
 from educhat.components.chat import sidebar, chat_container
 from educhat.components.shared import mobile_header, sidebar_overlay
+from educhat.styles.theme import COLORS
 
 
 def index() -> rx.Component:
@@ -57,6 +58,7 @@ def index() -> rx.Component:
             
             width="100%",
             height="100vh",
+            background=COLORS["light_gray"],
         ),
         
         # Full viewport container
@@ -64,4 +66,7 @@ def index() -> rx.Component:
         width="100vw",
         height="100vh",
         overflow="hidden",
+        background=COLORS["light_gray"],
+        margin="0",
+        padding="0",
     )

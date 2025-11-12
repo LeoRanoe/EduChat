@@ -27,8 +27,14 @@ def avatar(
     
     avatar_size = size_map.get(size, "40px")
     
-    # Get initials from name
-    initials = "".join([word[0].upper() for word in name.split()[:2]])
+    # Get first character as initial (simpler approach that works with Reflex Vars)
+    # For a full name like "John Doe", we'll just use "J" as initial
+    # This avoids .split() which doesn't work with Reflex Vars
+    initial = rx.cond(
+        name != "",
+        name[0].upper(),
+        "U"  # Default to "U" for User
+    )
     
     avatar_element = rx.cond(
         image_url,
@@ -41,7 +47,7 @@ def avatar(
         ),
         rx.box(
             rx.text(
-                initials,
+                initial,
                 font_size="0.875rem" if size == "sm" else "1rem",
                 font_weight="600",
                 color=COLORS["white"],

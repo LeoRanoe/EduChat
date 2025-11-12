@@ -20,6 +20,13 @@ except ImportError:
     OPENAI_AVAILABLE = False
     print("Warning: OpenAI not available. Install with: pip install openai")
 
+try:
+    import google.generativeai as genai
+    GOOGLE_AI_AVAILABLE = True
+except ImportError:
+    GOOGLE_AI_AVAILABLE = False
+    print("Warning: Google AI not available. Install with: pip install google-generativeai")
+
 
 class AIService:
     """AI service with OpenAI integration for educational queries."""
@@ -48,22 +55,51 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
 "Ik ben gespecialiseerd in Surinaams onderwijs en kan je daar graag mee helpen! Heb je vragen over studies, inschrijvingen, of onderwijsinstellingen in Suriname?"
 """
     
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-3.5-turbo"):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, provider: str = "auto"):
         """Initialize AI service.
         
         Args:
-            api_key: OpenAI API key (defaults to env var)
-            model: OpenAI model to use
+            api_key: API key (defaults to env var)
+            model: Model to use (defaults based on provider)
+            provider: "openai", "google", or "auto" (auto-detect from env)
         """
-        if not OPENAI_AVAILABLE:
-            raise ImportError("OpenAI library not installed. Run: pip install openai")
+        # Auto-detect provider based on available API keys
+        if provider == "auto":
+            if os.getenv("GOOGLE_AI_API_KEY"):
+                provider = "google"
+            elif os.getenv("OPENAI_API_KEY"):
+                provider = "openai"
+            else:
+                raise ValueError("No API key found. Set OPENAI_API_KEY or GOOGLE_AI_API_KEY environment variable.")
         
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        if not self.api_key:
-            raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+        self.provider = provider
         
-        self.model = model
-        self.client = OpenAI(api_key=self.api_key)
+        # Initialize based on provider
+        if self.provider == "google":
+            if not GOOGLE_AI_AVAILABLE:
+                raise ImportError("Google AI library not installed. Run: pip install google-generativeai")
+            
+            self.api_key = api_key or os.getenv("GOOGLE_AI_API_KEY")
+            if not self.api_key:
+                raise ValueError("Google AI API key not found. Set GOOGLE_AI_API_KEY environment variable.")
+            
+            genai.configure(api_key=self.api_key)
+            self.model = model or "gemini-2.0-flash-exp"
+            self.client = genai.GenerativeModel(self.model)
+            
+        elif self.provider == "openai":
+            if not OPENAI_AVAILABLE:
+                raise ImportError("OpenAI library not installed. Run: pip install openai")
+            
+            self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+            if not self.api_key:
+                raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+            
+            self.model = model or "gpt-3.5-turbo"
+            self.client = OpenAI(api_key=self.api_key)
+        
+        else:
+            raise ValueError(f"Unknown provider: {provider}. Use 'openai' or 'google'.")
         
         # Retry configuration
         self.max_retries = 3
@@ -213,10 +249,10 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         # Add current message
         messages.append({"role": "user", "content": message})
         
-        # Call OpenAI API with retry logic
+        # Call AI API with retry logic
         try:
             response = self._retry_with_exponential_backoff(
-                self._call_openai,
+                self._call_ai,
                 messages
             )
             
@@ -237,8 +273,8 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
                 "Probeer het later nog eens, of stel een andere vraag over Surinaams onderwijs!"
             )
     
-    def _call_openai(self, messages: List[Dict[str, str]]) -> str:
-        """Call OpenAI API with timeout.
+    def _call_ai(self, messages: List[Dict[str, str]]) -> str:
+        """Call AI API with timeout (supports both OpenAI and Google AI).
         
         Args:
             messages: Messages array
@@ -249,18 +285,52 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         Raises:
             TimeoutError: If request exceeds 30s
         """
-        response = self.client.chat.completions.create(
-            model=self.model,
-            timeout=30.0,  # 30 second timeout
-            messages=messages,
-            temperature=0.7,
-            max_tokens=500,
-            top_p=1.0,
-            frequency_penalty=0.0,
-            presence_penalty=0.0
-        )
-        
-        return response.choices[0].message.content.strip()
+        if self.provider == "google":
+            # Convert messages to Gemini format
+            # Gemini doesn't use system messages in the same way, so we'll prepend system prompt to first user message
+            system_prompt = ""
+            user_messages = []
+            
+            for msg in messages:
+                if msg["role"] == "system":
+                    system_prompt += msg["content"] + "\n\n"
+                elif msg["role"] == "user":
+                    user_messages.append(msg["content"])
+                elif msg["role"] == "assistant":
+                    # For history context, we'll include it in the conversation
+                    user_messages.append(f"[Previous response: {msg['content']}]")
+            
+            # Build the final prompt with system context
+            if user_messages:
+                final_prompt = system_prompt + user_messages[-1] if system_prompt else user_messages[-1]
+            else:
+                final_prompt = system_prompt or "Hello"
+            
+            # Call Gemini API
+            response = self.client.generate_content(
+                final_prompt,
+                generation_config=genai.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=500,
+                    top_p=1.0,
+                )
+            )
+            
+            return response.text.strip()
+            
+        else:  # OpenAI
+            response = self.client.chat.completions.create(
+                model=self.model,
+                timeout=30.0,  # 30 second timeout
+                messages=messages,
+                temperature=0.7,
+                max_tokens=500,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0
+            )
+            
+            return response.choices[0].message.content.strip()
     
     def _build_context_prompt(self, context: Dict[str, Any]) -> Optional[str]:
         """Build context prompt from user preferences.

@@ -279,30 +279,37 @@ def quiz_content(state: OnboardingState) -> rx.Component:
     """Main quiz content with all questions."""
     return rx.vstack(
         # Logo at top
-        logo(size="md"),
+        rx.box(
+            logo(size="lg"),
+            margin_bottom="3rem",
+        ),
         
         # Main title
         rx.heading(
             "Vertel ons een beetje over jouw",
-            font_size="28px",
+            font_size=["1.5rem", "1.75rem", "2rem"],
             font_weight="700",
             color=COLORS["text_primary"],
-            margin_top="32px",
+            margin_bottom="0.75rem",
+            line_height="1.2",
         ),
         
         # Subtitle
         rx.text(
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            font_size="14px",
+            "Beantwoord een paar vragen zodat we EduChat kunnen personaliseren voor jouw behoeften.",
+            font_size=["0.875rem", "0.9375rem", "1rem"],
             color=COLORS["text_secondary"],
             line_height="1.6",
-            margin_top="8px",
+            margin_bottom="2rem",
         ),
         
         # Progress bar
-        progress_bar(
-            current_step=state.current_step,
-            total_steps=state.total_steps,
+        rx.box(
+            progress_bar(
+                current_step=state.current_step,
+                total_steps=state.total_steps,
+            ),
+            margin_bottom="2.5rem",
         ),
         
         # Question content (conditional rendering based on current step)
@@ -338,6 +345,7 @@ def quiz_content(state: OnboardingState) -> rx.Component:
             ),
             min_height="300px",
             width="100%",
+            margin_bottom="2rem",
         ),
         
         # Navigation buttons
@@ -346,61 +354,71 @@ def quiz_content(state: OnboardingState) -> rx.Component:
         spacing="0",
         align="start",
         width="100%",
-        padding="40px",
+        max_width="600px",
+        padding=["1.5rem", "2rem", "3rem"],
     )
 
 
 def welcome_panel() -> rx.Component:
     """Right panel with welcome message and illustration."""
     return rx.vstack(
+        # Welcome heading
         rx.vstack(
             rx.heading(
                 "Welkom bij",
-                font_size="32px",
-                font_weight="700",
-                color="#FFFFFF",
+                font_size=["1.75rem", "2rem", "2.25rem"],
+                font_weight="600",
+                color="rgba(255, 255, 255, 0.95)",
                 text_align="center",
+                line_height="1.2",
             ),
             rx.heading(
                 "EduChat",
-                font_size="64px",
+                font_size=["3rem", "3.5rem", "4rem"],
                 font_weight="700",
                 color="#FFFFFF",
                 text_align="center",
-                margin_top="-8px",
+                line_height="1",
+                margin_top="0.25rem",
             ),
             spacing="0",
-            margin_bottom="32px",
+            margin_bottom="3rem",
         ),
         
-        # Illustration placeholder (you can add an actual image here)
+        # AI Assistant Illustration
         rx.box(
+            rx.image(
+                src="/ai_assistant_illustration.svg",
+                width=["300px", "350px", "400px"],
+                height=["225px", "262px", "300px"],
+                alt="AI Assistant",
+                object_fit="contain",
+            ),
+            display="flex",
+            justify_content="center",
+            align_items="center",
+            margin_bottom="2.5rem",
+        ),
+        
+        # Description text
+        rx.vstack(
             rx.text(
-                "🎓",
-                font_size="120px",
+                "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
+                font_size=["0.9375rem", "1rem", "1.0625rem"],
+                color="rgba(255, 255, 255, 0.92)",
+                line_height="1.7",
                 text_align="center",
             ),
-            padding="40px",
-        ),
-        
-        rx.text(
-            "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
-            font_size="16px",
-            color="#FFFFFF",
-            line_height="1.8",
-            text_align="center",
-            max_width="400px",
-            margin_top="24px",
-        ),
-        
-        rx.text(
-            "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent het is er om het jou simpel uit te leggen, op jouw manier.",
-            font_size="16px",
-            color="#FFFFFF",
-            line_height="1.8",
-            text_align="center",
-            max_width="400px",
-            margin_top="16px",
+            rx.text(
+                "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
+                font_size=["0.9375rem", "1rem", "1.0625rem"],
+                color="rgba(255, 255, 255, 0.88)",
+                line_height="1.7",
+                text_align="center",
+                margin_top="1.25rem",
+            ),
+            max_width="480px",
+            spacing="0",
         ),
         
         spacing="0",
@@ -408,22 +426,27 @@ def welcome_panel() -> rx.Component:
         justify="center",
         width="100%",
         height="100%",
-        padding="60px",
+        padding=["2.5rem", "3rem", "4rem"],
     )
 
 
 def onboarding() -> rx.Component:
     """Main onboarding page with responsive split layout."""
     return rx.box(
-        # Mobile: Stack vertically
-        # Desktop: Side by side
         rx.hstack(
             # Left panel - Quiz
             rx.box(
-                quiz_content(OnboardingState),
-                width="100%",  # Full width on mobile
+                rx.box(
+                    quiz_content(OnboardingState),
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                    min_height="100vh",
+                    width="100%",
+                ),
+                width="100%",
                 height="100vh",
-                background="#FFFFFF",
+                background=COLORS["white"],
                 overflow_y="auto",
                 **{
                     "@media (min-width: 1024px)": {
@@ -435,14 +458,14 @@ def onboarding() -> rx.Component:
             # Right panel - Welcome (hidden on mobile)
             rx.box(
                 welcome_panel(),
-                width="0",  # Hidden on mobile
+                width="0",
                 height="100vh",
                 background=COLORS["primary_green"],
                 overflow_y="auto",
-                display="none",  # Hidden on mobile/tablet
+                display="none",
                 **{
                     "@media (min-width: 1024px)": {
-                        "display": "block",
+                        "display": "flex",
                         "width": "50%",
                     }
                 }
@@ -451,7 +474,9 @@ def onboarding() -> rx.Component:
             spacing="0",
             width="100%",
             height="100vh",
+            align="stretch",
         ),
         width="100%",
         height="100vh",
+        overflow="hidden",
     )
