@@ -5,11 +5,12 @@ import reflex as rx
 from reflex.utils.console import LogLevel
 
 # Determine environment - check multiple env vars for Render
-app_env = os.getenv("APP_ENV", os.getenv("RENDER", "development"))
-is_production = app_env in ("production", "true", "1")
-
-# Detect if running on Render (they set RENDER=true)
+app_env = os.getenv("APP_ENV", "development")
 is_render = os.getenv("RENDER") is not None
+is_production = app_env == "production" or is_render
+
+# Get port from environment (Render provides PORT env var)
+backend_port = int(os.getenv("PORT", "10000" if is_render else "8001"))
 
 config = rx.Config(
     app_name="educhat",
@@ -21,11 +22,11 @@ config = rx.Config(
     # db_url not needed as we use Supabase client directly
     
     # API Configuration
-    api_url="https://educhat-dgxn.onrender.com" if is_render else "http://localhost:8001",
+    api_url="https://educhat-dgxn.onrender.com" if is_render else f"http://localhost:{backend_port}",
     
     # Frontend Configuration
     frontend_port=3000,
-    backend_port=10000 if is_render else 8001,
+    backend_port=backend_port,
     backend_host="0.0.0.0",
     
     # Production optimizations
