@@ -23,6 +23,10 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
       
+      # Port configuration - Render provides this automatically but we set explicitly
+      - key: PORT
+        value: "10000"
+      
       # Supabase Configuration (set these in Render dashboard)
       - key: DATABASE_URL
         sync: false  # Set manually with your Supabase connection string

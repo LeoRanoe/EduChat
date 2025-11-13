@@ -9,10 +9,14 @@ is_render = os.getenv("RENDER") == "true"
 is_production = is_render or os.getenv("APP_ENV") == "production"
 
 # Get port - Render exposes PORT env var (defaults to 10000)
-# Use 8001 for local development
-if is_render:
-    backend_port = int(os.getenv("PORT", "10000"))
+# CRITICAL: Must use PORT env var for Render to detect the service
+port_env = os.getenv("PORT")
+if port_env:
+    # Running on Render or similar platform - use their PORT
+    backend_port = int(port_env)
+    print(f"[Render] Using PORT from environment: {backend_port}")
 else:
+    # Local development
     backend_port = 8001
 
 config = rx.Config(
