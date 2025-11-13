@@ -8,7 +8,7 @@ services:
     env: python
     region: oregon  # Choose: oregon, frankfurt, singapore
     plan: free  # or 'starter' for $7/mo
-    branch: main  # or feat/supabase
+    branch: experiment  # Deploying from experiment branch with latest features
     
     # Build command - install dependencies and build frontend
     buildCommand: |
