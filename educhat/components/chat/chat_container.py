@@ -171,6 +171,7 @@ def chat_container(
                                         False
                                     ),
                                     on_suggestion_click=on_quick_action,
+                                    is_thinking=msg.get("is_thinking", False),
                                 ),
                             ),
                             spacing="0",
@@ -182,6 +183,7 @@ def chat_container(
                         overflow_y="auto",
                         height="100%",
                         width="100%",
+                        custom_attrs={"data-chat-container": "true"},
                     ),
                 ),
                 flex="1",

@@ -42,19 +42,30 @@ class AppState(rx.State):
         import time
         start_time = time.time()
         
+        # Store input first
+        user_input_text = self.user_input
+        
         # Add user message
         user_message = {
-            "content": self.user_input,
+            "content": user_input_text,
             "is_user": True,
             "timestamp": datetime.now().strftime("%H:%M"),
         }
         self.messages.append(user_message)
         
-        # Store input and clear
-        user_input_text = self.user_input
+        # Clear input box immediately
         self.user_input = ""
         
-        # Set loading state
+        # Add temporary thinking message bubble
+        thinking_message = {
+            "content": "...",
+            "is_user": False,
+            "timestamp": datetime.now().strftime("%H:%M"),
+            "is_thinking": True,
+        }
+        self.messages.append(thinking_message)
+        
+        # Set loading state and update UI
         self.is_loading = True
         yield
         
@@ -85,31 +96,28 @@ class AppState(rx.State):
             # Track response time
             self.last_response_time = time.time() - start_time
             
-            # Add AI response
-            bot_message = {
+            # Replace thinking message with actual AI response
+            self.messages[-1] = {
                 "content": ai_response,
                 "is_user": False,
                 "timestamp": datetime.now().strftime("%H:%M"),
             }
-            self.messages.append(bot_message)
             
         except TimeoutError:
-            # Handle timeout specifically
-            error_message = {
+            # Replace thinking message with timeout error
+            self.messages[-1] = {
                 "content": "Het antwoord duurt te lang. Probeer je vraag opnieuw te stellen of maak deze korter.",
                 "is_user": False,
                 "timestamp": datetime.now().strftime("%H:%M"),
                 "is_error": True,
             }
-            self.messages.append(error_message)
         except Exception as e:
-            # Handle errors gracefully
-            error_message = {
+            # Replace thinking message with error
+            self.messages[-1] = {
                 "content": "Sorry, er is iets misgegaan. Probeer het opnieuw of stel een andere vraag.",
                 "is_user": False,
                 "timestamp": datetime.now().strftime("%H:%M"),
             }
-            self.messages.append(error_message)
         
         finally:
             self.is_loading = False
@@ -177,9 +185,11 @@ class AppState(rx.State):
             prompt: Pre-defined prompt text
         """
         self.user_input = prompt
-        # send_message is an async generator, so we need to iterate through it
+        # Yield immediately to show the chat interface with the user message
+        yield
+        # Then send the message (this will handle the AI response)
         async for _ in self.send_message():
-            pass
+            yield
     
     async def handle_message_feedback(self, message_index: int, feedback_type: str):
         """Handle user feedback on a message (like/dislike).

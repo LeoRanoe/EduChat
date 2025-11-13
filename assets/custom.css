@@ -1,0 +1,166 @@
+/* Custom animations and styles for EduChat */
+
+/* Enhanced pulse animation for typing indicator with smooth, attractive motion */
+@keyframes pulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.6) translateY(0);
+  }
+  25% {
+    opacity: 0.7;
+    transform: scale(0.9) translateY(-2px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3) translateY(-4px);
+  }
+  75% {
+    opacity: 0.7;
+    transform: scale(0.9) translateY(-2px);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(0.6) translateY(0);
+  }
+}
+
+/* Smooth breathing animation for the thinking bubble container */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Smooth scrolling for chat container */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Bot message markdown content styling */
+.bot-message-content {
+  font-size: 0.9375rem !important;
+  color: #111827 !important;
+  line-height: 1.7 !important;
+}
+
+@media (min-width: 768px) {
+  .bot-message-content {
+    font-size: 1rem !important;
+  }
+}
+
+/* Force all text elements in markdown to have proper color */
+.bot-message-content * {
+  color: #111827 !important;
+}
+
+/* Markdown paragraphs */
+.bot-message-content p {
+  margin-bottom: 0.75rem;
+  color: #111827 !important;
+}
+
+.bot-message-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Markdown lists */
+.bot-message-content ul,
+.bot-message-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 0;
+  color: #111827 !important;
+}
+
+.bot-message-content ul {
+  list-style-type: disc;
+}
+
+.bot-message-content ol {
+  list-style-type: decimal;
+}
+
+.bot-message-content li {
+  margin-bottom: 0.25rem;
+  padding-left: 0.25rem;
+  color: #111827 !important;
+}
+
+/* Markdown bold text */
+.bot-message-content strong {
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+/* Markdown emphasis */
+.bot-message-content em {
+  font-style: italic;
+  color: #111827 !important;
+}
+
+/* Nested lists */
+.bot-message-content li > ul,
+.bot-message-content li > ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Enhanced message fade-in animation with smooth, attractive motion */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Apply smooth animation to message bubbles */
+.message-bubble {
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+/* Auto-expanding textarea - single line by default, expands as you type */
+.auto-expand-textarea {
+  overflow: hidden !important;
+  min-height: 24px !important;
+  height: 24px !important;
+  resize: none !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: height 0.1s ease;
+}
+
+.auto-expand-textarea:focus,
+.auto-expand-textarea:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  outline-offset: 0 !important;
+}
+
+/* Allow scrolling when max height is reached */
+.auto-expand-textarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.auto-expand-textarea::-webkit-scrollbar-thumb {
+  background-color: rgba(16, 163, 127, 0.3);
+  border-radius: 2px;
+}
+
+.auto-expand-textarea::-webkit-scrollbar-track {
+  background-color: transparent;
+}

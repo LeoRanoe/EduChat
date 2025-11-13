@@ -173,6 +173,7 @@ def circular_button(
     icon: str,
     on_click: Optional[Callable] = None,
     background_color: str = "primary_green",
+    id: Optional[str] = None,
 ) -> rx.Component:
     """Modern circular button with gradient for send button.
     
@@ -180,10 +181,12 @@ def circular_button(
         icon: Icon name from lucide-react icon set
         on_click: Click handler function
         background_color: Background color key from COLORS
+        id: Optional HTML id attribute
     """
     return rx.button(
         rx.icon(icon, size=18),
         on_click=on_click,
+        id=id,
         background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
         color=COLORS["white"],
         border="none",

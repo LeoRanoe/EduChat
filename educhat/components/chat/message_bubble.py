@@ -25,6 +25,7 @@ def user_message(content: str, timestamp: Optional[str] = None) -> rx.Component:
                 max_width=["85%", "75%", "700px"],
                 word_wrap="break-word",
                 box_shadow="0 2px 8px rgba(16, 163, 127, 0.25), 0 1px 3px rgba(0,0,0,0.1)",
+                class_name="message-bubble",
             ),
             rx.cond(
                 timestamp,
@@ -57,6 +58,7 @@ def bot_message(
     on_refresh=None,
     show_suggestions: bool = False,
     on_suggestion_click=None,
+    is_thinking: bool = False,
 ) -> rx.Component:
     """Bot message bubble (left-aligned, modern card style)."""
     from educhat.components.shared import contextual_follow_ups
@@ -84,13 +86,47 @@ def bot_message(
                     ),
                     # Message content
                     rx.box(
-                        rx.text(
-                            content,
-                            font_size=["0.9375rem", "0.9375rem", "1rem"],
-                            color=COLORS["text_primary"],
-                            line_height="1.7",
-                            font_weight="400",
-                            letter_spacing="-0.01em",
+                        rx.cond(
+                            is_thinking,
+                            # Thinking indicator with smooth, attractive animation
+                            rx.hstack(
+                                rx.box(
+                                    width="10px",
+                                    height="10px",
+                                    border_radius="50%",
+                                    background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                                    animation="pulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1) 0s",
+                                    box_shadow="0 2px 8px rgba(16, 163, 127, 0.4)",
+                                ),
+                                rx.box(
+                                    width="10px",
+                                    height="10px",
+                                    border_radius="50%",
+                                    background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                                    animation="pulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1) 0.3s",
+                                    box_shadow="0 2px 8px rgba(16, 163, 127, 0.4)",
+                                ),
+                                rx.box(
+                                    width="10px",
+                                    height="10px",
+                                    border_radius="50%",
+                                    background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                                    animation="pulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1) 0.6s",
+                                    box_shadow="0 2px 8px rgba(16, 163, 127, 0.4)",
+                                ),
+                                spacing="3",
+                                align="center",
+                                padding="0.5rem 0",
+                                animation="breathe 2s infinite ease-in-out",
+                            ),
+                            # Normal markdown content
+                            rx.markdown(
+                                content,
+                                class_name="bot-message-content",
+                                color=COLORS["text_primary"],
+                                font_size=["0.9375rem", "0.9375rem", "1rem"],
+                                line_height="1.7",
+                            ),
                         ),
                         flex="1",
                     ),
@@ -110,6 +146,7 @@ def bot_message(
                     "box_shadow": "0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.06)",
                     "border_color": COLORS["border_gray"],
                 },
+                class_name="message-bubble",
             ),
             # Action icons
             rx.hstack(
@@ -167,6 +204,7 @@ def message_bubble(
     on_refresh=None,
     show_suggestions: bool = False,
     on_suggestion_click=None,
+    is_thinking: bool = False,
 ) -> rx.Component:
     """Message bubble component for chat messages.
     
@@ -181,9 +219,10 @@ def message_bubble(
         on_refresh: Handler for refresh/regenerate action
         show_suggestions: Whether to show follow-up suggestions (only for bot messages)
         on_suggestion_click: Handler for suggestion click
+        is_thinking: Whether the bot is currently thinking (typing indicator)
     """
     return rx.cond(
         is_user,
         user_message(content, timestamp),
-        bot_message(content, timestamp, on_copy, on_like, on_dislike, on_bookmark, on_refresh, show_suggestions, on_suggestion_click),
+        bot_message(content, timestamp, on_copy, on_like, on_dislike, on_bookmark, on_refresh, show_suggestions, on_suggestion_click, is_thinking),
     )

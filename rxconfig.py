@@ -29,4 +29,13 @@ config = rx.Config(
     
     # Logging
     loglevel=LogLevel.INFO if is_production else LogLevel.DEBUG,
+    
+    # Custom stylesheets and scripts
+    stylesheets=[
+        "/custom.css",  # Custom animations and styles
+    ],
+    scripts=[
+        "/auto-expand.js",  # Auto-expanding textarea
+        "/auto-scroll.js",  # Auto-scroll to new messages
+    ],
 )

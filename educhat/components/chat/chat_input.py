@@ -31,30 +31,49 @@ def chat_input(
                 # Input area with modern styling
                 rx.box(
                     rx.hstack(
-                        # Text area with enhanced styling
+                        # Text area with enhanced styling and auto-expand
                         rx.text_area(
                             placeholder=placeholder,
                             value=value,
                             on_change=on_change,
                             background="transparent",
-                            border="none",
+                            border="none !important",
+                            outline="none !important",
+                            box_shadow="none !important",
                             padding="0",
                             width="100%",
-                            min_height=["44px", "44px", "48px"],
-                            max_height=["160px", "160px", "200px"],
-                            rows="1",
+                            min_height="24px",
+                            max_height=["120px", "160px", "200px"],
                             font_size=["0.9375rem", "0.9375rem", "1rem"],
                             color=COLORS["text_primary"],
                             resize="none",
                             line_height="1.5",
                             font_weight="400",
                             letter_spacing="-0.01em",
+                            overflow="hidden",
+                            class_name="auto-expand-textarea",
+                            id="chat-textarea",
                             _focus={
                                 "outline": "none",
+                                "border": "none",
+                                "box_shadow": "none",
                             },
                             _placeholder={
                                 "color": COLORS["text_tertiary"],
                                 "font_weight": "400",
+                            },
+                            custom_attrs={
+                                "oninput": "this.style.height = '24px'; this.style.height = (this.scrollHeight) + 'px';",
+                                "onkeydown": """
+                                    if(event.key === 'Enter' && !event.shiftKey) {
+                                        event.preventDefault();
+                                        const sendBtn = document.getElementById('send-button');
+                                        if(sendBtn) {
+                                            sendBtn.click();
+                                        }
+                                        return false;
+                                    }
+                                """
                             },
                         ),
                         # Enhanced send button
@@ -62,6 +81,7 @@ def chat_input(
                             circular_button(
                                 icon="arrow-up",
                                 on_click=on_submit,
+                                id="send-button",
                             ),
                             align_self="end",
                             flex_shrink="0",
@@ -85,31 +105,20 @@ def chat_input(
                     width="100%",
                 ),
                 
-                # Loading indicator
-                rx.cond(
-                    is_loading,
-                    rx.hstack(
-                        rx.spinner(size="2"),
-                        rx.text(
-                            "EduChat is aan het typen...",
-                            font_size="0.875rem",
-                            color=COLORS["gray"],
-                        ),
-                        spacing="2",
-                        align="center",
-                    ),
-                    rx.fragment(),
-                ),
-                
                 spacing="3",
                 width="100%",
             ),
             width="100%",
             max_width="900px",
             margin="0 auto",
+            padding_left="0",
+            padding_right="0",
         ),
         width="100%",
         padding=["0.875rem 1rem", "1rem 1.5rem", "1.125rem 2rem"],
+        display="flex",
+        justify_content="center",
+        align_items="center",
         background=COLORS["white"],
         border_top=f"1px solid {COLORS['border_light']}",
         box_shadow="0 -2px 12px rgba(0,0,0,0.04)",

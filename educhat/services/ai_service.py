@@ -119,15 +119,23 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         Returns:
             True if education-related
         """
+        # Expanded list of education keywords including common variations and typos
         education_keywords = [
-            "studie", "opleiding", "universiteit", "school", "minov",
+            "studie", "opleiding", "universiteit", "school", "minov", "minow",
             "inschrijven", "inschrijving", "toelating", "examen", "diploma",
             "vakken", "lessen", "docent", "leraar", "student", "cursus",
             "bachelor", "master", "vmbo", "havo", "vwo", "mbo",
-            "deadline", "kosten", "beurs", "financiering"
+            "deadline", "kosten", "beurs", "financiering",
+            "hoe", "wat", "welke", "wanneer", "waar",  # Question words - allow most questions through
+            "helpen", "help", "vraag", "vragen", "info", "informatie"
         ]
         
         message_lower = message.lower()
+        
+        # If message is very short (greeting or simple question), let it through
+        if len(message.split()) <= 5:
+            return True
+        
         return any(keyword in message_lower for keyword in education_keywords)
     
     def _get_fallback_response(self, message: str) -> str:
@@ -137,9 +145,20 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
             message: User message
             
         Returns:
-            Fallback response
+            Fallback response or None to let AI handle it
         """
-        if not self._is_education_related(message):
+        # Only block obviously off-topic questions (e.g., about weather, sports, etc.)
+        off_topic_keywords = [
+            "weer", "voetbal", "sport", "recept", "koken",
+            "film", "muziek", "game", "spel"
+        ]
+        
+        message_lower = message.lower()
+        
+        # Check if it's obviously off-topic
+        is_off_topic = any(keyword in message_lower for keyword in off_topic_keywords)
+        
+        if is_off_topic and not self._is_education_related(message):
             return (
                 "Ik ben gespecialiseerd in Surinaams onderwijs en kan je daar graag mee helpen! "
                 "Heb je vragen over studies, inschrijvingen, of onderwijsinstellingen in Suriname? "
@@ -149,6 +168,8 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
                 "- Wat zijn de toelatingseisen?\n"
                 "- Vertel me over MINOV opleidingen"
             )
+        
+        # Let the AI handle everything else
         return None
     
     def _validate_response(self, response: str) -> bool:

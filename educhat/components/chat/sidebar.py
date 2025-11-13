@@ -402,13 +402,13 @@ def sidebar(
                     rx.cond(
                         is_collapsed,
                         rx.box(
-                            rx.icon("user-circle", size=20, color=COLORS["primary_green"]),
+                            rx.icon("user", size=20, color=COLORS["primary_green"]),
                             display="flex",
                             justify_content="center",
                             width="100%",
                         ),
                         rx.hstack(
-                            rx.icon("user-circle", size=18, color=COLORS["primary_green"]),
+                            rx.icon("user", size=18, color=COLORS["primary_green"]),
                             rx.text(
                                 "Start onboarding",
                                 font_size="0.875rem",
