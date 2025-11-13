@@ -18,7 +18,7 @@ services:
       reflex export --frontend-only --no-zip
     
     # Start command - run the Reflex app
-    startCommand: reflex run --env prod --backend-only
+    startCommand: reflex run --env prod --loglevel info
     
     # Python version
     envVars:
