@@ -10,13 +10,15 @@ services:
     plan: free  # or 'starter' for $7/mo
     branch: experiment  # Deploying from experiment branch with latest features
     
-    # Build command - install dependencies only
+    # Build command - install dependencies and pre-build frontend
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
+      reflex init
+      reflex export --no-zip
     
-    # Start command - run the Reflex app (Reflex handles frontend build on first run)
-    startCommand: reflex run --env prod --loglevel info --backend-host 0.0.0.0 --backend-port 10000
+    # Start command - run backend only (frontend pre-built during build phase)
+    startCommand: reflex run --env prod --loglevel info --backend-host 0.0.0.0 --backend-port 10000 --backend-only
     
     # Python version
     envVars:
