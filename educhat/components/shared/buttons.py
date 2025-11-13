@@ -30,12 +30,19 @@ def primary_button(
             ),
             rx.cond(
                 icon,
-                rx.icon(icon, size=18),
+                rx.icon(icon, size=18, flex_shrink="0"),
                 rx.fragment(),
             ),
-            rx.text(text, font_size=["0.9375rem", "0.9375rem", "1rem"]),
+            rx.text(
+                text, 
+                font_size=["0.9375rem", "0.9375rem", "1rem"],
+                white_space="nowrap",
+                overflow="hidden",
+                text_overflow="ellipsis",
+            ),
             spacing="2",
             align="center",
+            width="100%",
         ),
         on_click=on_click,
         background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
@@ -56,6 +63,7 @@ def primary_button(
             "box_shadow": "0 2px 8px rgba(16, 163, 127, 0.3), 0 1px 3px rgba(0,0,0,0.1)",
         },
         transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        min_height=["44px", "44px", "48px"],
     )
 
 
@@ -77,18 +85,22 @@ def secondary_button(
         rx.hstack(
             rx.cond(
                 icon,
-                rx.icon(icon, size=18),
+                rx.icon(icon, size=18, flex_shrink="0", color=COLORS["primary_green"]),
                 rx.fragment(),
             ),
             rx.text(
                 text,
                 font_size=["0.875rem", "0.875rem", "0.9375rem"],
+                white_space="nowrap",
+                overflow="hidden",
+                text_overflow="ellipsis",
             ),
             spacing="2",
             align="center",
+            width="100%",
         ),
         on_click=on_click,
-        background=COLORS["white"],
+        background=f"linear-gradient(135deg, {COLORS['white']} 0%, {COLORS['light_green']}15 100%)",
         color=COLORS["dark_gray"],
         border=f"1.5px solid {COLORS['border_gray']}",
         border_radius=RADIUS["xl"],
@@ -97,17 +109,17 @@ def secondary_button(
         font_weight="500",
         width=width,
         min_height=["44px", "44px", "48px"],
-        box_shadow="0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+        box_shadow="0 2px 8px rgba(16, 163, 127, 0.08), 0 1px 3px rgba(0,0,0,0.04)",
         _hover={
-            "background": COLORS["light_gray"],
-            "border_color": COLORS["gray"],
-            "box_shadow": "0 4px 8px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.06)",
-            "transform": "translateY(-1px)",
+            "background": f"linear-gradient(135deg, {COLORS['light_green']}30 0%, {COLORS['light_green']}10 100%)",
+            "border_color": COLORS["primary_green"],
+            "box_shadow": "0 6px 20px rgba(16, 163, 127, 0.15), 0 3px 6px rgba(0,0,0,0.08)",
+            "transform": "translateY(-2px)",
         },
         _active={
             "transform": "translateY(0)",
         },
-        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     )
 
 
@@ -170,16 +182,16 @@ def circular_button(
         background_color: Background color key from COLORS
     """
     return rx.button(
-        rx.icon(icon, size=20),
+        rx.icon(icon, size=18),
         on_click=on_click,
         background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
         color=COLORS["white"],
         border="none",
         border_radius=RADIUS["full"],
-        width=["40px", "40px", "44px"],
-        height=["40px", "40px", "44px"],
-        min_width=["40px", "40px", "44px"],
-        min_height=["40px", "40px", "44px"],
+        width=["36px", "36px", "40px"],
+        height=["36px", "36px", "40px"],
+        min_width=["36px", "36px", "40px"],
+        min_height=["36px", "36px", "40px"],
         padding="0",
         cursor="pointer",
         display="flex",
@@ -188,11 +200,11 @@ def circular_button(
         flex_shrink="0",
         box_shadow="0 2px 8px rgba(16, 163, 127, 0.3), 0 1px 3px rgba(0,0,0,0.1)",
         _hover={
-            "transform": "scale(1.08) translateY(-1px)",
+            "transform": "scale(1.1) translateY(-1px)",
             "box_shadow": "0 4px 12px rgba(16, 163, 127, 0.4), 0 2px 4px rgba(0,0,0,0.15)",
         },
         _active={
-            "transform": "scale(0.96)",
+            "transform": "scale(0.95)",
         },
         transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     )

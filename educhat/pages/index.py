@@ -24,6 +24,8 @@ def index() -> rx.Component:
             user_name="John Doe",
             user_email="johndoe@email.com",
             is_open=AppState.sidebar_open,
+            is_collapsed=AppState.sidebar_collapsed,
+            on_toggle_collapse=AppState.toggle_sidebar_collapse,
         ),
         
         # Main content area
@@ -34,12 +36,7 @@ def index() -> rx.Component:
                     on_menu_click=AppState.toggle_sidebar,
                     is_sidebar_open=AppState.sidebar_open,
                 ),
-                display="block",
-                **{
-                    "@media (min-width: 1024px)": {
-                        "display": "none",
-                    }
-                }
+                display=["block", "block", "none"],
             ),
             
             # Chat container
@@ -59,14 +56,18 @@ def index() -> rx.Component:
             width="100%",
             height="100vh",
             background=COLORS["light_gray"],
+            display="flex",
+            flex_direction="column",
         ),
         
         # Full viewport container
         display="flex",
+        flex_direction="row",
         width="100vw",
         height="100vh",
         overflow="hidden",
         background=COLORS["light_gray"],
         margin="0",
         padding="0",
+        position="relative",
     )

@@ -139,4 +139,10 @@ def sidebar_overlay(
         z_index="999",
         display=rx.cond(is_open, "block", "none"),
         on_click=on_click,
+        # Hide on desktop
+        **{
+            "@media (min-width: 1024px)": {
+                "display": "none !important",
+            }
+        }
     )

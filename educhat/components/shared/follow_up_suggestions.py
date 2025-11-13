@@ -63,7 +63,7 @@ def follow_up_suggestions(
                     *[
                         suggestion_chip(
                             text=suggestion,
-                            on_click=lambda s=suggestion: on_suggestion_click(s) if on_suggestion_click else None,
+                            on_click=on_suggestion_click(suggestion) if on_suggestion_click else None,
                         )
                         for suggestion in suggestions
                     ],

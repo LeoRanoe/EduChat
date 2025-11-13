@@ -278,6 +278,27 @@ def question_step_7(state: OnboardingState) -> rx.Component:
 def quiz_content(state: OnboardingState) -> rx.Component:
     """Main quiz content with all questions."""
     return rx.vstack(
+        # Back to chat link
+        rx.box(
+            rx.link(
+                rx.hstack(
+                    rx.icon("arrow-left", size=18, color=COLORS["primary_green"]),
+                    rx.text(
+                        "Terug naar chat",
+                        font_size="0.875rem",
+                        color=COLORS["primary_green"],
+                        font_weight="500",
+                    ),
+                    spacing="2",
+                    align="center",
+                ),
+                href="/",
+                text_decoration="none",
+            ),
+            margin_bottom="2rem",
+            width="100%",
+        ),
+        
         # Logo at top
         rx.box(
             logo(size="lg"),

@@ -84,8 +84,12 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
                 raise ValueError("Google AI API key not found. Set GOOGLE_AI_API_KEY environment variable.")
             
             genai.configure(api_key=self.api_key)
-            self.model = model or "gemini-2.0-flash-exp"
-            self.client = genai.GenerativeModel(self.model)
+            # Use Gemini 2.5 Flash (latest stable version)
+            self.model = model or "gemini-2.5-flash"
+            self.client = genai.GenerativeModel(
+                model_name=self.model,
+                system_instruction=self.SYSTEM_PROMPT
+            )
             
         elif self.provider == "openai":
             if not OPENAI_AVAILABLE:
@@ -190,22 +194,41 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         for attempt in range(self.max_retries):
             try:
                 return func(*args, **kwargs)
-            except RateLimitError as e:
+            except Exception as e:
                 last_exception = e
-                if attempt < self.max_retries - 1:
-                    delay = min(self.base_delay * (2 ** attempt), self.max_delay)
-                    print(f"Rate limit hit, retrying in {delay}s... (attempt {attempt + 1}/{self.max_retries})")
-                    time.sleep(delay)
-            except APIConnectionError as e:
-                last_exception = e
-                if attempt < self.max_retries - 1:
-                    delay = min(self.base_delay * (2 ** attempt), self.max_delay)
-                    print(f"Connection error, retrying in {delay}s... (attempt {attempt + 1}/{self.max_retries})")
-                    time.sleep(delay)
-            except APIError as e:
-                last_exception = e
+                error_str = str(e).lower()
+                
+                # Check for rate limit or quota errors (both OpenAI and Google)
+                if "rate" in error_str or "quota" in error_str or "limit" in error_str:
+                    if attempt < self.max_retries - 1:
+                        delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                        print(f"Rate limit hit, retrying in {delay}s... (attempt {attempt + 1}/{self.max_retries})")
+                        time.sleep(delay)
+                        continue
+                
+                # Check for connection errors
+                if "connection" in error_str or "timeout" in error_str:
+                    if attempt < self.max_retries - 1:
+                        delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                        print(f"Connection error, retrying in {delay}s... (attempt {attempt + 1}/{self.max_retries})")
+                        time.sleep(delay)
+                        continue
+                
+                # For OpenAI specific errors
+                if OPENAI_AVAILABLE:
+                    if isinstance(e, (RateLimitError, APIConnectionError)):
+                        if attempt < self.max_retries - 1:
+                            delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                            print(f"API error, retrying in {delay}s... (attempt {attempt + 1}/{self.max_retries})")
+                            time.sleep(delay)
+                            continue
+                    elif isinstance(e, APIError):
+                        print(f"API error: {e}")
+                        break  # Don't retry on general API errors
+                
+                # For other errors, log and break
                 print(f"API error: {e}")
-                break  # Don't retry on general API errors
+                break
         
         raise last_exception
     
@@ -267,7 +290,22 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
             return response
             
         except Exception as e:
+            error_str = str(e).lower()
             print(f"AI service error: {e}")
+            
+            # Check for quota/rate limit errors
+            if "quota" in error_str or "429" in str(e):
+                return (
+                    "⚠️ De AI service heeft zijn gebruikslimiet bereikt. "
+                    "Dit kan betekenen dat de API-sleutel zijn gratis quota heeft overschreden. "
+                    "Probeer het over een paar minuten opnieuw, of neem contact op met de beheerder."
+                )
+            elif "401" in str(e) or "unauthorized" in error_str or "invalid" in error_str and "key" in error_str:
+                return (
+                    "⚠️ Er is een probleem met de AI API-sleutel. "
+                    "Neem contact op met de beheerder om dit op te lossen."
+                )
+            
             return (
                 "Er ging iets mis bij het verwerken van je vraag. "
                 "Probeer het later nog eens, of stel een andere vraag over Surinaams onderwijs!"
@@ -287,28 +325,49 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         """
         if self.provider == "google":
             # Convert messages to Gemini format
-            # Gemini doesn't use system messages in the same way, so we'll prepend system prompt to first user message
-            system_prompt = ""
-            user_messages = []
+            # Skip system messages (already in system_instruction)
+            history = []
+            current_message = None
             
             for msg in messages:
                 if msg["role"] == "system":
-                    system_prompt += msg["content"] + "\n\n"
+                    # Skip system messages as they're handled by system_instruction
+                    continue
                 elif msg["role"] == "user":
-                    user_messages.append(msg["content"])
+                    if current_message is not None:
+                        # This is the new message, not history
+                        current_message = msg["content"]
+                    else:
+                        # This is history
+                        history.append({
+                            "role": "user",
+                            "parts": [msg["content"]]
+                        })
                 elif msg["role"] == "assistant":
-                    # For history context, we'll include it in the conversation
-                    user_messages.append(f"[Previous response: {msg['content']}]")
+                    history.append({
+                        "role": "model",
+                        "parts": [msg["content"]]
+                    })
             
-            # Build the final prompt with system context
-            if user_messages:
-                final_prompt = system_prompt + user_messages[-1] if system_prompt else user_messages[-1]
-            else:
-                final_prompt = system_prompt or "Hello"
+            # The last user message should be the current message
+            if not current_message and messages:
+                for msg in reversed(messages):
+                    if msg["role"] == "user":
+                        current_message = msg["content"]
+                        # Remove from history if it was added
+                        if history and history[-1]["role"] == "user":
+                            history.pop()
+                        break
+            
+            if not current_message:
+                current_message = "Hello"
+            
+            # Start chat session with history
+            chat = self.client.start_chat(history=history)
             
             # Call Gemini API
-            response = self.client.generate_content(
-                final_prompt,
+            response = chat.send_message(
+                current_message,
                 generation_config=genai.GenerationConfig(
                     temperature=0.7,
                     max_output_tokens=500,
@@ -402,17 +461,18 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
 _ai_service = None
 
 
-def get_ai_service(api_key: Optional[str] = None, model: str = "gpt-3.5-turbo") -> AIService:
+def get_ai_service(api_key: Optional[str] = None, model: Optional[str] = None, provider: str = "auto") -> AIService:
     """Get or create AI service singleton.
     
     Args:
-        api_key: OpenAI API key
-        model: Model to use
+        api_key: API key (OpenAI or Google AI)
+        model: Model to use (auto-selected based on provider if not specified)
+        provider: "openai", "google", or "auto" (auto-detect from environment)
         
     Returns:
         AIService instance
     """
     global _ai_service
     if _ai_service is None:
-        _ai_service = AIService(api_key=api_key, model=model)
+        _ai_service = AIService(api_key=api_key, model=model, provider=provider)
     return _ai_service

@@ -25,6 +25,7 @@ class AppState(rx.State):
     
     # UI state
     sidebar_open: bool = False  # For mobile sidebar toggle
+    sidebar_collapsed: bool = False  # For desktop sidebar collapse
     
     # User context for AI (from onboarding)
     user_context: Optional[Dict] = None
@@ -70,11 +71,15 @@ class AppState(rx.State):
                     "content": msg["content"]
                 })
             
-            # Call AI service with context
-            ai_response = await ai_service.chat(
-                message=user_input_text,
-                conversation_history=conversation_history,
-                context=self.user_context
+            # Call AI service with context (run in executor to avoid blocking)
+            loop = asyncio.get_event_loop()
+            ai_response = await loop.run_in_executor(
+                None,
+                lambda: ai_service.chat(
+                    message=user_input_text,
+                    conversation_history=conversation_history,
+                    context=self.user_context
+                )
             )
             
             # Track response time
@@ -148,6 +153,10 @@ class AppState(rx.State):
         """Close sidebar (for mobile)."""
         self.sidebar_open = False
     
+    def toggle_sidebar_collapse(self):
+        """Toggle sidebar collapse (for desktop)."""
+        self.sidebar_collapsed = not self.sidebar_collapsed
+    
     def set_user_context(self, context: Dict):
         """Set user context from onboarding data.
         
@@ -219,7 +228,8 @@ class AppState(rx.State):
                 
                 # Re-send the user message
                 self.user_input = self.messages[user_msg_idx]["content"]
-                await self.send_message()
+                # Use return to chain to send_message generator
+                return self.send_message()
     
     async def load_more_messages(self):
         """Load older messages (pagination)."""
@@ -248,3 +258,51 @@ class AppState(rx.State):
         """
         # For now, return all messages (pagination disabled until DB integration)
         return self.messages
+    
+    def delete_conversation(self, conversation_id: str):
+        """Delete a conversation by ID.
+        
+        Args:
+            conversation_id: ID of conversation to delete
+        """
+        # Remove conversation from list
+        self.conversations = [conv for conv in self.conversations if conv["id"] != conversation_id]
+        
+        # If current conversation was deleted, clear messages
+        if self.current_conversation_id == conversation_id:
+            self.current_conversation_id = ""
+            self.messages = []
+            
+            # Load most recent conversation if any exist
+            if self.conversations:
+                self.load_conversation(self.conversations[0]["id"])
+        
+        # TODO: Delete from database when integrated
+        # await self.database.delete_conversation(conversation_id)
+    
+    def archive_conversation(self, conversation_id: str):
+        """Archive a conversation by ID.
+        
+        Args:
+            conversation_id: ID of conversation to archive
+        """
+        # Find and mark conversation as archived
+        for conv in self.conversations:
+            if conv["id"] == conversation_id:
+                conv["archived"] = True
+                break
+        
+        # Filter out archived conversations from visible list
+        self.conversations = [conv for conv in self.conversations if not conv.get("archived", False)]
+        
+        # If current conversation was archived, clear messages
+        if self.current_conversation_id == conversation_id:
+            self.current_conversation_id = ""
+            self.messages = []
+            
+            # Load most recent conversation if any exist
+            if self.conversations:
+                self.load_conversation(self.conversations[0]["id"])
+        
+        # TODO: Update database when integrated
+        # await self.database.update_conversation(conversation_id, archived=True)

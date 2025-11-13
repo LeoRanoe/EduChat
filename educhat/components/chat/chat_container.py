@@ -15,79 +15,104 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
         on_quick_action: Handler for quick action clicks
     """
     return rx.box(
-        rx.vstack(
-            # Welcome header with logo
+        # Gradient background overlay
+        rx.box(
+            position="absolute",
+            top="0",
+            left="0",
+            right="0",
+            height="400px",
+            background=f"radial-gradient(ellipse at top, {COLORS['light_green']}40 0%, transparent 70%)",
+            pointer_events="none",
+            z_index="0",
+        ),
+        rx.box(
             rx.vstack(
-                rx.heading(
-                    "Welkom bij",
-                    font_size=["1.25rem", "1.5rem", "1.75rem"],
-                    font_weight="600",
-                    color=COLORS["text_secondary"],
-                    text_align="center",
-                    line_height="1.2",
-                ),
-                logo(size="lg"),
-                spacing="1",
-                align="center",
-                margin_bottom="2rem",
-            ),
-            
-            # Description text
-            rx.text(
-                "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
-                font_size=["0.9375rem", "1rem", "1.0625rem"],
-                color=COLORS["text_primary"],
-                text_align="center",
-                max_width="680px",
-                line_height="1.7",
-                font_weight="400",
-            ),
-            rx.text(
-                "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
-                font_size=["0.875rem", "0.9375rem", "1rem"],
-                color=COLORS["text_secondary"],
-                text_align="center",
-                max_width="680px",
-                line_height="1.6",
-                margin_bottom="3rem",
-            ),
-            
-            # Quick action buttons
-            quick_actions_grid(on_action_click=on_quick_action) if on_quick_action else rx.fragment(),
-            
-            # Conversation templates
-            rx.box(
+                # Welcome header with logo and decorative elements
                 rx.vstack(
-                    rx.text(
-                        "Of start met een stap-voor-stap gids:",
-                        font_size=["0.875rem", "0.9375rem", "1rem"],
-                        color=COLORS["text_primary"],
-                        font_weight="600",
-                        margin_bottom="1.25rem",
-                        text_align="center",
+                    rx.box(
+                        rx.heading(
+                            "Welkom bij",
+                            font_size=["1.25rem", "1.5rem", "1.75rem"],
+                            font_weight="600",
+                            color=COLORS["text_secondary"],
+                            text_align="center",
+                            line_height="1.2",
+                        ),
+                        margin_bottom="0.5rem",
                     ),
-                    conversation_templates(on_template_click=on_quick_action) if on_quick_action else rx.fragment(),
-                    spacing="3",
+                    rx.box(
+                        logo(size="lg"),
+                        padding="1rem",
+                        background=f"linear-gradient(135deg, {COLORS['white']} 0%, {COLORS['light_green']}30 100%)",
+                        border_radius="24px",
+                        box_shadow="0 8px 32px rgba(16, 163, 127, 0.12), 0 2px 8px rgba(0,0,0,0.04)",
+                    ),
+                    spacing="2",
                     align="center",
+                    margin_bottom="1.5rem",
+                ),
+                
+                # Description text
+                rx.text(
+                    "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
+                    font_size=["0.9375rem", "1rem", "1.0625rem"],
+                    color=COLORS["text_primary"],
+                    text_align="center",
+                    max_width="680px",
+                    line_height="1.7",
+                    font_weight="400",
                     width="100%",
                 ),
-                margin_top="3rem",
+                rx.text(
+                    "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
+                    font_size=["0.875rem", "0.9375rem", "1rem"],
+                    color=COLORS["text_secondary"],
+                    text_align="center",
+                    max_width="680px",
+                    line_height="1.6",
+                    margin_bottom="2rem",
+                    width="100%",
+                ),
+                
+                # Quick action buttons
+                quick_actions_grid(on_action_click=on_quick_action) if on_quick_action else rx.fragment(),
+                
+                # Conversation templates
+                rx.box(
+                    rx.vstack(
+                        rx.text(
+                            "Of start met een stap-voor-stap gids:",
+                            font_size=["0.875rem", "0.9375rem", "1rem"],
+                            color=COLORS["text_primary"],
+                            font_weight="600",
+                            margin_bottom="1rem",
+                            text_align="center",
+                        ),
+                        conversation_templates(on_template_click=on_quick_action) if on_quick_action else rx.fragment(),
+                        spacing="3",
+                        align="center",
+                        width="100%",
+                    ),
+                    margin_top="2rem",
+                    width="100%",
+                ),
+                
+                spacing="4",
+                align="center",
                 width="100%",
-                max_width="900px",
             ),
-            
-            spacing="0",
-            align="center",
-            justify="center",
             width="100%",
             max_width="900px",
-            padding=["1.5rem", "2rem", "3rem"],
+            margin="0 auto",
+            padding=["1.5rem 1rem", "2rem 1.5rem", "3rem 2rem"],
         ),
+        width="100%",
         height="100%",
-        display="flex",
-        align_items="center",
-        justify_content="center",
         overflow_y="auto",
+        display="flex",
+        align_items="start",
+        justify_content="start",
     )
 
 
@@ -163,6 +188,7 @@ def chat_container(
                 width="100%",
                 overflow_y="auto",
                 background=COLORS["background"],
+                min_height="0",
             ),
             
             # Input area with enhanced styling
@@ -174,20 +200,13 @@ def chat_container(
             ),
             
             spacing="0",
-            height="100vh",
+            height="100%",
             width="100%",
         ),
         # Responsive layout
-        margin_left="0",
         background=COLORS["background"],
-        height="100vh",
-        width="100vw",
-        
-        # Desktop: account for sidebar
-        **{
-            "@media (min-width: 1024px)": {
-                "margin_left": "280px",
-                "width": "calc(100vw - 280px)",
-            }
-        }
+        height="100%",
+        width="100%",
+        flex="1",
+        overflow="hidden",
     )

@@ -26,88 +26,92 @@ def chat_input(
         max_chars: Maximum character limit
     """
     return rx.box(
-        rx.vstack(
-            # Input area with modern styling
-            rx.box(
-                rx.hstack(
-                    # Text area with enhanced styling
-                    rx.text_area(
-                        placeholder=placeholder,
-                        value=value,
-                        on_change=on_change,
-                        background="transparent",
-                        border="none",
-                        padding="0",
-                        width="100%",
-                        min_height=["56px", "56px", "64px"],
-                        max_height=["180px", "180px", "220px"],
-                        font_size=["0.9375rem", "0.9375rem", "1rem"],
-                        color=COLORS["text_primary"],
-                        resize="none",
-                        line_height="1.6",
-                        font_weight="400",
-                        letter_spacing="-0.01em",
-                        _focus={
-                            "outline": "none",
-                        },
-                        _placeholder={
-                            "color": COLORS["text_tertiary"],
-                            "font_weight": "400",
-                        },
-                    ),
-                    # Enhanced send button
-                    rx.box(
-                        circular_button(
-                            icon="arrow-up",
-                            on_click=on_submit,
+        rx.box(
+            rx.vstack(
+                # Input area with modern styling
+                rx.box(
+                    rx.hstack(
+                        # Text area with enhanced styling
+                        rx.text_area(
+                            placeholder=placeholder,
+                            value=value,
+                            on_change=on_change,
+                            background="transparent",
+                            border="none",
+                            padding="0",
+                            width="100%",
+                            min_height=["44px", "44px", "48px"],
+                            max_height=["160px", "160px", "200px"],
+                            rows="1",
+                            font_size=["0.9375rem", "0.9375rem", "1rem"],
+                            color=COLORS["text_primary"],
+                            resize="none",
+                            line_height="1.5",
+                            font_weight="400",
+                            letter_spacing="-0.01em",
+                            _focus={
+                                "outline": "none",
+                            },
+                            _placeholder={
+                                "color": COLORS["text_tertiary"],
+                                "font_weight": "400",
+                            },
                         ),
-                        align_self="end",
+                        # Enhanced send button
+                        rx.box(
+                            circular_button(
+                                icon="arrow-up",
+                                on_click=on_submit,
+                            ),
+                            align_self="end",
+                            flex_shrink="0",
+                        ),
+                        spacing="3",
+                        align="end",
+                        width="100%",
                     ),
-                    spacing="4",
-                    align="end",
+                    background=f"linear-gradient(135deg, {COLORS['white']} 0%, {COLORS['light_gray']}20 100%)",
+                    border=f"2px solid {COLORS['border_gray']}",
+                    border_radius=RADIUS["2xl"],
+                    padding=["0.75rem 1rem", "0.75rem 1rem", "0.875rem 1.125rem"],
+                    box_shadow="0 2px 12px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.03)",
+                    _focus_within={
+                        "box_shadow": f"0 0 0 3px {COLORS['light_green']}, 0 8px 24px rgba(16, 163, 127, 0.15), 0 4px 8px rgba(0,0,0,0.08)",
+                        "border_color": COLORS["primary_green"],
+                        "background": COLORS["white"],
+                        "transform": "translateY(-1px)",
+                    },
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                     width="100%",
                 ),
-                background=COLORS["white"],
-                border=f"2px solid {COLORS['border_gray']}",
-                border_radius=RADIUS["2xl"],
-                padding=["1.125rem 1.25rem", "1.125rem 1.25rem", "1.25rem 1.5rem"],
-                box_shadow="0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
-                _focus_within={
-                    "box_shadow": f"0 0 0 4px {COLORS['light_green']}, 0 4px 16px rgba(16, 163, 127, 0.15)",
-                    "border_color": COLORS["primary_green"],
-                },
-                transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-            ),
-            
-            # Bottom row: character count - hidden for now to avoid errors
-            rx.box(
-                height="0.5rem",  # Placeholder space
-            ),
-            
-            # Loading indicator
-            rx.cond(
-                is_loading,
-                rx.hstack(
-                    rx.spinner(size="2"),
-                    rx.text(
-                        "EduChat is aan het typen...",
-                        font_size="0.875rem",
-                        color=COLORS["gray"],
+                
+                # Loading indicator
+                rx.cond(
+                    is_loading,
+                    rx.hstack(
+                        rx.spinner(size="2"),
+                        rx.text(
+                            "EduChat is aan het typen...",
+                            font_size="0.875rem",
+                            color=COLORS["gray"],
+                        ),
+                        spacing="2",
+                        align="center",
                     ),
-                    spacing="2",
-                    align="center",
+                    rx.fragment(),
                 ),
-                rx.fragment(),
+                
+                spacing="3",
+                width="100%",
             ),
-            
-            spacing="3",
             width="100%",
             max_width="900px",
             margin="0 auto",
         ),
         width="100%",
-        padding=["1.25rem 1rem", "1.5rem 1.5rem", "2rem"],
+        padding=["0.875rem 1rem", "1rem 1.5rem", "1.125rem 2rem"],
         background=COLORS["white"],
         border_top=f"1px solid {COLORS['border_light']}",
-        box_shadow="0 -2px 16px rgba(0,0,0,0.04)",
+        box_shadow="0 -2px 12px rgba(0,0,0,0.04)",
+        flex_shrink="0",
     )
