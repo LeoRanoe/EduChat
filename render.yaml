@@ -15,8 +15,8 @@ services:
       pip install --upgrade pip
       pip install -r requirements.txt
     
-    # Start command - Reflex will auto-build frontend on first run and serve on port 10000
-    startCommand: reflex run --env prod --loglevel info --backend-host 0.0.0.0 --backend-port 10000
+    # Start command - Let rxconfig.py handle all port configuration
+    startCommand: reflex run --env prod --loglevel info
     
     # Python version
     envVars:

@@ -4,13 +4,16 @@ import os
 import reflex as rx
 from reflex.utils.console import LogLevel
 
-# Determine environment - check multiple env vars for Render
-app_env = os.getenv("APP_ENV", "development")
-is_render = os.getenv("RENDER") is not None
-is_production = app_env == "production" or is_render
+# Determine environment - Render sets RENDER=true
+is_render = os.getenv("RENDER") == "true"
+is_production = is_render or os.getenv("APP_ENV") == "production"
 
-# Get port from environment (Render provides PORT env var)
-backend_port = int(os.getenv("PORT", "10000" if is_render else "8001"))
+# Get port - Render exposes PORT env var (defaults to 10000)
+# Use 8001 for local development
+if is_render:
+    backend_port = int(os.getenv("PORT", "10000"))
+else:
+    backend_port = 8001
 
 config = rx.Config(
     app_name="educhat",
