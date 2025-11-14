@@ -47,11 +47,14 @@ echo "================================"
 export REFLEX_ENV=prod
 export APP_ENV=production
 
-# Start Reflex - it WILL compile at startup, but should still bind the port
-# The key is using --env prod to minimize compilation time
-echo "Starting Reflex in production mode..."
-echo "This will compile the frontend (takes ~30-60 seconds)..."
-echo "Port will open once compilation starts..."
+# CRITICAL FIX: Reflex in prod mode hangs after compilation
+# Solution: Skip the frontend compilation and run backend directly
+echo "Starting Reflex backend directly..."
 
-# Use exec to replace shell with Reflex process
-exec reflex run --env prod --loglevel info --backend-host 0.0.0.0 --backend-port $PORT
+# Export frontend first (this completes and exits cleanly)
+echo "Exporting frontend..."
+reflex export --frontend-only --no-zip --loglevel warning
+
+# Now start ONLY the backend using the exported frontend
+echo "Starting backend server on port $PORT..."
+exec reflex run --env prod --backend-only --loglevel info --backend-host 0.0.0.0 --backend-port $PORT
