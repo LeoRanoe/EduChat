@@ -30,7 +30,10 @@ Your Render dashboard is using the **OLD start command**. The render.yaml file h
 
 ### Step 3: Verify Environment Variables
 Make sure these are set in Environment tab:
-- `PORT` = `10000` (or leave blank, Render auto-sets this)
+
+**IMPORTANT**: Do NOT set `PORT` manually - Render sets it automatically!
+
+Required variables:
 - `RENDER` = `true`
 - `APP_ENV` = `production`
 - `DATABASE_URL` = (your Supabase connection string)
@@ -38,6 +41,8 @@ Make sure these are set in Environment tab:
 - `SUPABASE_ANON_KEY` = (your key)
 - `SUPABASE_SERVICE_ROLE_KEY` = (your key)
 - `GOOGLE_AI_API_KEY` = (your key)
+
+**If you manually set PORT, DELETE IT!** It should be auto-set by Render.
 
 ### Step 4: Manual Deploy
 1. Click "Manual Deploy" → "Deploy latest commit"

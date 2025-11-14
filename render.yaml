@@ -24,9 +24,8 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
       
-      # Port configuration - Render provides this automatically but we set explicitly
-      - key: PORT
-        value: "10000"
+      # Note: PORT is automatically set by Render (usually 10000)
+      # Do not manually set PORT in environment variables
       
       # Supabase Configuration (set these in Render dashboard)
       - key: DATABASE_URL

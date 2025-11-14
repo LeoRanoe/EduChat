@@ -10,7 +10,8 @@ is_production = is_render or os.getenv("APP_ENV") == "production"
 
 # Get port - Render exposes PORT env var (defaults to 10000)
 # CRITICAL: Must use PORT env var for Render to detect the service
-port = int(os.getenv("PORT", "8000"))
+port_env = os.getenv("PORT", "8000")
+port = int(port_env) if port_env and port_env.strip() else 8000
 
 config = rx.Config(
     app_name="educhat",
