@@ -42,5 +42,6 @@ echo "✅ Startup checks complete!"
 echo "🌐 Starting Reflex application..."
 echo "================================"
 
-# Start the Reflex application
-exec reflex run --env prod --loglevel info
+# Start the Reflex application in backend-only mode
+# Frontend is pre-built during build phase
+exec reflex run --env prod --loglevel info --backend-only

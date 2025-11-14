@@ -10,14 +10,7 @@ is_production = is_render or os.getenv("APP_ENV") == "production"
 
 # Get port - Render exposes PORT env var (defaults to 10000)
 # CRITICAL: Must use PORT env var for Render to detect the service
-port_env = os.getenv("PORT")
-if port_env:
-    # Running on Render or similar platform - use their PORT
-    backend_port = int(port_env)
-    print(f"[Render] Using PORT from environment: {backend_port}")
-else:
-    # Local development
-    backend_port = 8001
+port = int(os.getenv("PORT", "8000"))
 
 config = rx.Config(
     app_name="educhat",
@@ -28,12 +21,12 @@ config = rx.Config(
     # Database (using Supabase, not Reflex's internal DB)
     # db_url not needed as we use Supabase client directly
     
-    # API Configuration
-    api_url="https://educhat-dgxn.onrender.com" if is_render else f"http://localhost:{backend_port}",
+    # API Configuration - use port directly for both frontend and backend in production
+    api_url=f"https://educhat-dgxn.onrender.com" if is_render else f"http://localhost:{port}",
     
-    # Frontend Configuration
-    frontend_port=3000,
-    backend_port=backend_port,
+    # Port Configuration - use same port for both in production
+    frontend_port=port,
+    backend_port=port,
     backend_host="0.0.0.0",
     
     # Production optimizations
@@ -41,6 +34,9 @@ config = rx.Config(
     
     # Logging
     loglevel=LogLevel.INFO if is_production else LogLevel.DEBUG,
+    
+    # Disable sitemap plugin to avoid warnings
+    disable_plugins=["reflex.plugins.sitemap.SitemapPlugin"],
     
     # Custom stylesheets and scripts
     stylesheets=[
