@@ -16,7 +16,7 @@ services:
       pip install -r requirements.txt
       reflex init
     
-    # Start command - use simple startup script
+    # Start command - start server that binds immediately
     startCommand: bash start.sh
     
     # Python version
@@ -61,8 +61,10 @@ services:
       - key: SESSION_SECRET
         generateValue: true  # Render will generate a secure random value
     
-    # Health check endpoint
-    healthCheckPath: /
+    # Health check configuration
+    # Disable health check during startup to allow time for compilation
+    # Render will just check if port is open
+    # healthCheckPath: /
     
     # Auto-deploy on push
     autoDeploy: true

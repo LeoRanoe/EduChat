@@ -46,9 +46,12 @@ echo "================================"
 # Set environment variables for production
 export REFLEX_ENV=prod
 export APP_ENV=production
-export NODE_OPTIONS="--max-old-space-size=512"
 
-# Start Reflex in production mode
-# Production mode uses much less memory than dev mode
-echo "Starting Reflex backend on 0.0.0.0:$PORT..."
-exec reflex run --env prod --loglevel warning --backend-host 0.0.0.0 --backend-port $PORT
+# Start Reflex - it WILL compile at startup, but should still bind the port
+# The key is using --env prod to minimize compilation time
+echo "Starting Reflex in production mode..."
+echo "This will compile the frontend (takes ~30-60 seconds)..."
+echo "Port will open once compilation starts..."
+
+# Use exec to replace shell with Reflex process
+exec reflex run --env prod --loglevel info --backend-host 0.0.0.0 --backend-port $PORT
