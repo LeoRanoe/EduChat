@@ -40,8 +40,15 @@ except Exception as e:
 echo "================================"
 echo "✅ Startup checks complete!"
 echo "🌐 Starting Reflex application..."
+echo "Port: $PORT"
 echo "================================"
 
-# Start the Reflex application in backend-only mode
-# Frontend is pre-built during build phase
-exec reflex run --env prod --loglevel info --backend-only
+# Set environment variables for production
+export REFLEX_ENV=prod
+export APP_ENV=production
+export NODE_OPTIONS="--max-old-space-size=512"
+
+# Start Reflex in production mode
+# Production mode uses much less memory than dev mode
+echo "Starting Reflex backend on 0.0.0.0:$PORT..."
+exec reflex run --env prod --loglevel warning --backend-host 0.0.0.0 --backend-port $PORT

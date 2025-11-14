@@ -21,11 +21,10 @@ config = rx.Config(
     # Database (using Supabase, not Reflex's internal DB)
     # db_url not needed as we use Supabase client directly
     
-    # API Configuration - use port directly for both frontend and backend in production
+    # API Configuration
     api_url=f"https://educhat-dgxn.onrender.com" if is_render else f"http://localhost:{port}",
     
-    # Port Configuration - use same port for both in production
-    frontend_port=port,
+    # Port Configuration
     backend_port=port,
     backend_host="0.0.0.0",
     

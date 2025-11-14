@@ -10,14 +10,14 @@ services:
     plan: free  # or 'starter' for $7/mo
     branch: experiment  # Deploying from experiment branch with latest features
     
-    # Build command - install dependencies and export frontend
+    # Build command - install dependencies only
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
-      reflex export --frontend-only --no-zip
+      reflex init
     
-    # Start command - production mode with exported frontend
-    startCommand: reflex run --env prod --loglevel info --backend-only
+    # Start command - use simple startup script
+    startCommand: bash start.sh
     
     # Python version
     envVars:
@@ -51,6 +51,9 @@ services:
       # Application Configuration
       - key: APP_ENV
         value: production
+      
+      - key: RENDER
+        value: "true"
       
       - key: DEBUG
         value: "False"
