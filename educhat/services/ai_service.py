@@ -391,7 +391,7 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
                 current_message,
                 generation_config=genai.GenerationConfig(
                     temperature=0.7,
-                    max_output_tokens=500,
+                    max_output_tokens=4096,  # High limit for complete responses
                     top_p=1.0,
                 )
             )
@@ -401,10 +401,10 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         else:  # OpenAI
             response = self.client.chat.completions.create(
                 model=self.model,
-                timeout=30.0,  # 30 second timeout
+                timeout=60.0,  # 60 second timeout for longer responses
                 messages=messages,
                 temperature=0.7,
-                max_tokens=500,
+                max_tokens=4096,  # High limit for complete responses
                 top_p=1.0,
                 frequency_penalty=0.0,
                 presence_penalty=0.0
@@ -456,13 +456,13 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         
         return None
     
-    async def chat_stream(
+    def chat_stream(
         self,
         message: str,
         conversation_history: Optional[List[Dict[str, str]]] = None,
         context: Optional[Dict[str, Any]] = None
     ):
-        """Get AI response as a stream (for future streaming implementation).
+        """Get AI response as a stream for real-time typing animation.
         
         Args:
             message: User message
@@ -470,12 +470,153 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
             context: Additional context
             
         Yields:
-            Response chunks
+            Response chunks (each chunk is a string to append)
         """
-        # For now, just return the full response
-        # In the future, this can be implemented with OpenAI streaming
-        response = self.chat(message, conversation_history, context)
-        yield response
+        # Check for off-topic questions
+        fallback = self._get_fallback_response(message)
+        if fallback:
+            # Stream the fallback response word by word
+            words = fallback.split()
+            for i, word in enumerate(words):
+                if i == 0:
+                    yield word
+                else:
+                    yield " " + word
+            return
+        
+        # Build messages array
+        messages = [{"role": "system", "content": self.SYSTEM_PROMPT}]
+        
+        # Add context if available
+        if context:
+            context_prompt = self._build_context_prompt(context)
+            if context_prompt:
+                messages.append({"role": "system", "content": context_prompt})
+        
+        # Add conversation history
+        if conversation_history:
+            messages.extend(conversation_history[-10:])
+        
+        # Add current message
+        messages.append({"role": "user", "content": message})
+        
+        try:
+            if self.provider == "google":
+                # Convert messages to Gemini format
+                history = []
+                current_message = None
+                
+                for msg in messages:
+                    if msg["role"] == "system":
+                        continue
+                    elif msg["role"] == "user":
+                        if current_message is not None:
+                            current_message = msg["content"]
+                        else:
+                            history.append({
+                                "role": "user",
+                                "parts": [msg["content"]]
+                            })
+                    elif msg["role"] == "assistant":
+                        history.append({
+                            "role": "model",
+                            "parts": [msg["content"]]
+                        })
+                
+                if not current_message and messages:
+                    for msg in reversed(messages):
+                        if msg["role"] == "user":
+                            current_message = msg["content"]
+                            if history and history[-1]["role"] == "user":
+                                history.pop()
+                            break
+                
+                if not current_message:
+                    current_message = "Hello"
+                
+                # Start chat and stream response
+                chat = self.client.start_chat(history=history)
+                response = chat.send_message(
+                    current_message,
+                    generation_config=genai.GenerationConfig(
+                        temperature=0.7,
+                        max_output_tokens=4096,  # High limit for complete responses
+                        top_p=1.0,
+                    ),
+                    stream=True,
+                )
+                
+                # Stream chunks with batching for smooth animation
+                buffer = ""
+                for chunk in response:
+                    if chunk.text:
+                        buffer += chunk.text
+                        # Batch chunks for smoother visual updates (every 3-5 chars)
+                        if len(buffer) >= 3:
+                            yield buffer
+                            buffer = ""
+                
+                # Yield remaining buffer
+                if buffer:
+                    yield buffer
+                        
+            else:  # OpenAI
+                # Stream OpenAI response
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    timeout=60.0,  # Longer timeout for complete responses
+                    messages=messages,
+                    temperature=0.7,
+                    max_tokens=4096,  # High limit for complete responses
+                    top_p=1.0,
+                    frequency_penalty=0.0,
+                    presence_penalty=0.0,
+                    stream=True,
+                )
+                
+                # Stream chunks with batching for smoother visual updates
+                buffer = ""
+                for chunk in response:
+                    if chunk.choices[0].delta.content:
+                        buffer += chunk.choices[0].delta.content
+                        # Batch chunks for smoother animation (every 3-5 chars)
+                        if len(buffer) >= 3:
+                            yield buffer
+                            buffer = ""
+                
+                # Yield remaining buffer
+                if buffer:
+                    yield buffer
+                        
+        except Exception as e:
+            error_str = str(e).lower()
+            print(f"Streaming error: {e}")
+            
+            # Return error message
+            if "quota" in error_str or "429" in str(e):
+                error_msg = (
+                    "⚠️ De AI service heeft zijn gebruikslimiet bereikt. "
+                    "Dit kan betekenen dat de API-sleutel zijn gratis quota heeft overschreden. "
+                    "Probeer het over een paar minuten opnieuw, of neem contact op met de beheerder."
+                )
+            elif "401" in str(e) or "unauthorized" in error_str or "invalid" in error_str and "key" in error_str:
+                error_msg = (
+                    "⚠️ Er is een probleem met de AI API-sleutel. "
+                    "Neem contact op met de beheerder om dit op te lossen."
+                )
+            else:
+                error_msg = (
+                    "Er ging iets mis bij het verwerken van je vraag. "
+                    "Probeer het later nog eens, of stel een andere vraag over Surinaams onderwijs!"
+                )
+            
+            # Stream error message
+            words = error_msg.split()
+            for i, word in enumerate(words):
+                if i == 0:
+                    yield word
+                else:
+                    yield " " + word
 
 
 # Singleton instance

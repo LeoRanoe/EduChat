@@ -26,6 +26,8 @@ class AppState(rx.State):
     # UI state
     sidebar_open: bool = False  # For mobile sidebar toggle
     sidebar_collapsed: bool = False  # For desktop sidebar collapse
+    search_query: str = ""  # Search query for filtering conversations
+    search_expanded: bool = False  # Whether search bar is expanded
     
     # User context for AI (from onboarding)
     user_context: Optional[Dict] = None
@@ -34,7 +36,7 @@ class AppState(rx.State):
     last_response_time: float = 0.0
     
     async def send_message(self):
-        """Handle sending a message with AI integration."""
+        """Handle sending a message with AI integration and streaming response."""
         if not self.user_input.strip():
             return
         
@@ -58,12 +60,13 @@ class AppState(rx.State):
         
         # Add temporary thinking message bubble
         thinking_message = {
-            "content": "...",
+            "content": "",
             "is_user": False,
             "timestamp": datetime.now().strftime("%H:%M"),
-            "is_thinking": True,
+            "is_streaming": True,
         }
         self.messages.append(thinking_message)
+        bot_message_idx = len(self.messages) - 1
         
         # Set loading state and update UI
         self.is_loading = True
@@ -73,50 +76,58 @@ class AppState(rx.State):
             # Get AI service
             ai_service = get_ai_service()
             
-            # Build conversation history (last 10 messages)
+            # Build conversation history (last 10 messages, excluding the new empty one)
             conversation_history = []
-            for msg in self.messages[-10:]:
+            for msg in self.messages[:-1][-10:]:
                 role = "user" if msg["is_user"] else "assistant"
                 conversation_history.append({
                     "role": role,
                     "content": msg["content"]
                 })
             
-            # Call AI service with context (run in executor to avoid blocking)
+            # Stream AI response with typing animation
+            full_response = ""
             loop = asyncio.get_event_loop()
-            ai_response = await loop.run_in_executor(
+            
+            # Run streaming in executor
+            stream_generator = await loop.run_in_executor(
                 None,
-                lambda: ai_service.chat(
+                lambda: ai_service.chat_stream(
                     message=user_input_text,
                     conversation_history=conversation_history,
                     context=self.user_context
                 )
             )
             
+            # Stream each chunk with smooth updates
+            for chunk in stream_generator:
+                full_response += chunk
+                self.messages[bot_message_idx]["content"] = full_response
+                yield
+                # Small delay for natural typing effect (adjust as needed)
+                await asyncio.sleep(0.03)  # 30ms between updates for smooth animation
+            
             # Track response time
             self.last_response_time = time.time() - start_time
             
-            # Replace thinking message with actual AI response
-            self.messages[-1] = {
-                "content": ai_response,
-                "is_user": False,
-                "timestamp": datetime.now().strftime("%H:%M"),
-            }
+            # Mark streaming as complete
+            self.messages[bot_message_idx]["is_streaming"] = False
             
         except TimeoutError:
-            # Replace thinking message with timeout error
-            self.messages[-1] = {
+            # Replace with timeout error
+            self.messages[bot_message_idx] = {
                 "content": "Het antwoord duurt te lang. Probeer je vraag opnieuw te stellen of maak deze korter.",
                 "is_user": False,
                 "timestamp": datetime.now().strftime("%H:%M"),
                 "is_error": True,
             }
         except Exception as e:
-            # Replace thinking message with error
-            self.messages[-1] = {
+            # Replace with error message
+            self.messages[bot_message_idx] = {
                 "content": "Sorry, er is iets misgegaan. Probeer het opnieuw of stel een andere vraag.",
                 "is_user": False,
                 "timestamp": datetime.now().strftime("%H:%M"),
+                "is_error": True,
             }
         
         finally:
@@ -164,6 +175,20 @@ class AppState(rx.State):
     def toggle_sidebar_collapse(self):
         """Toggle sidebar collapse (for desktop)."""
         self.sidebar_collapsed = not self.sidebar_collapsed
+        # Close search when collapsing sidebar
+        if self.sidebar_collapsed:
+            self.search_expanded = False
+            self.search_query = ""
+    
+    def toggle_search(self):
+        """Toggle search bar expansion."""
+        self.search_expanded = not self.search_expanded
+        if not self.search_expanded:
+            self.search_query = ""
+    
+    def set_search_query(self, query: str):
+        """Update search query."""
+        self.search_query = query
     
     def set_user_context(self, context: Dict):
         """Set user context from onboarding data.
@@ -233,13 +258,68 @@ class AppState(rx.State):
             # Find the previous user message
             user_msg_idx = message_index - 1
             if user_msg_idx >= 0 and self.messages[user_msg_idx]["is_user"]:
-                # Remove the old bot response
-                self.messages.pop(message_index)
+                # Store the user message content
+                user_message_content = self.messages[user_msg_idx]["content"]
                 
-                # Re-send the user message
-                self.user_input = self.messages[user_msg_idx]["content"]
-                # Use return to chain to send_message generator
-                return self.send_message()
+                # Replace the old bot response with streaming placeholder
+                self.messages[message_index] = {
+                    "content": "",
+                    "is_user": False,
+                    "timestamp": datetime.now().strftime("%H:%M"),
+                    "is_streaming": True,
+                }
+                
+                # Set loading state
+                self.is_loading = True
+                yield
+                
+                try:
+                    # Get AI service
+                    ai_service = get_ai_service()
+                    
+                    # Build conversation history (excluding the message being regenerated)
+                    conversation_history = []
+                    for i, msg in enumerate(self.messages[:message_index]):
+                        role = "user" if msg["is_user"] else "assistant"
+                        conversation_history.append({
+                            "role": role,
+                            "content": msg["content"]
+                        })
+                    
+                    # Stream AI response
+                    full_response = ""
+                    loop = asyncio.get_event_loop()
+                    
+                    stream_generator = await loop.run_in_executor(
+                        None,
+                        lambda: ai_service.chat_stream(
+                            message=user_message_content,
+                            conversation_history=conversation_history[-10:],
+                            context=self.user_context
+                        )
+                    )
+                    
+                    # Stream each chunk with smooth updates
+                    for chunk in stream_generator:
+                        full_response += chunk
+                        self.messages[message_index]["content"] = full_response
+                        yield
+                        # Small delay for natural typing effect
+                        await asyncio.sleep(0.03)  # 30ms between updates
+                    
+                    # Mark streaming as complete
+                    self.messages[message_index]["is_streaming"] = False
+                    
+                except Exception as e:
+                    self.messages[message_index] = {
+                        "content": "Sorry, er is iets misgegaan bij het opnieuw genereren. Probeer het nog eens.",
+                        "is_user": False,
+                        "timestamp": datetime.now().strftime("%H:%M"),
+                        "is_error": True,
+                    }
+                
+                finally:
+                    self.is_loading = False
     
     async def load_more_messages(self):
         """Load older messages (pagination)."""

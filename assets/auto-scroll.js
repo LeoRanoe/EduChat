@@ -3,20 +3,22 @@
   let lastMessageCount = 0;
   let isUserScrolling = false;
   let scrollTimeout;
+  let lastScrollHeight = 0;
+  let streamingCheckInterval;
   
-  function scrollToBottom(force = false) {
+  function scrollToBottom(force = false, instant = false) {
     const chatContainer = document.querySelector('[data-chat-container]');
     if (!chatContainer) return;
     
-    // Check if user is scrolled near bottom (within 100px)
-    const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 100;
+    // Check if user is scrolled near bottom (within 150px for better UX)
+    const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 150;
     
     // Only auto-scroll if user is near bottom or force is true
     if (isNearBottom || force || !isUserScrolling) {
       requestAnimationFrame(() => {
         chatContainer.scrollTo({
           top: chatContainer.scrollHeight,
-          behavior: 'smooth'
+          behavior: instant ? 'auto' : 'smooth'
         });
       });
     }
@@ -27,13 +29,33 @@
     const chatContainer = document.querySelector('[data-chat-container]');
     if (!chatContainer) return;
     
+    const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 10;
+    
+    // If user scrolls to bottom, stop marking as user scrolling
+    if (isAtBottom) {
+      isUserScrolling = false;
+      return;
+    }
+    
     isUserScrolling = true;
     clearTimeout(scrollTimeout);
     
-    // Reset after 1 second of no scrolling
+    // Reset after 1.5 seconds of no scrolling
     scrollTimeout = setTimeout(() => {
       isUserScrolling = false;
-    }, 1000);
+    }, 1500);
+  }
+  
+  // Check for streaming content updates
+  function checkForStreamingUpdates() {
+    const chatContainer = document.querySelector('[data-chat-container]');
+    if (!chatContainer) return;
+    
+    // If content height changed, scroll (streaming in progress)
+    if (chatContainer.scrollHeight !== lastScrollHeight) {
+      lastScrollHeight = chatContainer.scrollHeight;
+      scrollToBottom(false, false);
+    }
   }
   
   // Watch for new messages with improved detection
@@ -88,9 +110,16 @@
       });
       
       lastMessageCount = document.querySelectorAll('.message-bubble').length;
+      lastScrollHeight = chatContainer.scrollHeight;
+      
+      // Start checking for streaming updates every 100ms
+      if (streamingCheckInterval) {
+        clearInterval(streamingCheckInterval);
+      }
+      streamingCheckInterval = setInterval(checkForStreamingUpdates, 100);
       
       // Initial scroll to bottom
-      setTimeout(() => scrollToBottom(true), 100);
+      setTimeout(() => scrollToBottom(true, true), 100);
     } else {
       // Retry if container not found yet
       setTimeout(init, 100);

@@ -1,26 +1,46 @@
 /* Custom animations and styles for EduChat */
 
+/* Sidebar conversation action buttons - smooth reveal on hover */
+.conv-action {
+  opacity: 0;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar scrollbar styling for better UX */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(16, 163, 127, 0.2);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 163, 127, 0.4);
+}
+
 /* Enhanced pulse animation for typing indicator with smooth, attractive motion */
 @keyframes pulse {
   0% {
-    opacity: 0.4;
-    transform: scale(0.6) translateY(0);
-  }
-  25% {
-    opacity: 0.7;
-    transform: scale(0.9) translateY(-2px);
+    opacity: 0.3;
+    transform: scale(0.7) translateY(0);
   }
   50% {
     opacity: 1;
-    transform: scale(1.3) translateY(-4px);
-  }
-  75% {
-    opacity: 0.7;
-    transform: scale(0.9) translateY(-2px);
+    transform: scale(1.2) translateY(-3px);
   }
   100% {
-    opacity: 0.4;
-    transform: scale(0.6) translateY(0);
+    opacity: 0.3;
+    transform: scale(0.7) translateY(0);
   }
 }
 
@@ -28,9 +48,11 @@
 @keyframes breathe {
   0%, 100% {
     transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.03);
+    opacity: 0.95;
   }
 }
 
@@ -39,11 +61,18 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Bot message markdown content styling */
+/* Ultra-smooth scroll behavior for chat */
+[data-chat-container] {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Bot message markdown content styling with enhanced readability */
 .bot-message-content {
   font-size: 0.9375rem !important;
   color: #111827 !important;
-  line-height: 1.7 !important;
+  line-height: 1.75 !important;
+  letter-spacing: 0.01em !important;
 }
 
 @media (min-width: 768px) {
@@ -57,9 +86,9 @@ html {
   color: #111827 !important;
 }
 
-/* Markdown paragraphs */
+/* Markdown paragraphs with better spacing */
 .bot-message-content p {
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   color: #111827 !important;
 }
 
@@ -67,11 +96,17 @@ html {
   margin-bottom: 0;
 }
 
-/* Markdown lists */
+/* Better visual separation between paragraphs */
+.bot-message-content p + p {
+  margin-top: 0.5rem;
+}
+
+/* Markdown lists with enhanced spacing and style */
 .bot-message-content ul,
 .bot-message-content ol {
   margin-left: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  margin-top: 0.5rem;
   padding-left: 0;
   color: #111827 !important;
 }
@@ -85,15 +120,20 @@ html {
 }
 
 .bot-message-content li {
-  margin-bottom: 0.25rem;
-  padding-left: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
   color: #111827 !important;
+  line-height: 1.6;
 }
 
-/* Markdown bold text */
+.bot-message-content li:last-child {
+  margin-bottom: 0;
+}
+
+/* Markdown bold text with stronger emphasis */
 .bot-message-content strong {
-  font-weight: 600 !important;
-  color: #111827 !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
 }
 
 /* Markdown emphasis */
@@ -102,22 +142,61 @@ html {
   color: #111827 !important;
 }
 
+/* Markdown headings in bot messages */
+.bot-message-content h1,
+.bot-message-content h2,
+.bot-message-content h3,
+.bot-message-content h4,
+.bot-message-content h5,
+.bot-message-content h6 {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.bot-message-content h1 { font-size: 1.5rem !important; }
+.bot-message-content h2 { font-size: 1.3rem !important; }
+.bot-message-content h3 { font-size: 1.15rem !important; }
+
 /* Nested lists */
 .bot-message-content li > ul,
 .bot-message-content li > ol {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Code blocks in markdown */
+.bot-message-content code {
+  background: #f1f5f9;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.9em;
+  color: #e11d48 !important;
+}
+
+.bot-message-content pre {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.bot-message-content pre code {
+  background: transparent;
+  padding: 0;
+  color: #334155 !important;
 }
 
 /* Enhanced message fade-in animation with smooth, attractive motion */
 @keyframes fadeInUp {
   0% {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.01);
+    transform: translateY(12px) scale(0.98);
   }
   100% {
     opacity: 1;
@@ -127,8 +206,70 @@ html {
 
 /* Apply smooth animation to message bubbles */
 .message-bubble {
-  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+/* Smooth text rendering for better readability */
+.bot-message-content,
+.message-bubble {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Typing cursor animation for streaming responses */
+@keyframes blink {
+  0%, 49% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50%, 100% {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #10a37f;
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 0.8s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+/* Smooth transitions for all interactive elements */
+button, a, .icon-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced hover states */
+button:hover, .icon-button:hover {
+  transform: translateY(-1px);
+}
+
+button:active, .icon-button:active {
+  transform: translateY(0);
+}
+
+/* Performance optimizations for smooth rendering */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* GPU acceleration for animations */
+.message-bubble,
+.typing-cursor,
+button,
+.icon-button {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Auto-expanding textarea - single line by default, expands as you type */
@@ -140,7 +281,7 @@ html {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
-  transition: height 0.1s ease;
+  transition: height 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .auto-expand-textarea:focus,

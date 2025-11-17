@@ -172,6 +172,7 @@ def chat_container(
                                     ),
                                     on_suggestion_click=on_quick_action,
                                     is_thinking=msg.get("is_thinking", False),
+                                    is_streaming=msg.get("is_streaming", False),
                                 ),
                             ),
                             spacing="0",
