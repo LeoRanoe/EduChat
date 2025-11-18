@@ -11,6 +11,7 @@ from educhat.styles.theme import COLORS
 app = rx.App(
     stylesheets=[
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+        "/landing-animations.css",
     ],
     style={
         "font_family": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

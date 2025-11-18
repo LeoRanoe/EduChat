@@ -64,11 +64,13 @@ class AppState(AuthState):
         # If no conversations exist (guest or new user), create initial conversation
         if not self.conversations:
             print("[INIT] No conversations found, creating initial conversation...")
-            await self.create_new_conversation()
+            async for _ in self.create_new_conversation():
+                pass
         # If conversations exist but no current one is selected, select the first
         elif not self.current_conversation_id:
             print(f"[INIT] Loading first conversation: {self.conversations[0]['id']}")
-            await self.load_conversation(self.conversations[0]["id"])
+            async for _ in self.load_conversation(self.conversations[0]["id"]):
+                pass
         
         print(f"[INIT] Initialization complete. Total conversations: {len(self.conversations)}, Current ID: {self.current_conversation_id}")
     
@@ -183,7 +185,8 @@ class AppState(AuthState):
                     break
         else:
             # Create new conversation
-            await self.create_new_conversation()
+            async for _ in self.create_new_conversation():
+                pass
             if self.conversations:
                 # Auto-title from first message
                 self.conversations[0]["title"] = user_input_text[:50] + ("..." if len(user_input_text) > 50 else "")
@@ -252,6 +255,7 @@ class AppState(AuthState):
         self.current_conversation_id = new_conv["id"]
         self.messages = []
         print(f"[CREATE] Created conversation {new_conv['id']}. Total conversations: {len(self.conversations)}")
+        yield  # Force UI update
     
     async def load_conversation(self, conversation_id: str):
         """Load a conversation by ID."""
@@ -285,6 +289,7 @@ class AppState(AuthState):
                 self.messages = []
         
         print(f"[LOAD] Loaded conversation {conversation_id}. Messages: {len(self.messages)}")
+        yield  # Force UI update
     
     def toggle_sidebar(self):
         """Toggle sidebar visibility (for mobile)."""
@@ -352,6 +357,8 @@ class AppState(AuthState):
                 db.update_conversation(conversation_id, title=new_title)
             except Exception as e:
                 print(f"Error renaming conversation in DB: {e}")
+        
+        yield  # Force UI update
     
     def start_rename_conversation(self, conversation_id: str):
         """Start renaming a conversation (open rename UI).
@@ -381,7 +388,8 @@ class AppState(AuthState):
             self.cancel_rename_conversation()
             return
         
-        await self.rename_conversation(self.rename_conversation_id, self.rename_conversation_title.strip())
+        async for _ in self.rename_conversation(self.rename_conversation_id, self.rename_conversation_title.strip()):
+            pass
         self.cancel_rename_conversation()
     
     def set_user_context(self, context: Dict):
@@ -570,7 +578,8 @@ class AppState(AuthState):
             
             # Load most recent conversation if any exist
             if self.conversations:
-                await self.load_conversation(self.conversations[0]["id"])
+                async for _ in self.load_conversation(self.conversations[0]["id"]):
+                    pass
         
         # Force UI update
         yield
@@ -607,7 +616,8 @@ class AppState(AuthState):
             
             # Load most recent conversation if any exist
             if self.conversations:
-                await self.load_conversation(self.conversations[0]["id"])
+                async for _ in self.load_conversation(self.conversations[0]["id"]):
+                    pass
         
         # Force UI update
         yield
@@ -623,7 +633,7 @@ class AppState(AuthState):
     def get_max_conversations(self) -> int:
         """Get maximum number of conversations allowed."""
         if self.is_guest:
-            return 1  # Guest users can only have 1 active conversation
+            return 10  # Guest users can have up to 10 active conversations
         elif self.is_authenticated:
             return 100  # Logged-in users can have up to 100 conversations
         return 0

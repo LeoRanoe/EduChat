@@ -585,8 +585,8 @@ def sidebar(
                         ),
                         rx.hstack(
                             rx.box(
-                                rx.icon("settings", size=16, color=COLORS["text_secondary"]),
-                                rx.text("Settings", font_size="0.8rem", margin_left="8px"),
+                                rx.icon("settings", size=16, color="black"),
+                                rx.text("Settings", font_size="0.8rem", margin_left="8px", color="black"),
                                 display="flex",
                                 align_items="center",
                                 cursor="pointer",
@@ -599,8 +599,8 @@ def sidebar(
                                 transition="all 0.2s ease",
                             ),
                             rx.box(
-                                rx.icon("log-out", size=16, color=COLORS["text_secondary"]),
-                                rx.text("Logout", font_size="0.8rem", margin_left="8px"),
+                                rx.icon("log-out", size=16, color="black"),
+                                rx.text("Logout", font_size="0.8rem", margin_left="8px", color="black"),
                                 display="flex",
                                 align_items="center",
                                 on_click=AppState.logout,
