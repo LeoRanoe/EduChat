@@ -351,7 +351,7 @@ def benefit_item_auth(text: str) -> rx.Component:
     """Benefit item for auth modal left side."""
     return rx.box(
         rx.icon(
-            tag="check-circle",
+            tag="circle-check",
             size=20,
             color="white",
             margin_right="12px",

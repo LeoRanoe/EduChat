@@ -107,65 +107,91 @@ def authenticated_chat() -> rx.Component:
 
 
 def guest_banner() -> rx.Component:
-    """Banner shown to guest users encouraging signup."""
+    """Banner shown to guest users encouraging signup - Enhanced."""
     return rx.cond(
         ~AuthState.guest_banner_dismissed,
         rx.box(
             rx.box(
                 rx.box(
-                    rx.icon(
-                        tag="info",
-                        size=20,
-                        color=COLORS["primary_green"],
-                        margin_right="12px",
+                    # Icon with gradient background
+                    rx.box(
+                        rx.icon(
+                            tag="user-circle",
+                            size=22,
+                            color=COLORS["primary_green"],
+                        ),
+                        width="40px",
+                        height="40px",
+                        display="flex",
+                        align_items="center",
+                        justify_content="center",
+                        background=f"linear-gradient(135deg, rgba(16, 163, 127, 0.1) 0%, rgba(13, 138, 107, 0.15) 100%)",
+                        border_radius="10px",
                         flex_shrink="0",
+                        margin_right="16px",
                     ),
+                    
                     rx.box(
                         rx.text(
-                            "You're using EduChat as a guest. ",
+                            "Je gebruikt EduChat als gast. ",
                             rx.text(
-                                "Sign up",
+                                "Meld je aan",
                                 as_="span",
-                                font_weight="600",
-                                text_decoration="underline",
+                                font_weight="700",
                                 cursor="pointer",
                                 color=COLORS["primary_green"],
-                                _hover={"opacity": "0.8"},
+                                text_decoration="underline",
+                                text_decoration_thickness="2px",
+                                text_underline_offset="2px",
+                                _hover={
+                                    "opacity": "0.8",
+                                    "text_decoration_color": COLORS["dark_green"],
+                                },
                                 on_click=AuthState.toggle_auth_modal,
                             ),
-                            " to save your conversations and access more features.",
-                            font_size="13px",
+                            " om je gesprekken op te slaan en toegang te krijgen tot meer functies.",
+                            font_size="14px",
                             color=COLORS["text_primary"],
-                            line_height="1.5",
+                            line_height="1.6",
+                            font_weight="500",
                         ),
                         flex="1",
                     ),
                     display="flex",
-                    align_items="flex-start",
+                    align_items="center",
                     flex="1",
                 ),
-                rx.icon(
-                    tag="x",
-                    size=18,
-                    color=COLORS["text_secondary"],
+                
+                # Close button with hover effect
+                rx.box(
+                    rx.icon(
+                        tag="x",
+                        size=18,
+                        color=COLORS["text_secondary"],
+                    ),
                     cursor="pointer",
-                    transition="all 0.2s ease",
+                    transition="all 0.3s ease",
                     flex_shrink="0",
+                    padding="8px",
+                    border_radius="8px",
                     _hover={
                         "color": COLORS["text_primary"],
+                        "background": f"rgba(0, 0, 0, 0.05)",
                         "transform": "rotate(90deg)",
                     },
                     on_click=AuthState.dismiss_guest_banner,
                 ),
                 display="flex",
                 justify_content="space-between",
-                align_items="flex-start",
-                padding="10px 16px",
-                gap="12px",
-                background="linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
-                border_bottom=f"1px solid {COLORS['border']}",
+                align_items="center",
+                padding="16px 24px",
+                gap="16px",
+                background=f"linear-gradient(135deg, rgba(16, 163, 127, 0.05) 0%, rgba(13, 138, 107, 0.08) 100%)",
+                backdrop_filter="blur(10px)",
+                border_bottom=f"2px solid rgba(16, 163, 127, 0.15)",
                 width="100%",
-                animation="slideInDown 0.3s ease-out",
+                box_shadow="0 4px 16px rgba(16, 163, 127, 0.08)",
+                animation="slideDown 0.4s ease-out",
             ),
             position="fixed",
             top="0",
