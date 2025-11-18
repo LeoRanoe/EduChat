@@ -76,3 +76,4 @@ def avatar(
         )
     
     return avatar_element
+

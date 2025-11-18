@@ -94,3 +94,4 @@ def get_global_styles():
             "box-sizing": "border-box",
         },
     }
+

@@ -14,3 +14,4 @@ DatabaseService = SupabaseService
 get_database_service = lambda: SupabaseService()
 
 __all__ = ["DatabaseService", "get_database_service", "get_client", "SupabaseService"]
+

@@ -638,3 +638,4 @@ def get_ai_service(api_key: Optional[str] = None, model: Optional[str] = None, p
     if _ai_service is None:
         _ai_service = AIService(api_key=api_key, model=model, provider=provider)
     return _ai_service
+

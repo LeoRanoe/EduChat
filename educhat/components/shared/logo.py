@@ -47,3 +47,4 @@ def logo(size: str = "md") -> rx.Component:
         spacing=config["spacing"],
         align="center",
     )
+

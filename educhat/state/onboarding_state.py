@@ -90,3 +90,4 @@ class OnboardingState(rx.State):
     def get_progress_percentage(self) -> int:
         """Calculate the current progress percentage."""
         return int((self.current_step / self.total_steps) * 100)
+

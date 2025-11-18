@@ -452,6 +452,229 @@ class SupabaseService:
         """Mark a reminder as sent."""
         self._ensure_connected()
         self.client.table('reminders').update({'sent': True}).eq('id', reminder_id).execute()
+    
+    # === Chat History Methods ===
+    
+    def create_conversation(self, user_id: str, title: str = "New Conversation") -> Dict[str, Any]:
+        """
+        Create a new conversation for a user.
+        
+        Args:
+            user_id: User's UUID
+            title: Conversation title
+            
+        Returns:
+            Created conversation data
+        """
+        self._ensure_connected()
+        data = {
+            'user_id': user_id,
+            'title': title,
+            'created_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat(),
+            'archived': False
+        }
+        response = self.client.table('conversations').insert(data).execute()
+        return response.data[0] if response.data else None
+    
+    def get_user_conversations(
+        self,
+        user_id: str,
+        include_archived: bool = False,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        Get all conversations for a user.
+        
+        Args:
+            user_id: User's UUID
+            include_archived: Whether to include archived conversations
+            limit: Maximum number of conversations to return
+            
+        Returns:
+            List of conversation data
+        """
+        self._ensure_connected()
+        query = self.client.table('conversations').select('*').eq('user_id', user_id)
+        
+        if not include_archived:
+            query = query.eq('archived', False)
+        
+        response = query.order('updated_at', desc=True).limit(limit).execute()
+        return response.data
+    
+    def get_conversation_by_id(self, conversation_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get a specific conversation by ID.
+        
+        Args:
+            conversation_id: Conversation UUID
+            
+        Returns:
+            Conversation data or None
+        """
+        self._ensure_connected()
+        response = self.client.table('conversations').select('*').eq('id', conversation_id).execute()
+        return response.data[0] if response.data else None
+    
+    def update_conversation(
+        self,
+        conversation_id: str,
+        title: Optional[str] = None,
+        archived: Optional[bool] = None
+    ) -> Dict[str, Any]:
+        """
+        Update conversation metadata.
+        
+        Args:
+            conversation_id: Conversation UUID
+            title: New title (optional)
+            archived: Archive status (optional)
+            
+        Returns:
+            Updated conversation data
+        """
+        self._ensure_connected()
+        data = {'updated_at': datetime.now().isoformat()}
+        
+        if title is not None:
+            data['title'] = title
+        if archived is not None:
+            data['archived'] = archived
+        
+        response = self.client.table('conversations').update(data).eq('id', conversation_id).execute()
+        return response.data[0] if response.data else None
+    
+    def delete_conversation(self, conversation_id: str) -> bool:
+        """
+        Delete a conversation and all its messages.
+        
+        Args:
+            conversation_id: Conversation UUID
+            
+        Returns:
+            True if successful
+        """
+        self._ensure_connected()
+        self.client.table('conversations').delete().eq('id', conversation_id).execute()
+        return True
+    
+    def save_message(
+        self,
+        conversation_id: str,
+        role: str,
+        content: str,
+        feedback: Optional[str] = None,
+        is_streaming: bool = False,
+        is_error: bool = False,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Save a message to a conversation.
+        
+        Args:
+            conversation_id: Conversation UUID
+            role: 'user' or 'assistant'
+            content: Message content
+            feedback: Optional feedback ('like' or 'dislike')
+            is_streaming: Whether message is being streamed
+            is_error: Whether message is an error
+            metadata: Additional metadata
+            
+        Returns:
+            Created message data
+        """
+        self._ensure_connected()
+        data = {
+            'conversation_id': conversation_id,
+            'role': role,
+            'content': content,
+            'timestamp': datetime.now().isoformat(),
+            'is_streaming': is_streaming,
+            'is_error': is_error
+        }
+        
+        if feedback:
+            data['feedback'] = feedback
+            data['feedback_timestamp'] = datetime.now().isoformat()
+        
+        if metadata:
+            data['metadata'] = metadata
+        
+        response = self.client.table('messages').insert(data).execute()
+        
+        # Update conversation's updated_at timestamp
+        self.client.table('conversations').update({
+            'updated_at': datetime.now().isoformat()
+        }).eq('id', conversation_id).execute()
+        
+        return response.data[0] if response.data else None
+    
+    def get_conversation_messages(
+        self,
+        conversation_id: str,
+        limit: Optional[int] = None,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        Get all messages for a conversation.
+        
+        Args:
+            conversation_id: Conversation UUID
+            limit: Maximum number of messages
+            offset: Number of messages to skip
+            
+        Returns:
+            List of message data
+        """
+        self._ensure_connected()
+        query = self.client.table('messages').select('*').eq('conversation_id', conversation_id)
+        query = query.order('timestamp', desc=False)
+        
+        if offset > 0:
+            query = query.range(offset, offset + (limit or 100) - 1)
+        elif limit:
+            query = query.limit(limit)
+        
+        response = query.execute()
+        return response.data
+    
+    def update_message_feedback(
+        self,
+        message_id: str,
+        feedback: str
+    ) -> Dict[str, Any]:
+        """
+        Update feedback for a message.
+        
+        Args:
+            message_id: Message UUID
+            feedback: 'like' or 'dislike'
+            
+        Returns:
+            Updated message data
+        """
+        self._ensure_connected()
+        data = {
+            'feedback': feedback,
+            'feedback_timestamp': datetime.now().isoformat()
+        }
+        response = self.client.table('messages').update(data).eq('id', message_id).execute()
+        return response.data[0] if response.data else None
+    
+    def get_conversation_count(self, user_id: str) -> int:
+        """
+        Get the number of conversations for a user.
+        
+        Args:
+            user_id: User's UUID
+            
+        Returns:
+            Number of conversations
+        """
+        self._ensure_connected()
+        response = self.client.table('conversations').select('id', count='exact').eq('user_id', user_id).eq('archived', False).execute()
+        return response.count if hasattr(response, 'count') else len(response.data)
 
 
 # Singleton instance
@@ -464,3 +687,4 @@ def get_service() -> SupabaseService:
     if _service_instance is None:
         _service_instance = SupabaseService()
     return _service_instance
+

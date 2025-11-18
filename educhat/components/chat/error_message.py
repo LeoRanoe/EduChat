@@ -44,7 +44,7 @@ def error_message(
                     cursor="pointer",
                     _hover={
                         "background": COLORS["light_gray"],
-                        "border_color": COLORS["primary"],
+                        "border_color": COLORS["primary_green"],
                     },
                     on_click=lambda: on_retry(suggestion) if on_retry else None,
                 )
@@ -79,14 +79,14 @@ def error_message(
                         spacing="2",
                         align="center",
                     ),
-                    background=COLORS["primary"],
+                    background=COLORS["primary_green"],
                     color=COLORS["white"],
                     border_radius=RADIUS["md"],
                     padding="0.75rem 1.5rem",
                     font_size="1rem",
                     cursor="pointer",
                     _hover={
-                        "background": COLORS["primary_dark"],
+                        "background": COLORS["dark_green"],
                     },
                     on_click=on_retry,
                 ),
@@ -141,8 +141,8 @@ def inline_error_badge(
     """
     return rx.hstack(
         rx.icon(
-            tag="alert-circle",
-            size=16,
+            tag="triangle-alert",
+            size=20,
             color=COLORS["error"],
         ),
         rx.text(
@@ -173,3 +173,4 @@ def inline_error_badge(
         border_radius=RADIUS["md"],
         border=f"1px solid {COLORS['error']}",
     )
+

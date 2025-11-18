@@ -70,32 +70,36 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE INDEX idx_users_email ON users(email);
 
--- Sessions table
-CREATE TABLE IF NOT EXISTS sessions (
+-- Conversations table (replaces sessions)
+CREATE TABLE IF NOT EXISTS conversations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    anonymous_id VARCHAR,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    title VARCHAR NOT NULL DEFAULT 'New Conversation',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    summary TEXT
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    archived BOOLEAN DEFAULT FALSE,
+    metadata JSONB
 );
 
-CREATE INDEX idx_sessions_user_id ON sessions(user_id);
-CREATE INDEX idx_sessions_anonymous_id ON sessions(anonymous_id);
-CREATE INDEX idx_sessions_last_active ON sessions(last_active);
+CREATE INDEX idx_conversations_user_id ON conversations(user_id);
+CREATE INDEX idx_conversations_created_at ON conversations(created_at);
+CREATE INDEX idx_conversations_archived ON conversations(archived);
 
 -- Messages table
 CREATE TABLE IF NOT EXISTS messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-    role VARCHAR NOT NULL,
+    conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    role VARCHAR NOT NULL CHECK (role IN ('user', 'assistant')),
     content TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    feedback JSONB,
+    feedback VARCHAR CHECK (feedback IN ('like', 'dislike')),
+    feedback_timestamp TIMESTAMP WITH TIME ZONE,
+    is_streaming BOOLEAN DEFAULT FALSE,
+    is_error BOOLEAN DEFAULT FALSE,
     metadata JSONB
 );
 
-CREATE INDEX idx_messages_session_id ON messages(session_id);
+CREATE INDEX idx_messages_conversation_id ON messages(conversation_id);
 CREATE INDEX idx_messages_timestamp ON messages(timestamp);
 CREATE INDEX idx_messages_role ON messages(role);
 

@@ -61,3 +61,4 @@ def progress_dots(current_step: rx.Var[int], total_steps: rx.Var[int]) -> rx.Com
         justify="center",
         width="100%",
     )
+

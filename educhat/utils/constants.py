@@ -27,3 +27,4 @@ PERFORMANCE_TARGETS = {
     "response_time": 2.0,  # seconds
     "initial_load": 3.0,   # seconds
 }
+

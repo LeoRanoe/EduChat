@@ -206,3 +206,4 @@ const clsObserver = new PerformanceObserver((list) => {
 });
 clsObserver.observe({ entryTypes: ['layout-shift'] });
 """
+

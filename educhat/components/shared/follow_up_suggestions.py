@@ -186,3 +186,4 @@ def contextual_follow_ups(
         suggestions=suggestions,
         on_suggestion_click=on_suggestion_click,
     )
+

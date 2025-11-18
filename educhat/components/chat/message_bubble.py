@@ -21,8 +21,8 @@ def user_message(content: str, timestamp: Optional[str] = None) -> rx.Component:
                 ),
                 background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
                 border_radius=RADIUS["2xl"],
-                padding=["1.125rem 1.375rem", "1.25rem 1.5rem", "1.25rem 1.625rem"],
-                max_width=["85%", "75%", "720px"],
+                padding=["1.25rem 1.5rem", "1.375rem 1.625rem", "1.5rem 1.75rem"],
+                max_width=["90%", "80%", "720px"],
                 word_wrap="break-word",
                 box_shadow="0 2px 10px rgba(16, 163, 127, 0.2), 0 1px 3px rgba(0,0,0,0.08)",
                 transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -254,3 +254,4 @@ def message_bubble(
         user_message(content, timestamp),
         bot_message(content, timestamp, on_copy, on_like, on_dislike, on_bookmark, on_refresh, show_suggestions, on_suggestion_click, is_thinking, is_streaming),
     )
+

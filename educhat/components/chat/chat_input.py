@@ -31,7 +31,7 @@ def chat_input(
                 # Input area with modern styling
                 rx.box(
                     rx.hstack(
-                        # Text area with enhanced styling and auto-expand
+                        # Text area with enhanced styling
                         rx.text_area(
                             placeholder=placeholder,
                             value=value,
@@ -50,8 +50,7 @@ def chat_input(
                             line_height="1.5",
                             font_weight="400",
                             letter_spacing="-0.01em",
-                            overflow="hidden",
-                            class_name="auto-expand-textarea",
+                            overflow="auto",
                             id="chat-textarea",
                             _focus={
                                 "outline": "none",
@@ -61,19 +60,6 @@ def chat_input(
                             _placeholder={
                                 "color": COLORS["text_tertiary"],
                                 "font_weight": "400",
-                            },
-                            custom_attrs={
-                                "oninput": "this.style.height = '24px'; this.style.height = (this.scrollHeight) + 'px';",
-                                "onkeydown": """
-                                    if(event.key === 'Enter' && !event.shiftKey) {
-                                        event.preventDefault();
-                                        const sendBtn = document.getElementById('send-button');
-                                        if(sendBtn) {
-                                            sendBtn.click();
-                                        }
-                                        return false;
-                                    }
-                                """
                             },
                         ),
                         # Enhanced send button
@@ -124,3 +110,5 @@ def chat_input(
         box_shadow="0 -2px 12px rgba(0,0,0,0.04)",
         flex_shrink="0",
     )
+
+

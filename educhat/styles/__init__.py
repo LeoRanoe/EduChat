@@ -1,1 +1,2 @@
 """Styling and theme configuration."""
+

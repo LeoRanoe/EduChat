@@ -146,3 +146,4 @@ def sidebar_overlay(
             }
         }
     )
+

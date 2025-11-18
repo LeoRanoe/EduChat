@@ -7,6 +7,140 @@ from educhat.components.shared import logo, secondary_button, search_input, avat
 from educhat.state.app_state import AppState
 
 
+def render_conversation_item(conv, current_id):
+    """Render a single conversation item for use in foreach.
+    
+    Args:
+        conv: Conversation dict with 'id' and 'title' (Reflex Var)
+        current_id: Currently active conversation ID (Reflex Var)
+    """
+    conv_id = conv["id"]
+    conv_title = conv["title"]
+    
+    return rx.box(
+        rx.vstack(
+            rx.hstack(
+                rx.box(
+                    rx.icon(
+                        "message-circle",
+                        size=16,
+                        color="white",
+                    ),
+                    background=rx.cond(
+                        conv_id == current_id,
+                        f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                        COLORS["border"]
+                    ),
+                    padding="0.5rem",
+                    border_radius="8px",
+                    transition="all 0.3s ease",
+                ),
+                rx.box(
+                    rx.text(
+                        conv_title,
+                        font_size="0.875rem",
+                        color=rx.cond(
+                            conv_id == current_id,
+                            COLORS["primary_green"],
+                            COLORS["text_primary"]
+                        ),
+                        font_weight=rx.cond(
+                            conv_id == current_id,
+                            "600",
+                            "500"
+                        ),
+                        overflow="hidden",
+                        text_overflow="ellipsis",
+                        display="-webkit-box",
+                        webkit_line_clamp="2",
+                        webkit_box_orient="vertical",
+                        line_height="1.4",
+                        max_height="2.8em",
+                        letter_spacing="-0.01em",
+                        title=conv_title,
+                    ),
+                    flex="1",
+                    min_width="0",
+                ),
+                rx.hstack(
+                    rx.box(
+                        rx.icon("pencil", size=14, color=COLORS["text_tertiary"]),
+                        on_click=AppState.start_rename_conversation(conv_id),
+                        cursor="pointer",
+                        padding="0.375rem",
+                        border_radius=RADIUS["sm"],
+                        opacity="0",
+                        class_name="conv-action",
+                        background="transparent",
+                        _hover={
+                            "background": f"rgba(16, 163, 127, 0.1)",
+                            "color": COLORS["primary_green"],
+                            "transform": "scale(1.1)",
+                        },
+                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    ),
+                    rx.box(
+                        rx.icon("trash-2", size=14, color=COLORS["text_tertiary"]),
+                        on_click=AppState.delete_conversation(conv_id),
+                        cursor="pointer",
+                        padding="0.375rem",
+                        border_radius=RADIUS["sm"],
+                        opacity="0",
+                        class_name="conv-action",
+                        background="transparent",
+                        _hover={
+                            "background": "rgba(220, 38, 38, 0.1)",
+                            "color": COLORS["error"],
+                            "transform": "scale(1.1)",
+                        },
+                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                    ),
+                    spacing="1",
+                    flex_shrink="0",
+                ),
+                spacing="3",
+                align="center",
+                width="100%",
+            ),
+            spacing="0",
+            width="100%",
+        ),
+        background=rx.cond(
+            conv_id == current_id,
+            f"linear-gradient(135deg, rgba(16, 163, 127, 0.08) 0%, rgba(16, 163, 127, 0.12) 100%)",
+            "transparent"
+        ),
+        border_radius=RADIUS["lg"],
+        padding="1rem",
+        margin="0 0.75rem 0.5rem 0.75rem",
+        cursor="pointer",
+        on_click=AppState.load_conversation(conv_id),
+        border=rx.cond(
+            conv_id == current_id,
+            f"1px solid {COLORS['primary_green']}",
+            f"1px solid {COLORS['border']}"
+        ),
+        box_shadow=rx.cond(
+            conv_id == current_id,
+            f"0 2px 8px rgba(16, 163, 127, 0.15)",
+            "none"
+        ),
+        _hover={
+            "background": rx.cond(
+                conv_id == current_id,
+                f"linear-gradient(135deg, rgba(16, 163, 127, 0.12) 0%, rgba(16, 163, 127, 0.15) 100%)",
+                f"rgba(0, 0, 0, 0.02)"
+            ),
+            "transform": "translateX(4px)",
+            "border_color": COLORS["primary_green"],
+            "box_shadow": f"0 4px 12px rgba(16, 163, 127, 0.2)",
+            ".conv-action": {"opacity": "1"},
+        },
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        animation="fadeInUp 0.3s ease-out",
+    )
+
+
 def conversation_item(
     title: str,
     conversation_id: str,
@@ -16,7 +150,7 @@ def conversation_item(
     on_delete=None,
     on_archive=None,
 ) -> rx.Component:
-    """Single conversation item in sidebar list.
+    """Single conversation item in sidebar list (DEPRECATED - kept for backwards compatibility).
     
     Args:
         title: Conversation title
@@ -54,10 +188,10 @@ def conversation_item(
             rx.cond(
                 is_collapsed,
                 rx.fragment(),
-                rx.hstack(
+                rx.box(
                     rx.box(
                         rx.icon("archive", size=14, color=COLORS["text_tertiary"]),
-                        on_click=AppState.archive_conversation(conversation_id),
+                        on_click=lambda: AppState.archive_conversation(conversation_id),
                         cursor="pointer",
                         padding="0.375rem",
                         border_radius=RADIUS["sm"],
@@ -73,7 +207,7 @@ def conversation_item(
                     ),
                     rx.box(
                         rx.icon("trash-2", size=14, color=COLORS["text_tertiary"]),
-                        on_click=AppState.delete_conversation(conversation_id),
+                        on_click=lambda: AppState.delete_conversation(conversation_id),
                         cursor="pointer",
                         padding="0.375rem",
                         border_radius=RADIUS["sm"],
@@ -248,18 +382,36 @@ def sidebar(
                 ),
             ),
             
-            # Conversations header (hide when collapsed)
+            # Conversations header with count (hide when collapsed)
             rx.cond(
                 is_collapsed,
                 rx.fragment(),
                 rx.box(
-                    rx.text(
-                        "GESPREKKEN",
-                        font_size="0.6875rem",
-                        color=COLORS["text_secondary"],
-                        text_transform="uppercase",
-                        font_weight="700",
-                        letter_spacing="0.5px",
+                    rx.hstack(
+                        rx.text(
+                            "GESPREKKEN",
+                            font_size="0.6875rem",
+                            color=COLORS["text_secondary"],
+                            text_transform="uppercase",
+                            font_weight="700",
+                            letter_spacing="0.5px",
+                        ),
+                        rx.box(
+                            rx.text(
+                                conversations.length(),
+                                font_size="0.625rem",
+                                color=COLORS["white"],
+                                font_weight="600",
+                            ),
+                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                            padding="0.125rem 0.5rem",
+                            border_radius="12px",
+                            min_width="1.5rem",
+                            text_align="center",
+                        ),
+                        justify="between",
+                        align="center",
+                        width="100%",
                     ),
                     padding="0.75rem 1.25rem 0.5rem",
                 ),
@@ -275,119 +427,36 @@ def sidebar(
                         rx.vstack(
                             rx.foreach(
                                 conversations,
-                                lambda conv: rx.box(
-                                    rx.hstack(
-                                        rx.icon(
-                                            "message-circle",
-                                            size=18,
-                                            color=rx.cond(
-                                                conv["id"] == current_conversation_id,
-                                                COLORS["primary_green"],
-                                                COLORS["text_tertiary"]
-                                            ),
-                                        ),
-                                        rx.text(
-                                            conv["title"],
-                                            font_size="0.875rem",
-                                            color=rx.cond(
-                                                conv["id"] == current_conversation_id,
-                                                COLORS["primary_green"],
-                                                COLORS["text_primary"]
-                                            ),
-                                            font_weight=rx.cond(
-                                                conv["id"] == current_conversation_id,
-                                                "600",
-                                                "500"
-                                            ),
-                                            white_space="nowrap",
-                                            overflow="hidden",
-                                            text_overflow="ellipsis",
-                                            flex="1",
-                                            letter_spacing="-0.01em",
-                                        ),
-                                        rx.hstack(
-                                            rx.box(
-                                                rx.icon("archive", size=14, color=COLORS["text_tertiary"]),
-                                                on_click=AppState.archive_conversation(conv["id"]),
-                                                cursor="pointer",
-                                                padding="0.375rem",
-                                                border_radius=RADIUS["sm"],
-                                                opacity="0",
-                                                class_name="conv-action",
-                                                background="transparent",
-                                                _hover={
-                                                    "background": f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['primary_green']}10 100%)",
-                                                    "color": COLORS["primary_green"],
-                                                    "transform": "scale(1.1)",
-                                                },
-                                                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                                            ),
-                                            rx.box(
-                                                rx.icon("trash-2", size=14, color=COLORS["text_tertiary"]),
-                                                on_click=AppState.delete_conversation(conv["id"]),
-                                                cursor="pointer",
-                                                padding="0.375rem",
-                                                border_radius=RADIUS["sm"],
-                                                opacity="0",
-                                                class_name="conv-action",
-                                                background="transparent",
-                                                _hover={
-                                                    "background": f"linear-gradient(135deg, {COLORS['error']}15 0%, {COLORS['error']}25 100%)",
-                                                    "color": COLORS["error"],
-                                                    "transform": "scale(1.1)",
-                                                },
-                                                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                                            ),
-                                            spacing="1",
-                                            flex_shrink="0",
-                                        ),
-                                        spacing="3",
-                                        align="center",
-                                        width="100%",
-                                        justify="start",
-                                    ),
-                                    background=rx.cond(
-                                        conv["id"] == current_conversation_id,
-                                        f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['light_green']}80 100%)",
-                                        "transparent"
-                                    ),
-                                    border_radius=RADIUS["lg"],
-                                    padding="0.875rem 1rem",
-                                    margin="0 0.75rem",
-                                    cursor="pointer",
-                                    on_click=AppState.load_conversation(conv["id"]),
-                                    border_left=rx.cond(
-                                        conv["id"] == current_conversation_id,
-                                        f"3px solid {COLORS['primary_green']}",
-                                        "3px solid transparent"
-                                    ),
-                                    box_shadow=rx.cond(
-                                        conv["id"] == current_conversation_id,
-                                        f"0 4px 12px {COLORS['primary_green']}15",
-                                        "none"
-                                    ),
-                                    _hover={
-                                        "background": rx.cond(
-                                            conv["id"] == current_conversation_id,
-                                            f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['light_green']}90 100%)",
-                                            f"linear-gradient(135deg, {COLORS['hover_bg']} 0%, {COLORS['light_gray']}40 100%)"
-                                        ),
-                                        "transform": "translateX(4px)",
-                                        "box_shadow": f"0 4px 12px {COLORS['primary_green']}20",
-                                        ".conv-action": {"opacity": "1"},
-                                    },
-                                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                ),
+                                lambda conv: render_conversation_item(conv, current_conversation_id),
                             ),
-                            spacing="1",
+                            spacing="0",
                             width="100%",
                         ),
-                        rx.text(
-                            "Geen gesprekken",
-                            font_size="0.875rem",
-                            color=COLORS["gray"],
+                        rx.box(
+                            rx.icon(
+                                tag="message-square",
+                                size=48,
+                                color=COLORS["border"],
+                                margin_bottom="16px",
+                            ),
+                            rx.text(
+                                "No conversations yet",
+                                font_size="0.875rem",
+                                color=COLORS["text_secondary"],
+                                font_weight="500",
+                                margin_bottom="4px",
+                            ),
+                            rx.text(
+                                "Start a new chat to begin",
+                                font_size="0.75rem",
+                                color=COLORS["text_tertiary"],
+                            ),
+                            display="flex",
+                            flex_direction="column",
+                            align_items="center",
+                            justify_content="center",
+                            padding="3rem 1rem",
                             text_align="center",
-                            padding="2rem 1rem",
                         ),
                     ),
                     flex="1",
@@ -402,35 +471,42 @@ def sidebar(
                     rx.cond(
                         is_collapsed,
                         rx.box(
-                            rx.icon("user", size=20, color=COLORS["primary_green"]),
+                            rx.icon("graduation-cap", size=20, color=COLORS["primary_green"]),
                             display="flex",
                             justify_content="center",
                             width="100%",
                         ),
-                        rx.hstack(
-                            rx.icon("user", size=18, color=COLORS["primary_green"]),
-                            rx.text(
-                                "Start onboarding",
-                                font_size="0.875rem",
-                                font_weight="500",
-                                color=COLORS["primary_green"],
+                        rx.box(
+                            rx.hstack(
+                                rx.icon("graduation-cap", size=18, color="white"),
+                                rx.text(
+                                    "Start Onboarding",
+                                    font_size="0.875rem",
+                                    font_weight="600",
+                                    color="white",
+                                ),
+                                spacing="2",
+                                align="center",
+                                justify="center",
                             ),
-                            spacing="2",
-                            align="center",
                             width="100%",
+                            padding="0.75rem 1rem",
+                            border_radius=RADIUS["md"],
+                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                            _hover={
+                                "transform": "translateY(-2px)",
+                                "box_shadow": f"0 4px 12px rgba(16, 163, 127, 0.3)",
+                            },
+                            transition="all 0.3s ease",
                         ),
                     ),
                     href="/onboarding",
                     text_decoration="none",
+                    width="100%",
                 ),
-                padding=rx.cond(is_collapsed, "0.875rem", "0.75rem 1.25rem"),
+                padding=rx.cond(is_collapsed, "0.875rem", "0.75rem"),
                 border_top=f"1px solid {COLORS['border_gray']}",
                 border_bottom=f"1px solid {COLORS['border_gray']}",
-                cursor="pointer",
-                _hover={
-                    "background": COLORS["light_green"],
-                },
-                transition="all 0.2s ease",
                 width="100%",
             ),
             
@@ -442,12 +518,14 @@ def sidebar(
                     rx.vstack(
                         avatar(name=user_name, size="md"),
                         rx.box(
-                            rx.icon("settings", size=18, color=COLORS["text_secondary"]),
+                            rx.icon("log-out", size=18, color=COLORS["text_secondary"]),
+                            on_click=AppState.logout,
                             cursor="pointer",
                             padding="0.5rem",
                             border_radius=RADIUS["sm"],
                             _hover={
                                 "background": COLORS["light_gray"],
+                                "color": COLORS["error"],
                             },
                             transition="all 0.2s ease",
                         ),
@@ -456,55 +534,97 @@ def sidebar(
                         width="100%",
                     ),
                     # Expanded view
-                    rx.hstack(
-                        avatar(name=user_name, size="md"),
-                        rx.vstack(
-                            rx.text(
-                                user_name,
-                                font_size="0.875rem",
-                                font_weight="600",
-                                color=COLORS["text_primary"],
-                                line_height="1.2",
-                                white_space="nowrap",
-                                overflow="hidden",
-                                text_overflow="ellipsis",
+                    rx.vstack(
+                        rx.hstack(
+                            avatar(name=user_name, size="md"),
+                            rx.vstack(
+                                rx.text(
+                                    user_name,
+                                    font_size="0.875rem",
+                                    font_weight="600",
+                                    color=COLORS["text_primary"],
+                                    line_height="1.2",
+                                    white_space="nowrap",
+                                    overflow="hidden",
+                                    text_overflow="ellipsis",
+                                ),
+                                rx.cond(
+                                    user_email != "",
+                                    rx.text(
+                                        user_email,
+                                        font_size="0.75rem",
+                                        color=COLORS["text_secondary"],
+                                        line_height="1.2",
+                                        white_space="nowrap",
+                                        overflow="hidden",
+                                        text_overflow="ellipsis",
+                                    ),
+                                    rx.box(
+                                        rx.text(
+                                            "GUEST",
+                                            font_size="0.65rem",
+                                            color=COLORS["primary_green"],
+                                            font_weight="700",
+                                            letter_spacing="0.5px",
+                                        ),
+                                        padding="3px 10px",
+                                        background=f"rgba(16, 163, 127, 0.15)",
+                                        border_radius="12px",
+                                        border=f"1px solid {COLORS['primary_green']}",
+                                        display="inline-block",
+                                    ),
+                                ),
+                                spacing="1",
+                                align_items="start",
+                                flex="1",
+                                min_width="0",
                             ),
-                            rx.text(
-                                user_email,
-                                font_size="0.75rem",
-                                color=COLORS["text_secondary"],
-                                line_height="1.2",
-                                white_space="nowrap",
-                                overflow="hidden",
-                                text_overflow="ellipsis",
+                            spacing="3",
+                            align="center",
+                            width="100%",
+                        ),
+                        rx.hstack(
+                            rx.box(
+                                rx.icon("settings", size=16, color=COLORS["text_secondary"]),
+                                rx.text("Settings", font_size="0.8rem", margin_left="8px"),
+                                display="flex",
+                                align_items="center",
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius=RADIUS["sm"],
+                                flex="1",
+                                _hover={
+                                    "background": COLORS["light_gray"],
+                                },
+                                transition="all 0.2s ease",
                             ),
-                            spacing="1",
-                            align_items="start",
-                            flex="1",
-                            min_width="0",
+                            rx.box(
+                                rx.icon("log-out", size=16, color=COLORS["text_secondary"]),
+                                rx.text("Logout", font_size="0.8rem", margin_left="8px"),
+                                display="flex",
+                                align_items="center",
+                                on_click=AppState.logout,
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius=RADIUS["sm"],
+                                flex="1",
+                                _hover={
+                                    "background": f"{COLORS['error']}10",
+                                    "color": COLORS["error"],
+                                },
+                                transition="all 0.2s ease",
+                            ),
+                            spacing="2",
+                            width="100%",
                         ),
-                        rx.box(
-                            rx.icon("settings", size=18, color=COLORS["text_secondary"]),
-                            cursor="pointer",
-                            padding="0.5rem",
-                            border_radius=RADIUS["sm"],
-                            flex_shrink="0",
-                            _hover={
-                                "background": f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['primary_green']}10 100%)",
-                                "color": COLORS["primary_green"],
-                                "transform": "rotate(90deg) scale(1.1)",
-                            },
-                            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                        ),
-                        spacing="3",
-                        align="center",
-                        justify="between",
+                        spacing="2",
                         width="100%",
                     ),
                 ),
                 padding=["1rem", "1rem", "1.25rem"],
                 width="100%",
                 background=COLORS["white"],
+                border_top=f"1px solid {COLORS['border_gray']}",
             ),
             
             spacing="0",
@@ -545,3 +665,4 @@ def sidebar(
             }
         }
     )
+
