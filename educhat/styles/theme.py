@@ -32,6 +32,33 @@ COLORS = {
     "border": "#E5E7EB",             # Border color alias
 }
 
+# Dark mode color palette
+DARK_COLORS = {
+    "primary_green": "#10A37F",      # Keep brand color
+    "light_green": "#1A3D33",        # Dark green background
+    "dark_green": "#0E8B6A",         # Hover
+    "white": "#1F2937",              # Dark surface
+    "background": "#111827",         # Dark background
+    "light_gray": "#1F2937",         # Dark surface
+    "gray": "#9CA3AF",               # Gray stays
+    "dark_gray": "#D1D5DB",          # Lighter for dark mode
+    "border_gray": "#374151",        # Dark border
+    "border_light": "#1F2937",       # Darker border
+    "black": "#F9FAFB",              # Light text
+    "text_primary": "#F9FAFB",       # Light text
+    "text_secondary": "#D1D5DB",     # Medium light text
+    "text_tertiary": "#9CA3AF",      # Gray text
+    "success": "#10B981",
+    "error": "#EF4444",
+    "warning": "#F59E0B",
+    "info": "#3B82F6",
+    "hover_bg": "#374151",
+    "active_bg": "#4B5563",
+    "shadow": "rgba(0, 0, 0, 0.3)",
+    "shadow_md": "rgba(0, 0, 0, 0.4)",
+    "border": "#374151",
+}
+
 # Typography
 FONTS = {
     "heading": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

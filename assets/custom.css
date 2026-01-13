@@ -1,5 +1,76 @@
 /* Custom animations and styles for EduChat */
 
+/* ========================================
+   DARK MODE CSS VARIABLES
+   ======================================== */
+:root {
+  --bg-primary: #F9FAFB;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F3F4F6;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --border-color: #E5E7EB;
+  --border-light: #F3F4F6;
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --accent-green: #10A37F;
+  --accent-green-light: #E6F7F1;
+  --message-user-bg: linear-gradient(135deg, #10A37F 0%, #0E8B6A 100%);
+  --message-bot-bg: #FFFFFF;
+}
+
+/* Dark mode styles */
+[data-theme="dark"],
+.dark-mode {
+  --bg-primary: #111827;
+  --bg-secondary: #1F2937;
+  --bg-tertiary: #374151;
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #9CA3AF;
+  --border-color: #374151;
+  --border-light: #1F2937;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --accent-green: #10A37F;
+  --accent-green-light: #1A3D33;
+  --message-user-bg: linear-gradient(135deg, #10A37F 0%, #0E8B6A 100%);
+  --message-bot-bg: #1F2937;
+}
+
+/* Apply dark mode to body and main containers */
+.dark-mode body,
+.dark-mode .chat-container,
+.dark-mode .sidebar {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .message-bubble {
+  background: var(--message-bot-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-mode .bot-message-content,
+.dark-mode .bot-message-content * {
+  color: var(--text-primary) !important;
+}
+
+.dark-mode input,
+.dark-mode textarea {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+/* ========================================
+   SIDEBAR & UI ELEMENTS
+   ======================================== */
+
 /* Sidebar conversation action buttons - smooth reveal on hover */
 .conv-action {
   opacity: 0;
@@ -94,6 +165,25 @@ html {
 
 .bot-message-content p:last-child {
   margin-bottom: 0;
+}
+
+/* Clickable links in markdown - styled for better visibility */
+.bot-message-content a {
+  color: #10A37F !important;
+  text-decoration: underline !important;
+  text-decoration-color: rgba(16, 163, 127, 0.4) !important;
+  text-underline-offset: 2px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.bot-message-content a:hover {
+  color: #0D8A6B !important;
+  text-decoration-color: #10A37F !important;
+}
+
+.bot-message-content a:visited {
+  color: #0D8A6B !important;
 }
 
 /* Better visual separation between paragraphs */
@@ -509,4 +599,99 @@ button,
 
 .shake {
   animation: shake 0.5s ease-in-out;
+}
+
+/* ========================================
+   DARK MODE ADDITIONAL STYLES
+   ======================================== */
+
+/* Dark mode markdown content */
+.dark-mode .bot-message-content p,
+.dark-mode .bot-message-content li,
+.dark-mode .bot-message-content em {
+  color: #E5E7EB !important;
+}
+
+.dark-mode .bot-message-content strong,
+.dark-mode .bot-message-content h1,
+.dark-mode .bot-message-content h2,
+.dark-mode .bot-message-content h3,
+.dark-mode .bot-message-content h4,
+.dark-mode .bot-message-content h5,
+.dark-mode .bot-message-content h6 {
+  color: #F9FAFB !important;
+}
+
+.dark-mode .bot-message-content code {
+  background: #374151;
+  color: #F472B6 !important;
+}
+
+.dark-mode .bot-message-content pre {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+.dark-mode .bot-message-content pre code {
+  color: #D1D5DB !important;
+}
+
+.dark-mode .bot-message-content a {
+  color: #34D399 !important;
+}
+
+.dark-mode .bot-message-content a:hover {
+  color: #6EE7B7 !important;
+}
+
+/* Dark mode sidebar */
+.dark-mode .sidebar-container,
+.dark-mode .conversation-list {
+  background: var(--bg-secondary) !important;
+}
+
+.dark-mode .conversation-item {
+  background: transparent !important;
+}
+
+.dark-mode .conversation-item:hover {
+  background: var(--bg-tertiary) !important;
+}
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.dark-mode-toggle:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Dark mode modal backgrounds */
+.dark-mode .modal-content {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Dark mode buttons */
+.dark-mode .secondary-btn {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Dark mode scrollbar */
+.dark-mode ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #4B5563;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: #6B7280;
 }

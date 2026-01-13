@@ -4,7 +4,7 @@ import reflex as rx
 from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
 from educhat.components.chat import sidebar, chat_container
-from educhat.components.shared import mobile_header, sidebar_overlay
+from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
 from educhat.styles.theme import COLORS
@@ -29,6 +29,12 @@ def authenticated_chat() -> rx.Component:
     return rx.box(
         # Auth modal (for login/signup)
         auth_modal(),
+        
+        # Reminders modal
+        reminders_modal(),
+        
+        # Events panel
+        events_panel(),
         
         # Toast notification
         toast_notification(
@@ -88,7 +94,7 @@ def authenticated_chat() -> rx.Component:
             
             width="100%",
             height="100vh",
-            background=COLORS["light_gray"],
+            background=rx.cond(AuthState.dark_mode, "#111827", COLORS["light_gray"]),
             display="flex",
             flex_direction="column",
         ),
@@ -99,10 +105,12 @@ def authenticated_chat() -> rx.Component:
         width="100vw",
         height="100vh",
         overflow="hidden",
-        background=COLORS["light_gray"],
+        background=rx.cond(AuthState.dark_mode, "#111827", COLORS["light_gray"]),
         margin="0",
         padding="0",
         position="relative",
+        # Apply dark mode class
+        class_name=rx.cond(AuthState.dark_mode, "dark-mode", ""),
     )
 
 
@@ -116,7 +124,7 @@ def guest_banner() -> rx.Component:
                     # Icon with gradient background
                     rx.box(
                         rx.icon(
-                            tag="user-circle",
+                            tag="circle-user",
                             size=22,
                             color=COLORS["primary_green"],
                         ),

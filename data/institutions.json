@@ -1,0 +1,317 @@
+{
+  "institutions": [
+    {
+      "id": "adekus",
+      "name": "Anton de Kom Universiteit van Suriname (AdeKUS)",
+      "type": "university",
+      "location": "Paramaribo",
+      "website": "https://www.uvs.edu",
+      "description": "De enige universiteit van Suriname, opgericht in 1968. Biedt bachelor- en masterprogramma's aan in diverse vakgebieden.",
+      "programs": [
+        "Rechtsgeleerdheid",
+        "Bedrijfskunde",
+        "Economie",
+        "Sociologie",
+        "Psychologie",
+        "Wiskunde",
+        "Natuurkunde",
+        "Biologie",
+        "Scheikunde",
+        "Informatica",
+        "Geneeskunde",
+        "Tandheelkunde",
+        "Farmacie",
+        "Technologie",
+        "Agrarische Wetenschappen"
+      ],
+      "requirements": "VWO diploma of equivalent, toelatingsexamen voor sommige opleidingen",
+      "admission_period": "April - Juni",
+      "contact": {
+        "phone": "+597 465558",
+        "email": "info@uvs.edu",
+        "address": "Universiteitscomplex, Leysweg 86, Paramaribo"
+      }
+    },
+    {
+      "id": "iob",
+      "name": "Instituut voor Opleiding van Leraren (IOL)",
+      "type": "teacher_training",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "Het belangrijkste instituut voor de opleiding van onderwijzers en leraren in Suriname.",
+      "programs": [
+        "Basisonderwijs (Kweekschool)",
+        "Voortgezet Onderwijs Junior (VOJ)",
+        "Lichamelijke Opvoeding",
+        "Handenarbeid",
+        "Muziek",
+        "Tekenen"
+      ],
+      "requirements": "HAVO diploma of VWO diploma",
+      "admission_period": "Mei - Juli",
+      "contact": {
+        "phone": "+597 472661",
+        "email": null,
+        "address": "Paramaribo"
+      }
+    },
+    {
+      "id": "natin",
+      "name": "Natuurtechnisch Instituut (NATIN)",
+      "type": "technical",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "Biedt technische opleidingen op MBO-niveau voor diverse industrieën.",
+      "programs": [
+        "Elektrotechniek",
+        "Werktuigbouwkunde",
+        "Bouwtechniek",
+        "Installatietechniek",
+        "Automotive",
+        "Houtbewerking"
+      ],
+      "requirements": "MULO/LBGO diploma",
+      "admission_period": "Juni - Augustus",
+      "contact": {
+        "phone": "+597 471122",
+        "email": null,
+        "address": "Paramaribo"
+      }
+    },
+    {
+      "id": "pba",
+      "name": "Polytechnic College Suriname (PTC)",
+      "type": "polytechnic",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "Biedt HBO-opleidingen aan in technische en zakelijke richtingen.",
+      "programs": [
+        "Civiele Techniek",
+        "Elektrotechniek",
+        "Informatica",
+        "Accountancy",
+        "Business Administration"
+      ],
+      "requirements": "VWO diploma of HAVO met aanvullende vakken",
+      "admission_period": "April - Juni",
+      "contact": {
+        "phone": "+597 410044",
+        "email": null,
+        "address": "Paramaribo"
+      }
+    },
+    {
+      "id": "ahkco",
+      "name": "Academie voor Hoger Kunst en Cultuur Onderwijs (AHKCO)",
+      "type": "art_academy",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "De kunstacademie van Suriname voor opleidingen in beeldende kunst en cultuur.",
+      "programs": [
+        "Beeldende Kunst",
+        "Grafisch Ontwerp",
+        "Fotografie",
+        "Theater",
+        "Dans",
+        "Muziek"
+      ],
+      "requirements": "HAVO diploma, portfolio en toelatingsexamen",
+      "admission_period": "Maart - Mei",
+      "contact": {
+        "phone": "+597 420303",
+        "email": null,
+        "address": "Paramaribo"
+      }
+    },
+    {
+      "id": "fhi",
+      "name": "FHI School of Business",
+      "type": "business_school",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "Particuliere hogeschool gespecialiseerd in bedrijfskundige opleidingen.",
+      "programs": [
+        "Business Administration",
+        "International Business",
+        "Marketing Management",
+        "Human Resource Management",
+        "Financial Management"
+      ],
+      "requirements": "VWO diploma of HAVO diploma met werkervaring",
+      "admission_period": "Augustus - September",
+      "contact": {
+        "phone": "+597 425000",
+        "email": null,
+        "address": "Paramaribo"
+      }
+    },
+    {
+      "id": "acs",
+      "name": "Academie voor Counseling en Supervisie (ACS)",
+      "type": "specialized",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "Gespecialiseerd instituut voor counseling en supervisie opleidingen.",
+      "programs": [
+        "Counseling",
+        "Supervisie",
+        "Coaching",
+        "Maatschappelijk Werk"
+      ],
+      "requirements": "HBO diploma, relevante werkervaring",
+      "admission_period": "Doorlopend",
+      "contact": {
+        "phone": null,
+        "email": null,
+        "address": "Paramaribo"
+      }
+    },
+    {
+      "id": "imeao",
+      "name": "IMEAO (Middelbaar Economisch Onderwijs)",
+      "type": "secondary_vocational",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "Middelbaar beroepsonderwijs gericht op economische en administratieve vakken.",
+      "programs": [
+        "Secretariële Opleiding",
+        "Administratie",
+        "Commerciële Economie",
+        "Toerisme",
+        "Horeca"
+      ],
+      "requirements": "MULO diploma",
+      "admission_period": "Juli - Augustus",
+      "contact": {
+        "phone": null,
+        "email": null,
+        "address": "Paramaribo"
+      }
+    },
+    {
+      "id": "sma",
+      "name": "School voor Middelbaar Agrarisch Onderwijs",
+      "type": "agricultural",
+      "location": "Paramaribo/Nickerie",
+      "website": null,
+      "description": "Opleiding voor landbouw en agrarische vakken.",
+      "programs": [
+        "Landbouw",
+        "Veeteelt",
+        "Tuinbouw",
+        "Bosbouw",
+        "Visserij"
+      ],
+      "requirements": "MULO diploma met exacte vakken",
+      "admission_period": "Juli - Augustus",
+      "contact": {
+        "phone": null,
+        "email": null,
+        "address": "Paramaribo/Nickerie"
+      }
+    },
+    {
+      "id": "nursing",
+      "name": "Verpleegkundige Opleiding Suriname",
+      "type": "nursing",
+      "location": "Paramaribo",
+      "website": null,
+      "description": "Opleiding voor verpleegkundigen verbonden aan het Academisch Ziekenhuis.",
+      "programs": [
+        "Verpleegkunde HBO",
+        "Verpleegkunde MBO",
+        "Operatieassistent",
+        "Anesthesieverpleging"
+      ],
+      "requirements": "HAVO/VWO diploma met biologie en scheikunde",
+      "admission_period": "April - Juni",
+      "contact": {
+        "phone": "+597 442222",
+        "email": null,
+        "address": "Academisch Ziekenhuis, Paramaribo"
+      }
+    }
+  ],
+  "education_system": {
+    "primary": {
+      "name": "Gewoon Lager Onderwijs (GLO)",
+      "duration": "6 jaar",
+      "age_range": "6-12 jaar",
+      "description": "Basisonderwijs voor alle kinderen in Suriname"
+    },
+    "secondary_junior": {
+      "name": "Voortgezet Onderwijs Junior (VOJ)",
+      "types": [
+        {
+          "name": "MULO",
+          "duration": "4 jaar",
+          "description": "Meer Uitgebreid Lager Onderwijs - algemene vorming"
+        },
+        {
+          "name": "LBGO",
+          "duration": "4 jaar",
+          "description": "Lager Beroepsgericht Onderwijs - praktijkgericht"
+        }
+      ]
+    },
+    "secondary_senior": {
+      "name": "Voortgezet Onderwijs Senior (VOS)",
+      "types": [
+        {
+          "name": "HAVO",
+          "duration": "2 jaar",
+          "description": "Hoger Algemeen Voortgezet Onderwijs"
+        },
+        {
+          "name": "VWO",
+          "duration": "2 jaar",
+          "description": "Voorbereidend Wetenschappelijk Onderwijs - voorbereiding universiteit"
+        }
+      ]
+    },
+    "higher": {
+      "name": "Hoger Onderwijs",
+      "types": [
+        {
+          "name": "HBO",
+          "description": "Hoger Beroepsonderwijs - praktijkgericht"
+        },
+        {
+          "name": "WO",
+          "description": "Wetenschappelijk Onderwijs - universiteit"
+        }
+      ]
+    }
+  },
+  "important_dates": {
+    "school_year": {
+      "start": "Oktober",
+      "end": "Juli"
+    },
+    "application_periods": {
+      "university": "April - Juni",
+      "hbo": "April - Juli",
+      "mbo": "Juni - Augustus"
+    },
+    "exam_periods": {
+      "mulo_exams": "Juni",
+      "vos_exams": "Juni",
+      "university_exams": "Januari/Februari en Juni/Juli"
+    }
+  },
+  "ministry": {
+    "name": "Ministerie van Onderwijs, Wetenschap en Cultuur (MINOV)",
+    "description": "Het ministerie verantwoordelijk voor onderwijs in Suriname",
+    "responsibilities": [
+      "Onderwijsbeleid",
+      "Curriculum ontwikkeling",
+      "Kwaliteitszorg",
+      "Leermiddelen",
+      "Onderwijspersoneel"
+    ],
+    "contact": {
+      "phone": "+597 498166",
+      "address": "Dr. S. Kafiluddistraat 117-123, Paramaribo"
+    }
+  }
+}

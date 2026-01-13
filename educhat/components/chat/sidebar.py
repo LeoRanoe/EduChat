@@ -5,6 +5,7 @@ from typing import List, Dict
 from educhat.styles.theme import COLORS, RADIUS
 from educhat.components.shared import logo, secondary_button, search_input, avatar
 from educhat.state.app_state import AppState
+from educhat.state.auth_state import AuthState
 
 
 def render_conversation_item(conv, current_id):
@@ -598,6 +599,68 @@ def sidebar(
                                 },
                                 transition="all 0.2s ease",
                             ),
+                            # Reminders button
+                            rx.box(
+                                rx.icon("bell", size=16, color=COLORS["primary_green"]),
+                                rx.text("Reminders", font_size="0.8rem", margin_left="8px", color="black"),
+                                display="flex",
+                                align_items="center",
+                                on_click=AuthState.toggle_reminder_modal,
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius=RADIUS["sm"],
+                                flex="1",
+                                _hover={
+                                    "background": f"{COLORS['primary_green']}10",
+                                },
+                                transition="all 0.2s ease",
+                            ),
+                            spacing="2",
+                            width="100%",
+                            flex_wrap="wrap",
+                        ),
+                        rx.hstack(
+                            # Events button
+                            rx.box(
+                                rx.icon("calendar", size=16, color="#3B82F6"),
+                                rx.text("Events", font_size="0.8rem", margin_left="8px", color="black"),
+                                display="flex",
+                                align_items="center",
+                                on_click=AuthState.toggle_events_panel,
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius=RADIUS["sm"],
+                                flex="1",
+                                _hover={
+                                    "background": "rgba(59, 130, 246, 0.1)",
+                                },
+                                transition="all 0.2s ease",
+                            ),
+                            # Dark mode toggle
+                            rx.box(
+                                rx.cond(
+                                    AuthState.dark_mode,
+                                    rx.icon("sun", size=16, color="#F59E0B"),
+                                    rx.icon("moon", size=16, color="#6B7280"),
+                                ),
+                                rx.text(
+                                    rx.cond(AuthState.dark_mode, "Light", "Dark"),
+                                    font_size="0.8rem",
+                                    margin_left="8px",
+                                    color="black",
+                                ),
+                                display="flex",
+                                align_items="center",
+                                on_click=AuthState.toggle_dark_mode,
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius=RADIUS["sm"],
+                                flex="1",
+                                _hover={
+                                    "background": COLORS["light_gray"],
+                                },
+                                transition="all 0.2s ease",
+                            ),
                             rx.box(
                                 rx.icon("log-out", size=16, color="black"),
                                 rx.text("Logout", font_size="0.8rem", margin_left="8px", color="black"),
@@ -616,6 +679,7 @@ def sidebar(
                             ),
                             spacing="2",
                             width="100%",
+                            flex_wrap="wrap",
                         ),
                         spacing="2",
                         width="100%",

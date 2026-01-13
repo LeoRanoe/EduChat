@@ -61,6 +61,10 @@ class AppState(AuthState):
             print("[INIT] Loading conversations from DB...")
             await self.load_conversations_from_db()
         
+        # Load upcoming events (for all users - uses local fallback if DB fails)
+        print("[INIT] Loading upcoming events...")
+        await self.load_upcoming_events()
+        
         # If no conversations exist (guest or new user), create initial conversation
         if not self.conversations:
             print("[INIT] No conversations found, creating initial conversation...")
@@ -430,12 +434,19 @@ class AppState(AuthState):
             self.messages[message_index]["feedback"] = feedback_type
             self.messages[message_index]["feedback_timestamp"] = datetime.now().isoformat()
             
-            # TODO: Store feedback in database for analytics
-            # await self.supabase_client.store_feedback(
-            #     conversation_id=self.current_conversation_id,
-            #     message_index=message_index,
-            #     feedback_type=feedback_type
-            # )
+            # Store feedback in database for analytics (for logged-in users)
+            if self.can_save_conversations() and self.current_conversation_id:
+                try:
+                    from educhat.services.supabase_client import get_service
+                    db = get_service()
+                    # Get the message from DB to update feedback
+                    messages_data = db.get_conversation_messages(self.current_conversation_id)
+                    if message_index < len(messages_data):
+                        message_id = messages_data[message_index].get("id")
+                        if message_id:
+                            db.update_message_feedback(message_id, feedback_type)
+                except Exception as e:
+                    print(f"Error saving message feedback: {e}")
             
             # Visual confirmation
             yield

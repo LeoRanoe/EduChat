@@ -80,7 +80,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
             # Complete button on last step
             rx.button(
                 rx.hstack(
-                    rx.icon("check-circle", size=18),
+                    rx.icon("circle-check", size=18),
                     rx.text("Voltooi", font_size="15px", font_weight="700"),
                     spacing="2",
                     align="center",

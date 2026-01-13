@@ -257,7 +257,7 @@ def landing() -> rx.Component:
                         ),
                         rx.button(
                             rx.hstack(
-                                rx.icon("play-circle", size=20),
+                                rx.icon("circle-play", size=20),
                                 rx.text("Probeer als Gast", font_size="16px"),
                                 spacing="2",
                             ),

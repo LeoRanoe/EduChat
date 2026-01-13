@@ -286,6 +286,11 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
             if context_prompt:
                 messages.append({"role": "system", "content": context_prompt})
         
+        # Add education data context based on user's question
+        edu_context = self._get_education_context(message)
+        if edu_context:
+            messages.append({"role": "system", "content": edu_context})
+        
         # Add conversation history
         if conversation_history:
             messages.extend(conversation_history[-10:])  # Last 10 messages for context
@@ -456,6 +461,26 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         
         return None
     
+    def _get_education_context(self, message: str) -> Optional[str]:
+        """Get education data context relevant to the user's question.
+        
+        Args:
+            message: User message
+            
+        Returns:
+            Education context string or None
+        """
+        try:
+            from educhat.services.education_service import get_education_service
+            edu_service = get_education_service()
+            context = edu_service.get_context_for_query(message)
+            if context:
+                return f"\n=== RELEVANTE INFORMATIE UIT DATABASE ===\n{context}\n\nGebruik deze informatie om de vraag van de gebruiker te beantwoorden waar relevant."
+            return None
+        except Exception as e:
+            print(f"Error getting education context: {e}")
+            return None
+    
     def chat_stream(
         self,
         message: str,
@@ -492,6 +517,11 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
             context_prompt = self._build_context_prompt(context)
             if context_prompt:
                 messages.append({"role": "system", "content": context_prompt})
+        
+        # Add education data context based on user's question
+        edu_context = self._get_education_context(message)
+        if edu_context:
+            messages.append({"role": "system", "content": edu_context})
         
         # Add conversation history
         if conversation_history:
