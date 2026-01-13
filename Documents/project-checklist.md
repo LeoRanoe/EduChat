@@ -1,9 +1,10 @@
-# ✅ EduChat – Complete Development Checklist
+# ✅ EduChat – Simplified Development Checklist
 
 **Project:** EduChat  
 **Based on:** PRD v1.1 & Design Requirements Document  
-**Target Hosting:** Render  
-**Timeline:** 10-12 weeks total
+**Target:** Local Development (No Deployment)  
+**Timeline:** 6-8 weeks total  
+**Philosophy:** Keep it simple, make it work
 
 ---
 
@@ -18,22 +19,19 @@
 - [x] Set up virtual environment for Python
 
 ### Accounts & Services Setup
-- [ ] Create Supabase project (Postgres) (free tier)
-- [ ] Create OpenAI account and obtain API key (or Google AI API)
-- [ ] Create Render account (free tier)
-- [ ] Link GitHub repository to Render
-- [ ] Set up environment variables vault (for API keys)
+- [x] Create Supabase project (Postgres) (free tier)
+- [x] Create OpenAI account and obtain API key
+- [x] Set up .env file for API keys
 
 ### Documentation
 - [x] Complete PRD review
 - [x] Create Design Requirements Document
-- [ ] Create project README.md with setup instructions
-- [ ] Create CONTRIBUTING.md for collaboration guidelines
-- [ ] Set up project documentation folder structure
+- [ ] Create simple README.md with setup instructions
+- [ ] Document basic usage guide
 
 ---
 
-## 🏗️ Phase 1: Core MVP (Weeks 1-3)
+## 🏗️ Phase 1: Basic Chat (Weeks 1-2)
 
 ### 1.1 Project Initialization ✅ COMPLETE
 - [x] Initialize Reflex project: `reflex init`
@@ -55,29 +53,17 @@
 - [x] Set up requirements.txt with all dependencies
 - [x] Create DEV-GUIDE.md with comprehensive setup instructions
 
-### 1.2 Supabase Integration ✅ COMPLETE
-- [x] Create Supabase project (free tier) and enable Postgres for the project
-- [x] Set up database/schema: `educhat_db` (using Prisma ORM with Supabase PostgreSQL)
-- [x] Create tables:
-  - [x] `institutions` (educational institutions)
-  - [x] `studies` (study programs)
-  - [x] `events` (important dates/events)
-  - [x] `users` (user accounts)
-  - [x] `sessions` (chat sessions)
-  - [x] `messages` (chat messages with feedback)
-  - [x] `onboarding` (user onboarding state)
-  - [x] `onboarding_questions` (quiz questions)
-  - [x] `onboarding_answers` (quiz answers)
-  - [x] `reminders` (user reminders)
-- [x] Create Supabase service module (`services/supabase.py`) — Prisma-based client wrapper with comprehensive CRUD operations
-- [x] Implement connection pooling / efficient client usage (Prisma manages connections automatically)
-- [x] Configure Row-Level Security (RLS) policies and API permissions (anon vs service role keys)
-- [x] Test CRUD operations locally (comprehensive test suite in `tests/test_supabase.py`)
-- [x] Add Postgres indexes and full-text / search configuration for performance (GIN, trigram, etc.)
-- [x] Update `.env.example` with `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and document recommended usage
-- [x] Created Prisma schema with all relationships and indexes
-- [x] Created RLS policies SQL script for security
-- [x] Created comprehensive setup guide (`Documents/SUPABASE_SETUP.md`)
+### 1.2 Supabase Integration (Simple Approach) ✅ COMPLETE
+- [x] Create Supabase project and tables
+- [x] Set up basic schema:
+  - [x] users (id, email, name, created_at)
+  - [x] conversations (id, user_id, title, created_at)
+  - [x] messages (id, conversation_id, role, content, created_at)
+- [x] Create Supabase client wrapper
+- [x] Enable Row Level Security (RLS)
+- [ ] Fix any connection issues
+- [ ] Test basic CRUD operations
+- [ ] Keep queries simple - no complex joins!
 
 ### 1.3 AI Integration ✅ COMPLETE
 - [x] Create AI service module (`services/ai_service.py`)
@@ -132,7 +118,9 @@
 - [x] Implement `send_message()` handler
 - [x] Implement `create_new_conversation()` handler
 - [x] Implement `load_conversation()` handler
-- [ ] Add session persistence logic (pending database integration)
+- [ ] Connect to Supabase for persistence (simple save/load)
+- [ ] Auto-save messages to database
+- [ ] Load conversations on startup
 
 ### 1.6 Core Functionality ⚠️ PARTIAL
 - [x] Implement message sending flow:
@@ -140,32 +128,28 @@
   2. [ ] Message stored in state and Supabase (state done, DB pending)
   3. [ ] AI request sent with context (pending AI integration)
   4. [x] Response received and displayed (placeholder implemented)
-  5. [x] Conversation history updated
-- [x] Add loading indicator (typing dots animation)
-- [x] Implement conversation switching
-- [x] Add new conversation creation
-- [x] Implement conversation history in sidebar
-- [x] Add timestamp to messages
-
-### 1.7 Responsive Design ✅ COMPLETE
-- [x] Implement mobile layout (<768px):
-  - [x] Collapsible sidebar (hamburger menu with animated icon)
-  - [x] Full-width chat area
+  5. [x] Conversation history updat (Simplified)
+- [x] Create `AppState` class in Reflex:
+  - [x] `messages: List[Dict]` - chat history (in memory)
+  - [x] `user_input: str` - current input text
+  - [x] `is_loading: bool` - AI response loading state
+- [x] Implement `send_message()` handler
+- [ ] Remove conversation history (too complex)
+- [ ] Remove sidebar conversation list (not needed)
+- [ ] Just one active chat session - keep it simple!
   - [x] Adjusted font sizes (0.875rem base)
   - [x] Mobile header with hamburger button
   - [x] Dark overlay when sidebar open
-  - [x] Sidebar slides in/out with animation
-- [x] Implement tablet layout (768px-1024px):
-  - [x] Sidebar toggle button
-  - [x] Adjusted spacing (1.25rem padding)
-- [x] Implement desktop layout (>1024px):
-  - [x] Fixed sidebar (280px)
-  - [x] Max container width (1200px)
-  - [x] Sidebar always visible (no hamburger)
-- [x] Test on multiple screen sizes (CSS media queries)
-- [x] Created responsive utility module (`utils/responsive.py`)
-- [x] Added AppState sidebar_open state management
-- [x] Created mobile navigation components (hamburger_button, mobile_header, sidebar_overlay)
+  - [x] Sidebar slides in/o✅ SIMPLIFIED
+- [x] Implement message sending flow:
+  1. [x] User types and clicks send
+  2. [x] Message stored in state (no database)
+  3. [x] AI request sent with context
+  4. [x] Response received and displayed
+- [x] Add loading indicator (typing dots animation)
+- [ ] ~~Conversation switching~~ (Remove - too complex)
+- [ ] ~~Conversation history in sidebar~~ (Remove - not needed)
+- [x] Show messages in current session only components (hamburger_button, mobile_header, sidebar_overlay)
 - [x] Updated all major components with responsive CSS
 
 ### 1.8 Suriname Education Filter ✅ COMPLETE
@@ -175,31 +159,17 @@
 - [x] Test with various educational queries (integrated in AI service)
 - [x] Add clarification prompts when query is unclear (fallback includes helpful examples)
 
-### 1.9 Deployment to Render ✅ CONFIGURATION COMPLETE
-- [x] Create `render.yaml` configuration file
-- [x] Configure build command: `reflex init && reflex export --frontend-only --no-zip`
-- [x] Configure start command: `reflex run --env prod --backend-only`
-- [x] Set environment variables in Render dashboard:
-  - [x] `SUPABASE_URL` / `DATABASE_URL`
-  - [x] `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`
-  - [x] `OPENAI_API_KEY` (required for AI functionality)
-  - [x] `PYTHON_VERSION` (defaults to 3.11)
-  - [x] `SESSION_SECRET` (auto-generated by Render)
-- [x] Update .env.example with all required variables
-- [x] Update deployment guide (Documents/render-deployment.md)
-- [ ] Test deployment pipeline from GitHub main branch (ready to deploy)
-- [ ] Configure custom domain (optional, after deployment)
-- [ ] Set up HTTPS/SSL certificate (automatic with Render)
-- [ ] Test production deployment (ready to deploy)
+### 1.9 Local Development Setup ✅ COMPLETE
+- [x] Configure .env file with required variables
+- [x] Test local development environment
+- [x] Document how to run locally (`reflex run`)
 
 ### 1.10 Testing & Bug Fixes
 - [ ] Test chat flow end-to-end
 - [ ] Test database logging
-- [ ] Test error handling (API failures, network issues)
-- [ ] Test responsive design on real devices
+- [ ] Test error handling (API failures)
+- [ ] Test responsive design on browser resize
 - [ ] Fix critical bugs
-- [ ] Performance testing (response time <2s)
-- [ ] Browser compatibility testing (Chrome, Firefox, Safari)
 
 ---
 
@@ -225,36 +195,12 @@
 #### Quiz Questions ✅ COMPLETE
 - [x] "Welk opleiding volgt je?" (multi-select buttons)
 - [x] "Wat is jouw leeftijd?" (dropdown: 18+)
-- [x] "In welk district woon je?" (dropdown: Paramaribo, etc.)
-- [x] "Wat is je favoriete vak?" (multi-select buttons)
-- [x] "Heb je plannen om verder te studeren na deze opleiding?" (Yes/No/Not yet)
-- [x] "Wat wil je verbeteren met EduChat?" (checkbox list)
-- [x] "Hoe formeel mag EduChat met je praten?" (radio buttons)
-- [x] "Wat verwacht jij van EduChat?" (free text)
+- [x] "In welk Better UX (Week 3)
 
-#### Quiz State Management ✅ COMPLETE
-- [x] Create `OnboardingState` class
- - [ ] Store user preferences in Supabase/Postgres (Prisma) (pending database integration)
-- [x] Implement quiz progress tracking
-- [x] Add quiz completion handler
-- [x] Redirect to chat after completion (route added, logic pending)
-
-### 2.2 Conversation Flow Improvements ✅ COMPLETE
-- [x] Create step-by-step conversation templates:
-  - [x] "Hoe schrijf ik me in?" (Enrollment process)
-  - [x] "Welke documenten heb ik nodig?" (Required documents)
-  - [x] "Wat zijn de toelatingseisen?" (Admission requirements)
-- [x] Created `conversation_templates` component with 3 detailed templates
-- [x] Integrated templates into welcome screen below quick actions
-- [x] Implement follow-up question suggestions (contextual_follow_ups component)
-- [x] Add quick action buttons in chat (6 common prompts)
-- [x] Implement contextual prompt suggestions (keyword-based suggestion generation)
-
-### 2.3 Asynchronous Request Handling ✅ COMPLETE
-- [x] Implement async API calls to AI service (AppState.send_message() is async)
-- [x] Add proper loading states during AI processing (is_loading flag)
-- [x] Implement request queuing for multiple messages (asyncio in Reflex handles this)
-- [x] Add timeout handling (30s max) - timeout=30.0 in OpenAI call
+### 2.1 Onboarding Quiz (Optional - Can Skip)
+- [ ] ~~Complex multi-step quiz~~ (Too much work)
+- [ ] OR keep existing quiz if it works
+- [ ] Just make sure user can skip directly to chat
 - [x] Timeout error differentiation with Dutch message
 - [ ] Optimize response streaming (future enhancement - OpenAI streaming API)
 
@@ -321,10 +267,8 @@
 - [x] Target <3s initial load time (Reflex + minimal dependencies meet this)
 
 ### 2.8 Testing & Refinement ✅ PARTIAL
-- [ ] User testing with 5-10 Surinamese students (pending deployment)
-- [ ] Collect feedback on conversation flow (pending user testing)
-- [ ] A/B test onboarding quiz vs. direct chat (future enhancement)
-- [x] Test error handling scenarios
+- [ ] Self-testing with various scenarios
+- [ ] Test error handling scenarios
   - [x] Created comprehensive error test suite (tests/test_error_handling.py)
   - [x] Test timeout errors (TimeoutError handling)
   - [x] Test API connection errors (ConnectionError handling)
@@ -338,332 +282,253 @@
   - [x] Track last_response_time for each AI call
   - [x] PerformanceMetrics tracks all requests with timestamps
   - [x] Calculate average and P95 response times
-- [x] Fix UX issues based on feedback (all Phase 2 UX features implemented)
+- [x] Fix UX issues based on testing (all Phase 2 UX features implemented)
+
+---
+## 📊 Phase 3: Simple Features (Week 4)
+
+### 3.1 Supabase Authentication (Simple!) ⚠️ FIX NEEDED
+- [ ] Use Supabase Auth (built-in, simple)
+- [ ] Fix existing auth code:
+  - [ ] Test sign-up flow
+  - [ ] Test login flow  
+  - [ ] Fix any API connection errors
+  - [ ] Remove complex features (OAuth, email verification)
+- [ ] Guest mode as fallback:
+  - [ ] Allow app use without login
+  - [ ] Save to temp user in database
+- [ ] Simple password reset (use Supabase built-in)
+- [ ] Keep it minimal - email + password only
+
+### 3.2 Conversation History (Supabase) ⚠️ CONNECT TO DB
+- [ ] Save conversations to Supabase database
+- [ ] Load conversation list from database on startup
+- [ ] Simple queries:
+  - [ ] `INSERT INTO conversations` on new chat
+  - [ ] `INSERT INTO messages` on each message
+  - [ ] `SELECT * FROM conversations WHERE user_id = ?`
+  - [ ] `SELECT * FROM messages WHERE conversation_id = ?`
+- [ ] Delete conversation (simple DELETE query)
+- [ ] Auto-save - no manual save button needed
+- [ ] Keep queries simple - one table at a time!
+
+### 3.3 Education Data (Simple Supabase Table)
+- [ ] Create `institutions` table in Supabase:
+  - [ ] id, name, type, programs, requirements
+- [ ] Import basic data (10-20 institutions)
+- [ ] Simple query: `SELECT * FROM institutions WHERE name ILIKE ?`
+- [ ] Inject relevant data into AI prompts
+- [ ] No vector search - just simple text matching
+- [ ] Keep data minimal - focus on quality over quantity
+
+### 3.4 Clickable Links in Responses
+- [ ] Detect URLs in AI responses (regex)
+- [ ] Make them clickable (`<a>` tags)
+- [ ] Open in new tab (target="_blank")
+- [ ] Style links with underline + color
+- [ ] That's it - simple and works!
 
 ---
 
-## 📊 Phase 3: Data Integration & Smart Content (Weeks 6-8)
-
-### 3.1 Surinamese Education Data Collection
-- [ ] Research and compile list of Surinamese institutions:
-  - [ ] Universities (e.g., Anton de Kom Universiteit)
-  - [ ] Vocational schools (MINOV institutions)
-  - [ ] Secondary schools
-- [ ] Gather information for each institution:
-  - [ ] Programs offered
-  - [ ] Admission requirements
-  - [ ] Tuition fees
-  - [ ] Application deadlines
-  - [ ] Contact information
-  - [ ] Location/address
-- [ ] Create CSV or JSON data files
-- [ ] Validate data accuracy with official sources
-
-### 3.2 Data Import & Structure
-- [ ] Design `instellingen` collection schema:
-  ```json
-  {
-    "name": "string",
-    "type": "university|vocational|secondary",
-    "programs": [
-      {
-        "name": "string",
-        "duration": "string",
-        "requirements": ["string"],
-        "tuition": "string",
-        "deadline": "date"
-      }
-    ],
-    "location": "string",
-    "contact": {},
-    "website": "string"
-  }
-  ```
-- [ ] Create data import script
-- [ ] Import data into Supabase/Postgres
-- [ ] Validate data integrity
-- [ ] Create indexes for search optimization
-
-### 3.3 RAG (Retrieval Augmented Generation) Implementation
-- [ ] Install vector database library (e.g., Pinecone or pgvector for Postgres)
-- [ ] Create `kennisbank` table for embeddings (Postgres)
-- [ ] Generate embeddings for education data
-- [ ] Implement semantic search function
-- [ ] Integrate RAG into AI service:
-  1. [ ] User query → semantic search
-  2. [ ] Retrieve relevant documents
-  3. [ ] Inject into AI prompt as context
-  4. [ ] Generate response with citations
-- [ ] Test RAG accuracy vs. baseline AI
-
-### 3.4 Program Comparison Feature
-- [ ] Create comparison prompt template
-- [ ] Implement multi-program data retrieval
-- [ ] Format comparison as structured response:
-  - [ ] Side-by-side table
-  - [ ] Highlight key differences
-  - [ ] Pros/cons list
-- [ ] Add "Vergelijk programma's" quick action button
-- [ ] Test with various program combinations
-
-### 3.5 Auto-updating Knowledge Base
-- [ ] Create scheduled job for data updates (monthly)
-- [ ] Implement web scraping for official education sites (if APIs unavailable)
-- [ ] Add data validation and change detection
-- [ ] Create admin notification for manual review
-- [ ] Version control for knowledge base updates
-
-### 3.6 Analytics Dashboard (Basic)
-- [ ] Create admin dashboard page (password protected)
-- [ ] Implement analytics queries:
-  - [ ] Most asked questions
-  - [ ] User satisfaction (thumbs up/down ratio)
-  - [ ] Popular programs/institutions
-  - [ ] Conversation volume over time
-- [ ] Create data visualization components (charts)
-- [ ] Add export functionality (CSV)
-
-### 3.7 Citation & Sources
-- [ ] Add source attribution to AI responses
-- [ ] Format responses with clickable references
-- [ ] Implement "Show sources" toggle
-- [ ] Link to official institution websites
-- [ ] Add disclaimer for AI-generated content
-
-### 3.8 Testing & Validation
-- [ ] Test data retrieval accuracy
-- [ ] Validate program comparisons
-- [ ] Test RAG with edge cases
-- [ ] Verify data freshness
-- [ ] User testing with real educational queries
-- [ ] Performance testing with large knowledge base
-
----
-
-## 🚀 Phase 4: Premium Features & Personalization (Weeks 9-12)
-
-### 4.1 User Authentication System
-- [ ] Choose auth provider (Firebase Auth, Auth0, or custom)
-- [ ] Implement sign-up flow
-- [ ] Implement login flow
-- [ ] Add OAuth options (Google, Facebook)
-- [ ] Create user profile page
-- [ ] Implement password reset
-- [ ] Add email verification
-
-### 4.2 Persistent Conversation History
-- [ ] Link conversations to user accounts
-- [ ] Implement cross-device sync
-- [ ] Add conversation search functionality
-- [ ] Implement conversation archiving
-- [ ] Add conversation export (PDF/text)
-- [ ] Implement conversation deletion
-
-### 4.3 Reminder System
-- [ ] Create `reminders` table in Supabase/Postgres
-- [ ] Implement reminder creation in chat
-- [ ] Add reminder scheduling logic
-- [ ] Set up notification service (email or push)
-- [ ] Create reminder management UI
-- [ ] Implement reminder notifications:
-  - [ ] Application deadlines
-  - [ ] Document submission dates
-  - [ ] Exam dates
-- [ ] Add snooze and dismiss options
-
-### 4.4 Hyperlinks in Responses
-- [ ] Implement markdown parsing in chat messages
-- [ ] Auto-detect URLs in AI responses
-- [ ] Format links as clickable buttons/chips
-- [ ] Add external link icon
-- [ ] Implement "Open in new tab" behavior
-- [ ] Track link clicks for analytics
-
-### 4.5 Multi-language Support
-- [ ] Set up i18n framework (e.g., Babel)
-- [ ] Create translation files:
-  - [ ] Dutch (primary)
-  - [ ] English (secondary)
-- [ ] Translate UI components
-- [ ] Translate system prompts for AI
-- [ ] Add language selector in settings
-- [ ] Implement language persistence
-- [ ] Test translations with native speakers
-
-### 4.6 Enhanced UI Features
-- [ ] Implement theme switcher (light/dark mode)
-- [ ] Create custom theme editor
-- [ ] Add voice input support (Web Speech API)
-- [ ] Implement text-to-speech for responses
-- [ ] Add emoji reactions to messages
-- [ ] Implement message search within conversation
-
-### 4.7 Advanced Analytics
-- [ ] User engagement metrics (session duration, messages per session)
-- [ ] Conversion tracking (quiz completion, onboarding)
-- [ ] Cohort analysis (user retention over time)
-- [ ] Funnel analysis (user journey mapping)
-- [ ] Create admin dashboard with advanced visualizations
-- [ ] Implement A/B testing framework
-
-### 4.8 Performance & Optimization
-- [ ] Implement Redis caching for frequent queries
-- [ ] Add CDN for static assets
-- [ ] Optimize database queries with aggregation pipelines
-- [ ] Implement database connection pooling
-- [ ] Add rate limiting for API endpoints
-- [ ] Implement progressive web app (PWA) features
-- [ ] Add offline support for basic functionality
-
-### 4.9 Security Hardening
-- [ ] Implement rate limiting per user
-- [ ] Add CAPTCHA for sign-up
-- [ ] Implement input sanitization
-- [ ] Add SQL injection protection (for any SQL queries)
-- [ ] Implement XSS protection
-- [ ] Add CSRF tokens
-- [ ] Implement secure headers (CSP, HSTS)
-- [ ] Regular security audits
-
-### 4.10 Final Testing & Launch
-- [ ] Comprehensive end-to-end testing
-- [ ] Load testing (simulate 100+ concurrent users)
-- [ ] Security penetration testing
-- [ ] Accessibility audit (WCAG AA compliance)
-- [ ] Browser compatibility testing
-- [ ] Mobile device testing (iOS/Android)
-- [ ] Beta launch with selected users
-- [ ] Collect feedback and iterate
-- [ ] Official public launch
-- [ ] Marketing and outreach
-
----
-
-## 🔧 Continuous Maintenance & Monitoring
-
-### Post-Launch Checklist
-- [ ] Set up error monitoring (Sentry or similar)
-- [ ] Configure uptime monitoring (UptimeRobot)
-- [ ] Set up log aggregation (Datadog, Loggly)
-- [ ] Create incident response plan
-  - [ ] Schedule weekly data backups
-  - [ ] Monitor Supabase/Postgres performance
-- [ ] Track API usage and costs
-- [ ] Regularly update dependencies
-- [ ] Schedule monthly security patches
-
-### Success Metrics Tracking
-- [ ] Monitor 85%+ correct response rate
-- [ ] Track response time ≤2s
-- [ ] Monitor 80%+ positive feedback rate
-- [ ] Track 99% uptime
-- [ ] Monitor user growth (target: 100+ in first month)
-- [ ] Weekly analytics review
-- [ ] Monthly user surveys
-
----
-
-## 📁 Repository Structure
+## 📁 Simplified Repository Structure
 
 ```
 EduChat/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          # CI/CD pipeline
 ├── assets/
-│   ├── images/
-│   ├── icons/
-│   └── illustrations/
+│   ├── custom.css
+│   ├── auto-scroll.js
+│   └── screenshots/
 ├── educhat/                     # Main Reflex app
-│   ├── __init__.py
-│   ├── components/
-│   │   ├── __init__.py
-│   │   ├── sidebar.py
-│   │   ├── chat_container.py
-│   │   ├── message_bubble.py
-│   │   ├── chat_input.py
-│   │   ├── onboarding.py
-│   │   └── shared/
-│   │       ├── button.py
-│   │       ├── input.py
-│   │       └── dropdown.py
-│   ├── pages/
-│   │   ├── __init__.py
-│   │   ├── index.py            # Main chat page
-│   │   ├── onboarding.py       # Quiz page
-│   │   └── admin.py            # Analytics dashboard
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── database.py         # Supabase/Postgres client (Prisma)
-│   │   ├── ai_service.py       # OpenAI/Google AI
-│   │   └── rag_service.py      # RAG implementation
-│   ├── state/
-│   │   ├── __init__.py
-│   │   ├── app_state.py        # Main app state
-│   │   └── onboarding_state.py
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   ├── constants.py
-│   │   └── helpers.py
-│   └── styles/
-│       ├── __init__.py
-│       └── theme.py            # Color palette, fonts
+│   ├── components/              # UI components
+│   ├── pages/                   # Pages (index, landing, onboarding)
+│   ├── services/                # AI, database, auth
+│   ├── state/                   # App state management
+│   ├── utils/                   # Helpers
+│   └── styles/                  # Themes
 ├── data/
-│   ├── instellingen.json       # Education institutions data
-│   └── scripts/
-│       └── import_data.py
-├── tests/
-│   ├── test_ai_service.py
-│   ├── test_database.py
-│   └── test_components.py
-├── docs/
-│   ├── prd.md
-│   ├── design-requirements.md
-│   ├── api-documentation.md
-│   └── deployment-guide.md
-├── .env.example
-├── .gitignore
+│   └── institutions.json        # Education data (simple JSON)
+├── tests/                       # Basic tests
+├── Documents/                   # Documentation
+├── .env                         # Local config (not in git)
+├── .env.example                 # Template
 ├── requirements.txt
-├── rxconfig.py                  # Reflex configuration
-├── render.yaml                  # Render deployment config
+├── rxconfig.py
 └── README.md
 ```
 
 ---
 
-## ✅ Definition of Done (DoD)
+## 🚀 Phase 4: Additional Features (Week 5-6)
 
-For each feature to be considered complete:
+### 4.1 Reminders System (Simple Supabase)
+- [ ] Create reminders table (already exists in DB)
+- [ ] Add "Set Reminder" button in chat
 
-- [ ] Code is written and follows PEP8 standards
-- [ ] Unit tests are written and passing
-- [ ] Component is responsive (mobile/tablet/desktop)
-- [ ] Accessibility requirements met (WCAG AA)
-- [ ] Code is reviewed and approved
-- [ ] Feature is tested on dev branch
-- [ ] Feature is deployed to staging for QA
-- [ ] Documentation is updated
-- [ ] No critical bugs remaining
-- [ ] User acceptance testing completed
-- [ ] Merged to main and deployed to production
+- [ ] Simple form: title + date
+- [ ] Save to Supabase: `INSERT INTO reminders`
+- [ ] Load reminders: `SELECT * FROM reminders WHERE user_id = ?`
+- [ ] Show in sidebar with date
+- [ ] Mark as done / delete
+- [ ] No email notifications - just show in app!
+
+### 4.2 Education Data (Simple Supabase Tables)
+- [ ] Use existing `institutions` and `studies` tables
+- [ ] Import 10-20 Surinamese institutions:
+  - [ ] Anton de Kom Universiteit
+  - [ ] MINOV institutions
+  - [ ] Other schools
+- [ ] Simple queries:
+  - [ ] `SELECT * FROM institutions WHERE name ILIKE ?`
+  - [ ] `SELECT * FROM studies WHERE institution_id = ?`
+- [ ] When user asks about institution, query DB
+- [ ] Inject data into AI prompt
+- [ ] Keep queries simple - no joins unless necessary
+
+### 4.3 Events & Important Dates (Simple)
+- [ ] Use existing `events` table
+- [ ] Add important dates:
+  - [ ] Application deadlines
+  - [ ] Exam dates
+  - [ ] Registration periods
+- [ ] Simple query: `SELECT * FROM events WHERE date >= NOW()`
+- [ ] Show upcoming events in sidebar or chat
+- [ ] User can create reminder from event
+
+### 4.4 Onboarding Quiz Integration (Connect to DB)
+- [x] Quiz UI already works
+- [ ] Connect to existing tables:
+  - [ ] `onboarding_questions` (load questions from DB)
+  - [ ] `onboarding_answers` (save user answers)
+  - [ ] `onboarding` (save completion status)
+- [ ] Simple queries:
+  - [ ] `SELECT * FROM onboarding_questions ORDER BY order_num`
+  - [ ] `INSERT INTO onboarding_answers`
+- [ ] Use quiz results to personalize AI responses
+- [ ] Load user preferences on startup
+
+### 4.5 Dark Mode (Super Easy)
+- [ ] Add toggle button in sidebar
+- [ ] Use CSS variables for colors
+- [ ] Save preference to `users.settings` in DB
+- [ ] Load on startup
+- [ ] 30 minutes max!
+
+### 4.6 Message Actions (Already exists, connect to DB)
+- [x] Copy, like, dislike buttons work
+- [ ] Save feedback to `messages.feedback` column
+- [ ] Update query: `UPDATE messages SET feedback = ? WHERE id = ?`
+- [ ] Simple - just store thumbs up/down
+
+### 4.7 Final Testing
+- [ ] Test full flow: signup → quiz → chat → reminders
+- [ ] Test on mobile
+- [ ] Test dark mode
+- [ ] Fix any bugs
+- [ ] Done!
 
 ---
 
-## 🎯 Success Criteria Summary
+## 🔧 Maintenance & Next Steps
 
-| Metric | Target | Phase |
-|--------|--------|-------|
-| Correct responses | >85% | Phase 1 |
-| Response time | ≤2s | Phase 1 |
-| Initial load time | <3s | Phase 2 |
-| Positive feedback | 80%+ | Phase 2 |
-| Uptime | 99%+ | Phase 1 |
-| Active users (month 1) | 100+ | Phase 4 |
-| Mobile usability | 4.5/5 | Phase 2 |
-| Data accuracy | 95%+ | Phase 3 |
+### If Something Breaks
+- [ ] Check terminal for errors
+- [ ] Google the error
+- [ ] Fix it
+- [ ] That's it!
+
+### If You Want to Add Features Later
+- [ ] Add them one at a time
+- [ ] Test each one
+- [ ] Don't try to build everything at once
 
 ---
 
-**End of Development Checklist**
+## 🎯 ULTRA SIMPLIFIED FEATURE LIST
 
-*This checklist should be updated as the project evolves. Mark items as completed and add new tasks as needed.*
+**What the app NEEDS to do:**
+1. ✅ Show chat interface
+2. ✅ User types message
+3. ✅ AI responds about Surinamese education
+4. ✅ Works on mobile and desktop
+5. ✅ Looks decent
+
+**What the app DOESN'T need:**
+- ❌ OAuth / Social login (Google, Facebook)
+- ❌ Email verification
+- ❌ Complex RLS policies
+- ❌ Analytics dashboard
+- ❌ Advanced error monitoring
+- ❌ A/B testing
+- ❌ Complex database queriAll DB Features Simple):**
+- ✅ Users table (email, password, settings)
+- ✅ Sessions table (chat sessions)
+- ✅ Messages table (chat history with feedback)
+- ✅ Institutions table (schools/universities)
+- ✅ Studies table (programs per institution)
+- ✅ Events table (important dates)
+- ✅ Onboarding tables (quiz questions, answers, completion)
+- ✅ Reminders table (user reminders)
+- ✅ Supabase Auth (email + password)
+- ✅ Basic RLS (user sees only their data)
+- ✅ Simple queries (no complex joins)
+- ✅ Auto-save(3 simple tables)
+- ✅ Supabase Auth (email + password only)
+- ✅ Basic RLS (user can only see their own data)
+- ✅ Simple queries (SELECT, INSERT, DELETE)
+- ✅ Auto-save messages to database
+
+**CConnect all tables with simple queries:
+   - users ← Supabase Auth handles this
+   - sessions ← Create on first message
+   - messages ← INSERT on each message
+   - institutions ← Import data, SELECT when needed
+   - studies ← Import data, SELECT when needed
+   - events ← Import data, SELECT upcoming events
+   - onboarding ← Connect quiz to DB
+   - reminders ← Simple CRUD operations
+4. Test each table connection one by one
+5. Keep queries simple:
+   - `INSERT INTO table VALUES (...)`
+   - `SELECT * FROM table WHERE user_id = ?`
+   - `UPDATE table SET field = ? WHERE id = ?`
+   - `DELETE FROM table WHERE id = ?`
+6. No complex joins - query tables separately
+7. Test: All features work with database ✅Auth exists but has bugs ❌ → **Solution: Debug and fix!**
+- Database not connected ❌ → **Solution: Wire up the queries!**
+
+**What to do NOW:**
+1. Keep existing UI/components (they work!)
+2. Fix Supabase auth connection issues
+3. Test auth flow: signup → login → stays logged in
+4. Connect AppState to Supabase database
+5. Save messages: `supabase.insert('messages', {...})`
+6. Load conversations: `supabase.select('conversations').eq('user_id', user.id)`
+7. Test: signup → chat → refresh page → still logged in → conversations still there
+8.Simple features that WILL work:**
+- ✅ localStorage for persistence (no database needed!)
+- ✅ Guest mode (no login required)
+- ✅ Optional simple auth (username + password in localStorage)
+- ✅ Conversation history (saved in browser)
+- ✅ Dark mode toggle (CSS variables)
+- ✅ Clickable links in messages
+- ✅ Simple reminders (in-app only)
+- ✅ Export chat as text file
+**Philosophy:** Use Supabase for ALL features, but keep each query simple - one table at a time, no over-engineering
+- **Storage:** Browser localStorage (5-10MB, free, no setup)
+- **Auth:** Simple username/password stored in localStorage (encrypted with basic crypto)
+- **Persistence:** Auto-save after each message
+- **Backup:** Export feature so users can download their data
+- **Privacy:** All data stays in user's browser
+
+**Why this works better:**
+1. No server = no hosting costs
+2. No database = no connection issues
+3. No auth service = no broken API calls
+4. Works offline = reliable
+5. Fast = everything is local
+6. Private = data never leaves user's browser
+
+**Philosophy:** Keep it simple, keep it working, keep it local
+- Whatever seems fun
+
+**Philosophy:** MVP = Minimum VIABLE Product, not Maximum Value Product!
