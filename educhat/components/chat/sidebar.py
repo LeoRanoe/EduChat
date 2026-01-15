@@ -19,249 +19,94 @@ def render_conversation_item(conv, current_id):
     conv_title = conv["title"]
     
     return rx.box(
-        rx.vstack(
+        rx.hstack(
+            # Icon
+            rx.box(
+                rx.icon(
+                    "message-circle",
+                    size=14,
+                    color=rx.cond(
+                        conv_id == current_id,
+                        "white",
+                        COLORS["text_tertiary"]
+                    ),
+                ),
+                background=rx.cond(
+                    conv_id == current_id,
+                    f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                    COLORS["light_gray"]
+                ),
+                padding="0.4rem",
+                border_radius="6px",
+                flex_shrink="0",
+            ),
+            # Title
+            rx.text(
+                conv_title,
+                font_size="0.8125rem",
+                color=rx.cond(
+                    conv_id == current_id,
+                    COLORS["primary_green"],
+                    COLORS["text_primary"]
+                ),
+                font_weight=rx.cond(
+                    conv_id == current_id,
+                    "600",
+                    "400"
+                ),
+                overflow="hidden",
+                text_overflow="ellipsis",
+                white_space="nowrap",
+                flex="1",
+                min_width="0",
+            ),
+            # Action buttons (visible on hover)
             rx.hstack(
                 rx.box(
-                    rx.icon(
-                        "message-circle",
-                        size=16,
-                        color="white",
-                    ),
-                    background=rx.cond(
-                        conv_id == current_id,
-                        f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                        COLORS["border"]
-                    ),
-                    padding="0.5rem",
-                    border_radius="8px",
-                    transition="all 0.3s ease",
+                    rx.icon("trash-2", size=12, color=COLORS["text_tertiary"]),
+                    on_click=lambda: AppState.delete_conversation(conv_id),
+                    cursor="pointer",
+                    padding="0.25rem",
+                    border_radius="4px",
+                    opacity="0",
+                    class_name="conv-action",
+                    _hover={
+                        "background": "rgba(220, 38, 38, 0.1)",
+                        "color": COLORS["error"],
+                    },
+                    transition="all 0.2s ease",
                 ),
-                rx.box(
-                    rx.text(
-                        conv_title,
-                        font_size="0.875rem",
-                        color=rx.cond(
-                            conv_id == current_id,
-                            COLORS["primary_green"],
-                            COLORS["text_primary"]
-                        ),
-                        font_weight=rx.cond(
-                            conv_id == current_id,
-                            "600",
-                            "500"
-                        ),
-                        overflow="hidden",
-                        text_overflow="ellipsis",
-                        display="-webkit-box",
-                        webkit_line_clamp="2",
-                        webkit_box_orient="vertical",
-                        line_height="1.4",
-                        max_height="2.8em",
-                        letter_spacing="-0.01em",
-                        title=conv_title,
-                    ),
-                    flex="1",
-                    min_width="0",
-                ),
-                rx.hstack(
-                    rx.box(
-                        rx.icon("pencil", size=14, color=COLORS["text_tertiary"]),
-                        on_click=AppState.start_rename_conversation(conv_id),
-                        cursor="pointer",
-                        padding="0.375rem",
-                        border_radius=RADIUS["sm"],
-                        opacity="0",
-                        class_name="conv-action",
-                        background="transparent",
-                        _hover={
-                            "background": f"rgba(16, 163, 127, 0.1)",
-                            "color": COLORS["primary_green"],
-                            "transform": "scale(1.1)",
-                        },
-                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                    ),
-                    rx.box(
-                        rx.icon("trash-2", size=14, color=COLORS["text_tertiary"]),
-                        on_click=AppState.delete_conversation(conv_id),
-                        cursor="pointer",
-                        padding="0.375rem",
-                        border_radius=RADIUS["sm"],
-                        opacity="0",
-                        class_name="conv-action",
-                        background="transparent",
-                        _hover={
-                            "background": "rgba(220, 38, 38, 0.1)",
-                            "color": COLORS["error"],
-                            "transform": "scale(1.1)",
-                        },
-                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                    ),
-                    spacing="1",
-                    flex_shrink="0",
-                ),
-                spacing="3",
-                align="center",
-                width="100%",
+                spacing="1",
+                flex_shrink="0",
             ),
-            spacing="0",
+            spacing="2",
+            align="center",
             width="100%",
         ),
         background=rx.cond(
             conv_id == current_id,
-            f"linear-gradient(135deg, rgba(16, 163, 127, 0.08) 0%, rgba(16, 163, 127, 0.12) 100%)",
+            f"rgba(16, 163, 127, 0.08)",
             "transparent"
         ),
-        border_radius=RADIUS["lg"],
-        padding="1rem",
-        margin="0 0.75rem 0.5rem 0.75rem",
+        border_radius="8px",
+        padding="0.625rem 0.75rem",
+        margin_bottom="0.25rem",
         cursor="pointer",
         on_click=AppState.load_conversation(conv_id),
-        border=rx.cond(
+        border_left=rx.cond(
             conv_id == current_id,
-            f"1px solid {COLORS['primary_green']}",
-            f"1px solid {COLORS['border']}"
-        ),
-        box_shadow=rx.cond(
-            conv_id == current_id,
-            f"0 2px 8px rgba(16, 163, 127, 0.15)",
-            "none"
+            f"3px solid {COLORS['primary_green']}",
+            "3px solid transparent"
         ),
         _hover={
             "background": rx.cond(
                 conv_id == current_id,
-                f"linear-gradient(135deg, rgba(16, 163, 127, 0.12) 0%, rgba(16, 163, 127, 0.15) 100%)",
-                f"rgba(0, 0, 0, 0.02)"
+                f"rgba(16, 163, 127, 0.12)",
+                COLORS["hover_bg"]
             ),
-            "transform": "translateX(4px)",
-            "border_color": COLORS["primary_green"],
-            "box_shadow": f"0 4px 12px rgba(16, 163, 127, 0.2)",
             ".conv-action": {"opacity": "1"},
         },
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        animation="fadeInUp 0.3s ease-out",
-    )
-
-
-def conversation_item(
-    title: str,
-    conversation_id: str,
-    is_active=False,
-    is_collapsed=False,
-    on_click=None,
-    on_delete=None,
-    on_archive=None,
-) -> rx.Component:
-    """Single conversation item in sidebar list (DEPRECATED - kept for backwards compatibility).
-    
-    Args:
-        title: Conversation title
-        conversation_id: Unique conversation ID
-        is_active: Whether this is the active conversation
-        is_collapsed: Whether sidebar is collapsed
-        on_click: Click handler
-        on_delete: Delete handler
-        on_archive: Archive handler
-    """
-    return rx.box(
-        rx.hstack(
-            rx.icon(
-                "message-circle",
-                size=18,
-                color=rx.cond(is_active, COLORS["primary_green"], COLORS["text_tertiary"]),
-            ),
-            # Show text only when not collapsed
-            rx.cond(
-                is_collapsed,
-                rx.fragment(),
-                rx.text(
-                    title,
-                    font_size="0.875rem",
-                    color=rx.cond(is_active, COLORS["primary_green"], COLORS["text_primary"]),
-                    font_weight=rx.cond(is_active, "600", "500"),
-                    white_space="nowrap",
-                    overflow="hidden",
-                    text_overflow="ellipsis",
-                    flex="1",
-                    letter_spacing="-0.01em",
-                ),
-            ),
-            # Action buttons (show only when expanded and on hover)
-            rx.cond(
-                is_collapsed,
-                rx.fragment(),
-                rx.box(
-                    rx.box(
-                        rx.icon("archive", size=14, color=COLORS["text_tertiary"]),
-                        on_click=lambda: AppState.archive_conversation(conversation_id),
-                        cursor="pointer",
-                        padding="0.375rem",
-                        border_radius=RADIUS["sm"],
-                        opacity="0",
-                        class_name="conv-action",
-                        background="transparent",
-                        _hover={
-                            "background": f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['primary_green']}10 100%)",
-                            "color": COLORS["primary_green"],
-                            "transform": "scale(1.1)",
-                        },
-                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                    ),
-                    rx.box(
-                        rx.icon("trash-2", size=14, color=COLORS["text_tertiary"]),
-                        on_click=lambda: AppState.delete_conversation(conversation_id),
-                        cursor="pointer",
-                        padding="0.375rem",
-                        border_radius=RADIUS["sm"],
-                        opacity="0",
-                        class_name="conv-action",
-                        background="transparent",
-                        _hover={
-                            "background": f"linear-gradient(135deg, {COLORS['error']}15 0%, {COLORS['error']}25 100%)",
-                            "color": COLORS["error"],
-                            "transform": "scale(1.1)",
-                        },
-                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                    ),
-                    spacing="1",
-                    flex_shrink="0",
-                ),
-            ),
-            spacing="3",
-            align="center",
-            width="100%",
-            justify=rx.cond(is_collapsed, "center", "start"),
-        ),
-        background=rx.cond(
-            is_active, 
-            f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['light_green']}80 100%)",
-            "transparent"
-        ),
-        border_radius=RADIUS["lg"],
-        padding=rx.cond(is_collapsed, "0.875rem", "0.875rem 1rem"),
-        margin=rx.cond(is_collapsed, "0 0.5rem", "0 0.75rem"),
-        cursor="pointer",
-        on_click=on_click,
-        border_left=rx.cond(
-            is_active,
-            f"3px solid {COLORS['primary_green']}",
-            "3px solid transparent"
-        ),
-        box_shadow=rx.cond(
-            is_active,
-            f"0 4px 12px {COLORS['primary_green']}15",
-            "none"
-        ),
-        _hover={
-            "background": rx.cond(
-                is_active, 
-                f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['light_green']}90 100%)",
-                f"linear-gradient(135deg, {COLORS['hover_bg']} 0%, {COLORS['light_gray']}40 100%)"
-            ),
-            "transform": rx.cond(is_collapsed, "scale(1.08)", "translateX(4px)"),
-            "box_shadow": f"0 4px 12px {COLORS['primary_green']}20",
-            ".conv-action": {"opacity": "1"},
-        },
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition="all 0.2s ease",
     )
 
 
@@ -277,7 +122,7 @@ def sidebar(
     is_collapsed: bool = False,
     on_toggle_collapse=None,
 ) -> rx.Component:
-    """Sidebar component with logo, search, and conversation list.
+    """Clean, modern sidebar with toggle functionality.
     
     Args:
         conversations: List of conversation dicts with 'id' and 'title'
@@ -288,444 +133,361 @@ def sidebar(
         user_name: User's display name
         user_email: User's email
         is_open: Whether sidebar is open (for mobile)
+        is_collapsed: Whether sidebar is collapsed (for desktop)
+        on_toggle_collapse: Handler for collapse toggle
     """
     return rx.box(
         rx.vstack(
-            # Logo section with collapse button and gradient background
+            # Header with logo and close/collapse button
             rx.box(
                 rx.hstack(
+                    # Logo
                     rx.cond(
                         is_collapsed,
-                        rx.box(
-                            rx.icon(
-                                "graduation-cap",
-                                size=24,
-                                color=COLORS["primary_green"],
-                            ),
-                            width="100%",
-                            display="flex",
-                            justify_content="center",
-                        ),
+                        rx.icon("graduation-cap", size=24, color=COLORS["primary_green"]),
                         logo(size="md"),
                     ),
-                    # Collapse toggle button (desktop only)
-                    rx.box(
-                        rx.icon(
-                            rx.cond(is_collapsed, "panel-right", "panel-left"),
-                            size=18,
-                            color=COLORS["text_secondary"],
+                    # Close button for mobile, Collapse button for desktop
+                    rx.hstack(
+                        # Mobile close button
+                        rx.box(
+                            rx.icon("x", size=20, color=COLORS["text_secondary"]),
+                            on_click=AppState.close_sidebar,
+                            cursor="pointer",
+                            padding="0.5rem",
+                            border_radius="8px",
+                            display=["flex", "flex", "none"],
+                            _hover={"background": COLORS["light_gray"]},
+                            transition="all 0.2s ease",
                         ),
-                        on_click=on_toggle_collapse,
-                        cursor="pointer",
-                        padding="0.5rem",
-                        border_radius=RADIUS["md"],
-                        display=["none", "none", "flex"],
-                        background="transparent",
-                        border=f"1px solid {COLORS['border_light']}",
-                        _hover={
-                            "background": f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['primary_green']}15 100%)",
-                            "transform": "scale(1.1) rotate(180deg)",
-                            "border_color": COLORS["primary_green"],
-                            "color": COLORS["primary_green"],
-                        },
-                        transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                        # Desktop collapse button
+                        rx.box(
+                            rx.icon(
+                                rx.cond(is_collapsed, "chevron-right", "chevron-left"),
+                                size=18,
+                                color=COLORS["text_secondary"],
+                            ),
+                            on_click=on_toggle_collapse,
+                            cursor="pointer",
+                            padding="0.5rem",
+                            border_radius="8px",
+                            display=["none", "none", "flex"],
+                            _hover={
+                                "background": COLORS["light_green"],
+                                "color": COLORS["primary_green"],
+                            },
+                            transition="all 0.2s ease",
+                        ),
+                        spacing="1",
                     ),
-                    spacing="2",
-                    align="center",
                     justify="between",
+                    align="center",
                     width="100%",
                 ),
-                padding=["1.25rem", "1.25rem", "1.5rem"],
-                border_bottom=f"1px solid {COLORS['border_gray']}",
-                background=f"linear-gradient(135deg, {COLORS['white']} 0%, {COLORS['light_green']}08 100%)",
+                padding="1rem 1rem 0.75rem",
+                border_bottom=f"1px solid {COLORS['border_light']}",
+                width="100%",
             ),
             
-            # Action buttons
-            rx.cond(
-                is_collapsed,
-                # Collapsed view - icon only
-                rx.vstack(
+            # New conversation button
+            rx.box(
+                rx.cond(
+                    is_collapsed,
+                    # Collapsed: Icon only
                     rx.box(
-                        rx.icon("pencil", size=20, color=COLORS["primary_green"]),
+                        rx.icon("plus", size=18, color=COLORS["primary_green"]),
                         on_click=on_new_conversation,
                         cursor="pointer",
-                        padding="0.875rem",
-                        border_radius=RADIUS["lg"],
-                        border=f"1.5px solid {COLORS['border_gray']}",
-                        background=f"linear-gradient(135deg, {COLORS['white']} 0%, {COLORS['light_green']}20 100%)",
-                        box_shadow=f"0 2px 8px {COLORS['primary_green']}10",
-                        _hover={
-                            "background": f"linear-gradient(135deg, {COLORS['light_green']} 0%, {COLORS['primary_green']}15 100%)",
-                            "border_color": COLORS["primary_green"],
-                            "transform": "scale(1.05) rotate(5deg)",
-                            "box_shadow": f"0 4px 16px {COLORS['primary_green']}25",
-                        },
-                        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        padding="0.75rem",
+                        border_radius="8px",
+                        border=f"1px dashed {COLORS['primary_green']}",
                         width="100%",
                         display="flex",
                         justify_content="center",
+                        _hover={
+                            "background": COLORS["light_green"],
+                            "border_style": "solid",
+                        },
+                        transition="all 0.2s ease",
                     ),
-                    spacing="2",
-                    padding=["1rem", "1rem", "1.25rem"],
-                    width="100%",
-                ),
-                # Expanded view
-                rx.vstack(
-                    secondary_button(
-                        text="Nieuw gesprek",
-                        icon="pencil",
+                    # Expanded: Full button
+                    rx.box(
+                        rx.hstack(
+                            rx.icon("plus", size=16, color=COLORS["primary_green"]),
+                            rx.text(
+                                "Nieuw gesprek",
+                                font_size="0.875rem",
+                                font_weight="500",
+                                color=COLORS["primary_green"],
+                            ),
+                            spacing="2",
+                            align="center",
+                            justify="center",
+                        ),
                         on_click=on_new_conversation,
+                        cursor="pointer",
+                        padding="0.625rem 1rem",
+                        border_radius="8px",
+                        border=f"1px dashed {COLORS['primary_green']}",
                         width="100%",
+                        _hover={
+                            "background": COLORS["light_green"],
+                            "border_style": "solid",
+                        },
+                        transition="all 0.2s ease",
                     ),
-                    spacing="2",
-                    padding=["1rem", "1rem", "1.25rem"],
-                    width="100%",
                 ),
+                padding="0.75rem",
+                width="100%",
             ),
             
-            # Conversations header with count (hide when collapsed)
+            # Conversations section header (only when expanded)
             rx.cond(
                 is_collapsed,
                 rx.fragment(),
                 rx.box(
                     rx.hstack(
                         rx.text(
-                            "GESPREKKEN",
+                            "Gesprekken",
                             font_size="0.6875rem",
-                            color=COLORS["text_secondary"],
+                            color=COLORS["text_tertiary"],
                             text_transform="uppercase",
-                            font_weight="700",
+                            font_weight="600",
                             letter_spacing="0.5px",
                         ),
                         rx.box(
                             rx.text(
                                 conversations.length(),
                                 font_size="0.625rem",
-                                color=COLORS["white"],
+                                color="white",
                                 font_weight="600",
                             ),
-                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                            background=COLORS["primary_green"],
                             padding="0.125rem 0.5rem",
-                            border_radius="12px",
-                            min_width="1.5rem",
+                            border_radius="10px",
+                            min_width="1.25rem",
                             text_align="center",
                         ),
                         justify="between",
                         align="center",
                         width="100%",
                     ),
-                    padding="0.75rem 1.25rem 0.5rem",
+                    padding="0.5rem 0.75rem",
+                    width="100%",
                 ),
             ),
             
-            # Conversation list (hide when collapsed)
-            rx.cond(
-                is_collapsed,
-                rx.fragment(),
-                rx.box(
+            # Conversation list
+            rx.box(
+                rx.cond(
+                    is_collapsed,
+                    # Collapsed: Show dots for conversations
+                    rx.vstack(
+                        rx.foreach(
+                            conversations,
+                            lambda conv: rx.box(
+                                rx.icon(
+                                    "message-circle",
+                                    size=16,
+                                    color=rx.cond(
+                                        conv["id"] == current_conversation_id,
+                                        COLORS["primary_green"],
+                                        COLORS["text_tertiary"]
+                                    ),
+                                ),
+                                on_click=AppState.load_conversation(conv["id"]),
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius="8px",
+                                background=rx.cond(
+                                    conv["id"] == current_conversation_id,
+                                    COLORS["light_green"],
+                                    "transparent"
+                                ),
+                                _hover={"background": COLORS["light_gray"]},
+                                transition="all 0.2s ease",
+                            ),
+                        ),
+                        spacing="1",
+                        padding="0.5rem",
+                        width="100%",
+                    ),
+                    # Expanded: Full conversation list
                     rx.cond(
                         conversations.length() > 0,
-                        rx.vstack(
+                        rx.box(
                             rx.foreach(
                                 conversations,
                                 lambda conv: render_conversation_item(conv, current_conversation_id),
                             ),
-                            spacing="0",
+                            padding="0 0.5rem",
                             width="100%",
                         ),
+                        # Empty state
                         rx.box(
-                            rx.icon(
-                                tag="message-square",
-                                size=48,
-                                color=COLORS["border"],
-                                margin_bottom="16px",
-                            ),
-                            rx.text(
-                                "No conversations yet",
-                                font_size="0.875rem",
-                                color=COLORS["text_secondary"],
-                                font_weight="500",
-                                margin_bottom="4px",
-                            ),
-                            rx.text(
-                                "Start a new chat to begin",
-                                font_size="0.75rem",
-                                color=COLORS["text_tertiary"],
-                            ),
-                            display="flex",
-                            flex_direction="column",
-                            align_items="center",
-                            justify_content="center",
-                            padding="3rem 1rem",
-                            text_align="center",
-                        ),
-                    ),
-                    flex="1",
-                    overflow_y="auto",
-                    width="100%",
-                ),
-            ),
-            
-            # Onboarding link section
-            rx.box(
-                rx.link(
-                    rx.cond(
-                        is_collapsed,
-                        rx.box(
-                            rx.icon("graduation-cap", size=20, color=COLORS["primary_green"]),
-                            display="flex",
-                            justify_content="center",
-                            width="100%",
-                        ),
-                        rx.box(
-                            rx.hstack(
-                                rx.icon("graduation-cap", size=18, color="white"),
+                            rx.vstack(
+                                rx.icon("message-square", size=32, color=COLORS["border"]),
                                 rx.text(
-                                    "Start Onboarding",
-                                    font_size="0.875rem",
-                                    font_weight="600",
-                                    color="white",
+                                    "Geen gesprekken",
+                                    font_size="0.8125rem",
+                                    color=COLORS["text_tertiary"],
+                                    font_weight="500",
+                                ),
+                                rx.text(
+                                    "Start een nieuw gesprek",
+                                    font_size="0.75rem",
+                                    color=COLORS["text_tertiary"],
                                 ),
                                 spacing="2",
                                 align="center",
-                                justify="center",
                             ),
+                            padding="2rem 1rem",
+                            text_align="center",
                             width="100%",
-                            padding="0.75rem 1rem",
-                            border_radius=RADIUS["md"],
-                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                            _hover={
-                                "transform": "translateY(-2px)",
-                                "box_shadow": f"0 4px 12px rgba(16, 163, 127, 0.3)",
-                            },
-                            transition="all 0.3s ease",
                         ),
                     ),
-                    href="/onboarding",
-                    text_decoration="none",
-                    width="100%",
                 ),
-                padding=rx.cond(is_collapsed, "0.875rem", "0.75rem"),
-                border_top=f"1px solid {COLORS['border_gray']}",
-                border_bottom=f"1px solid {COLORS['border_gray']}",
+                flex="1",
+                overflow_y="auto",
+                overflow_x="hidden",
                 width="100%",
             ),
             
-            # User profile section
+            # Footer with user info
             rx.box(
                 rx.cond(
                     is_collapsed,
-                    # Collapsed view - avatar only
+                    # Collapsed: Avatar only
                     rx.vstack(
-                        avatar(name=user_name, size="md"),
+                        avatar(name=user_name, size="sm"),
                         rx.box(
-                            rx.icon("log-out", size=18, color=COLORS["text_secondary"]),
+                            rx.icon("log-out", size=16, color=COLORS["text_tertiary"]),
                             on_click=AppState.logout,
                             cursor="pointer",
                             padding="0.5rem",
-                            border_radius=RADIUS["sm"],
+                            border_radius="6px",
                             _hover={
-                                "background": COLORS["light_gray"],
+                                "background": f"rgba(220, 38, 38, 0.1)",
                                 "color": COLORS["error"],
                             },
                             transition="all 0.2s ease",
                         ),
                         spacing="2",
                         align="center",
-                        width="100%",
                     ),
-                    # Expanded view
+                    # Expanded: Full user section
                     rx.vstack(
                         rx.hstack(
-                            avatar(name=user_name, size="md"),
+                            avatar(name=user_name, size="sm"),
                             rx.vstack(
                                 rx.text(
                                     user_name,
-                                    font_size="0.875rem",
+                                    font_size="0.8125rem",
                                     font_weight="600",
                                     color=COLORS["text_primary"],
-                                    line_height="1.2",
-                                    white_space="nowrap",
                                     overflow="hidden",
                                     text_overflow="ellipsis",
+                                    white_space="nowrap",
                                 ),
                                 rx.cond(
                                     user_email != "",
                                     rx.text(
                                         user_email,
-                                        font_size="0.75rem",
-                                        color=COLORS["text_secondary"],
-                                        line_height="1.2",
-                                        white_space="nowrap",
+                                        font_size="0.6875rem",
+                                        color=COLORS["text_tertiary"],
                                         overflow="hidden",
                                         text_overflow="ellipsis",
+                                        white_space="nowrap",
                                     ),
                                     rx.box(
                                         rx.text(
-                                            "GUEST",
-                                            font_size="0.65rem",
+                                            "GAST",
+                                            font_size="0.5625rem",
                                             color=COLORS["primary_green"],
                                             font_weight="700",
-                                            letter_spacing="0.5px",
                                         ),
-                                        padding="3px 10px",
-                                        background=f"rgba(16, 163, 127, 0.15)",
-                                        border_radius="12px",
-                                        border=f"1px solid {COLORS['primary_green']}",
-                                        display="inline-block",
+                                        padding="2px 8px",
+                                        background=f"rgba(16, 163, 127, 0.1)",
+                                        border_radius="4px",
                                     ),
                                 ),
-                                spacing="1",
+                                spacing="0",
                                 align_items="start",
                                 flex="1",
                                 min_width="0",
                             ),
-                            spacing="3",
+                            spacing="2",
                             align="center",
                             width="100%",
                         ),
                         rx.hstack(
                             rx.box(
-                                rx.icon("settings", size=16, color="black"),
-                                rx.text("Settings", font_size="0.8rem", margin_left="8px", color="black"),
-                                display="flex",
-                                align_items="center",
-                                cursor="pointer",
-                                padding="0.5rem",
-                                border_radius=RADIUS["sm"],
-                                flex="1",
-                                _hover={
-                                    "background": COLORS["light_gray"],
-                                },
-                                transition="all 0.2s ease",
-                            ),
-                            # Reminders button
-                            rx.box(
-                                rx.icon("bell", size=16, color=COLORS["primary_green"]),
-                                rx.text("Reminders", font_size="0.8rem", margin_left="8px", color="black"),
-                                display="flex",
-                                align_items="center",
-                                on_click=AuthState.toggle_reminder_modal,
-                                cursor="pointer",
-                                padding="0.5rem",
-                                border_radius=RADIUS["sm"],
-                                flex="1",
-                                _hover={
-                                    "background": f"{COLORS['primary_green']}10",
-                                },
-                                transition="all 0.2s ease",
-                            ),
-                            spacing="2",
-                            width="100%",
-                            flex_wrap="wrap",
-                        ),
-                        rx.hstack(
-                            # Events button
-                            rx.box(
-                                rx.icon("calendar", size=16, color="#3B82F6"),
-                                rx.text("Events", font_size="0.8rem", margin_left="8px", color="black"),
-                                display="flex",
-                                align_items="center",
-                                on_click=AuthState.toggle_events_panel,
-                                cursor="pointer",
-                                padding="0.5rem",
-                                border_radius=RADIUS["sm"],
-                                flex="1",
-                                _hover={
-                                    "background": "rgba(59, 130, 246, 0.1)",
-                                },
-                                transition="all 0.2s ease",
-                            ),
-                            # Dark mode toggle
-                            rx.box(
-                                rx.cond(
-                                    AuthState.dark_mode,
-                                    rx.icon("sun", size=16, color="#F59E0B"),
-                                    rx.icon("moon", size=16, color="#6B7280"),
+                                rx.hstack(
+                                    rx.icon("log-out", size=14, color=COLORS["text_secondary"]),
+                                    rx.text("Uitloggen", font_size="0.75rem", color=COLORS["text_secondary"]),
+                                    spacing="1",
+                                    align="center",
                                 ),
-                                rx.text(
-                                    rx.cond(AuthState.dark_mode, "Light", "Dark"),
-                                    font_size="0.8rem",
-                                    margin_left="8px",
-                                    color="black",
-                                ),
-                                display="flex",
-                                align_items="center",
-                                on_click=AuthState.toggle_dark_mode,
-                                cursor="pointer",
-                                padding="0.5rem",
-                                border_radius=RADIUS["sm"],
-                                flex="1",
-                                _hover={
-                                    "background": COLORS["light_gray"],
-                                },
-                                transition="all 0.2s ease",
-                            ),
-                            rx.box(
-                                rx.icon("log-out", size=16, color="black"),
-                                rx.text("Logout", font_size="0.8rem", margin_left="8px", color="black"),
-                                display="flex",
-                                align_items="center",
                                 on_click=AppState.logout,
                                 cursor="pointer",
-                                padding="0.5rem",
-                                border_radius=RADIUS["sm"],
+                                padding="0.5rem 0.75rem",
+                                border_radius="6px",
                                 flex="1",
                                 _hover={
-                                    "background": f"{COLORS['error']}10",
+                                    "background": f"rgba(220, 38, 38, 0.08)",
                                     "color": COLORS["error"],
                                 },
                                 transition="all 0.2s ease",
                             ),
-                            spacing="2",
                             width="100%",
-                            flex_wrap="wrap",
                         ),
-                        spacing="2",
+                        spacing="3",
                         width="100%",
                     ),
                 ),
-                padding=["1rem", "1rem", "1.25rem"],
+                padding="0.75rem",
+                border_top=f"1px solid {COLORS['border_light']}",
                 width="100%",
                 background=COLORS["white"],
-                border_top=f"1px solid {COLORS['border_gray']}",
             ),
             
             spacing="0",
-            height="100vh",
+            height="100%",
             width="100%",
         ),
-        # Modern responsive styling with collapse animation
+        # Sidebar container styling
         width=rx.cond(
             is_collapsed,
-            ["280px", "280px", "80px"],  # Collapsed: 80px on desktop, full on mobile
-            ["280px", "280px", "280px"]  # Expanded
+            ["280px", "280px", "72px"],  # Collapsed: narrow on desktop
+            ["280px", "280px", "260px"]  # Expanded
         ),
-        background=f"linear-gradient(180deg, {COLORS['white']} 0%, {COLORS['light_green']}05 100%)",
+        min_width=rx.cond(
+            is_collapsed,
+            ["280px", "280px", "72px"],
+            ["280px", "280px", "260px"]
+        ),
+        background=COLORS["white"],
         border_right=f"1px solid {COLORS['border_light']}",
         height="100vh",
         position="fixed",
         top="0",
-        overflow_y="auto",
-        overflow_x="hidden",
         flex_shrink="0",
-        # Mobile: slide in/out based on is_open, above overlay
+        # Mobile: slide in/out
         left=rx.cond(is_open, "0", "-100%"),
         z_index=["1001", "1001", "auto"],
-        transition="width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition="all 0.3s ease",
         box_shadow=rx.cond(
             is_open,
-            "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
+            "4px 0 16px rgba(0, 0, 0, 0.1)",
             "none"
         ),
-        backdrop_filter="blur(8px)",
-        
+        overflow="hidden",
         # Desktop: always visible
         **{
             "@media (min-width: 1024px)": {
                 "left": "0 !important",
                 "position": "relative",
-                "box_shadow": "0 0 1px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04)",
+                "box_shadow": "none",
             }
         }
     )

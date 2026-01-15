@@ -306,18 +306,25 @@ class AppState(AuthState):
                 # Logged-in users at limit - shouldn't happen with limit of 100
                 return
         
-        # Save current conversation messages before creating new one (for guests)
-        if self.is_guest and self.current_conversation_id and self.messages:
-            # Update current conversation in memory
-            for conv in self.conversations:
-                if conv["id"] == self.current_conversation_id:
-                    conv["messages"] = self.messages.copy()
-                    # Update title with first message
-                    if self.messages and self.messages[0]["is_user"]:
-                        conv["title"] = self.messages[0]["content"][:50] + ("..." if len(self.messages[0]["content"]) > 50 else "")
-                    break
+        # Save current conversation before creating new one
+        if self.current_conversation_id and self.messages:
+            if self.is_guest:
+                # Update current conversation in memory for guests
+                for conv in self.conversations:
+                    if conv["id"] == self.current_conversation_id:
+                        conv["messages"] = self.messages.copy()
+                        # Update title with first user message
+                        first_user_msg = next((m for m in self.messages if m.get("is_user")), None)
+                        if first_user_msg:
+                            title = first_user_msg["content"][:50]
+                            conv["title"] = title + ("..." if len(first_user_msg["content"]) > 50 else "")
+                        break
+            elif self.can_save_conversations():
+                # Save current conversation to DB for authenticated users
+                print(f"[CREATE] Saving current conversation before creating new one")
+                await self.save_conversation_to_db()
         
-        # Create conversation locally
+        # Create conversation locally first
         now = datetime.now()
         new_conv = {
             "id": str(uuid.uuid4()),
@@ -328,7 +335,7 @@ class AppState(AuthState):
             "messages": []  # Store messages for guests
         }
         
-        # If logged-in user, create in database
+        # If logged-in user, create in database immediately
         if self.can_save_conversations():
             try:
                 db = get_service()
@@ -336,46 +343,71 @@ class AppState(AuthState):
                     user_id=self.user_id,
                     title="Nieuw gesprek"
                 )
-                new_conv["id"] = conv_data["id"]
+                if conv_data:
+                    new_conv["id"] = conv_data["id"]
+                    print(f"[CREATE] Created conversation in DB: {conv_data['id']}")
             except Exception as e:
-                print(f"Error creating conversation in DB: {e}")
+                print(f"[CREATE] Error creating conversation in DB: {e}")
         
         self.conversations.insert(0, new_conv)
         self.current_conversation_id = new_conv["id"]
         self.messages = []
+        
+        # Close sidebar on mobile
+        self.sidebar_open = False
         print(f"[CREATE] Created conversation {new_conv['id']}. Total conversations: {len(self.conversations)}")
         yield  # Force UI update
     
     async def load_conversation(self, conversation_id: str):
         """Load a conversation by ID."""
         print(f"[LOAD] Loading conversation: {conversation_id}")
-        # Save current conversation messages before switching (for guests)
+        print(f"[LOAD] Current conversation: {self.current_conversation_id}, Is authenticated: {self.is_authenticated}")
+        
+        # Don't reload if already on this conversation
+        if self.current_conversation_id == conversation_id and self.messages:
+            print(f"[LOAD] Already on this conversation with {len(self.messages)} messages")
+            yield
+            return
+        
+        # Save current conversation before switching (for guests with unsaved messages)
         if self.is_guest and self.current_conversation_id and self.messages:
+            print(f"[LOAD] Saving current guest conversation before switching")
             for conv in self.conversations:
                 if conv["id"] == self.current_conversation_id:
                     conv["messages"] = self.messages.copy()
-                    # Update title with first message if still default
-                    if self.messages and self.messages[0]["is_user"]:
+                    # Update title with first user message if still default
+                    first_user_msg = next((m for m in self.messages if m.get("is_user")), None)
+                    if first_user_msg:
                         if conv.get("title") == "Nieuw gesprek" or not conv.get("title"):
-                            conv["title"] = self.messages[0]["content"][:50] + ("..." if len(self.messages[0]["content"]) > 50 else "")
-                    # Update metadata
+                            title = first_user_msg["content"][:50]
+                            conv["title"] = title + ("..." if len(first_user_msg["content"]) > 50 else "")
                     conv["last_updated"] = datetime.now().isoformat()
                     conv["message_count"] = len(self.messages)
                     break
         
+        # For authenticated users, save current conversation to DB before switching
+        if self.can_save_conversations() and self.current_conversation_id and self.messages:
+            print(f"[LOAD] Saving current conversation to DB before switching")
+            await self.save_conversation_to_db()
+        
+        # Switch to new conversation
         self.current_conversation_id = conversation_id
+        self.messages = []  # Clear messages first
         
         # Load messages from database if logged-in user
         if self.can_access_history():
+            print(f"[LOAD] Loading messages from database...")
             await self.load_conversation_messages(conversation_id)
         else:
             # Guest users: load from memory
             for conv in self.conversations:
                 if conv["id"] == conversation_id:
                     self.messages = conv.get("messages", []).copy()
+                    print(f"[LOAD] Loaded {len(self.messages)} messages from memory for guest")
                     break
-            else:
-                self.messages = []
+        
+        # Close sidebar on mobile after selecting conversation
+        self.sidebar_open = False
         
         print(f"[LOAD] Loaded conversation {conversation_id}. Messages: {len(self.messages)}")
         yield  # Force UI update
@@ -741,100 +773,210 @@ class AppState(AuthState):
     async def save_conversation_to_db(self):
         """Save current conversation to database (only for logged-in users)."""
         if not self.can_save_conversations():
+            print("[SAVE] Cannot save - not authenticated")
+            return
+        
+        if not self.messages:
+            print("[SAVE] No messages to save")
             return
         
         from educhat.services.supabase_client import get_service
         
         try:
             db = get_service()
+            print(f"[SAVE] Saving conversation {self.current_conversation_id} with {len(self.messages)} messages")
             
             # Check if conversation exists in DB
+            existing_conv = None
             if self.current_conversation_id:
-                existing_conv = db.get_conversation_by_id(self.current_conversation_id)
-                
-                if not existing_conv:
-                    # Create new conversation
-                    title = self.messages[0]["content"][:50] if self.messages else "New Conversation"
-                    conv_data = db.create_conversation(
-                        user_id=self.user_id,
-                        title=title + "..." if len(self.messages[0]["content"]) > 50 else title
-                    )
+                try:
+                    existing_conv = db.get_conversation_by_id(self.current_conversation_id)
+                except Exception as e:
+                    print(f"[SAVE] Error checking existing conversation: {e}")
+                    existing_conv = None
+            
+            # Get title from first user message
+            first_user_msg = next((m for m in self.messages if m.get("is_user")), None)
+            title = "Nieuw gesprek"
+            if first_user_msg:
+                title = first_user_msg["content"][:50]
+                if len(first_user_msg["content"]) > 50:
+                    title += "..."
+            
+            if not existing_conv:
+                # Create new conversation in database
+                print(f"[SAVE] Creating new conversation with title: {title}")
+                conv_data = db.create_conversation(
+                    user_id=self.user_id,
+                    title=title
+                )
+                if conv_data:
+                    old_id = self.current_conversation_id
                     self.current_conversation_id = conv_data["id"]
+                    print(f"[SAVE] Created conversation {conv_data['id']}")
+                    
+                    # Update local conversation list with new ID
+                    for conv in self.conversations:
+                        if conv["id"] == old_id:
+                            conv["id"] = conv_data["id"]
+                            conv["title"] = title
+                            break
                 else:
-                    # Update conversation title
-                    if self.messages:
-                        title = self.messages[0]["content"][:50]
-                        db.update_conversation(
-                            conversation_id=self.current_conversation_id,
-                            title=title + "..." if len(self.messages[0]["content"]) > 50 else title
-                        )
-                
-                # Save new messages (check if already saved by checking message count)
-                existing_messages = db.get_conversation_messages(self.current_conversation_id)
-                messages_to_save = self.messages[len(existing_messages):]
-                
-                for msg in messages_to_save:
-                    db.save_message(
+                    print("[SAVE] Failed to create conversation")
+                    return
+            else:
+                # Update conversation title if changed
+                if existing_conv.get("title") != title:
+                    print(f"[SAVE] Updating conversation title to: {title}")
+                    db.update_conversation(
                         conversation_id=self.current_conversation_id,
-                        role="user" if msg["is_user"] else "assistant",
-                        content=msg["content"],
-                        feedback=msg.get("feedback"),
-                        is_streaming=msg.get("is_streaming", False),
-                        is_error=msg.get("is_error", False)
+                        title=title
                     )
+            
+            # Get existing messages count to determine what needs saving
+            existing_messages = db.get_conversation_messages(self.current_conversation_id)
+            existing_count = len(existing_messages) if existing_messages else 0
+            print(f"[SAVE] Existing messages: {existing_count}, Current messages: {len(self.messages)}")
+            
+            # Only save messages that haven't been saved yet
+            messages_to_save = self.messages[existing_count:]
+            
+            for idx, msg in enumerate(messages_to_save):
+                # Skip streaming messages that are still being generated
+                if msg.get("is_streaming", False):
+                    print(f"[SAVE] Skipping streaming message {idx}")
+                    continue
+                    
+                print(f"[SAVE] Saving message {idx + existing_count}: {msg['content'][:30]}...")
+                db.save_message(
+                    conversation_id=self.current_conversation_id,
+                    role="user" if msg["is_user"] else "assistant",
+                    content=msg["content"],
+                    feedback=msg.get("feedback"),
+                    is_streaming=False,
+                    is_error=msg.get("is_error", False)
+                )
+            
+            # Update local conversation metadata
+            for conv in self.conversations:
+                if conv["id"] == self.current_conversation_id:
+                    conv["title"] = title
+                    conv["last_updated"] = datetime.now().isoformat()
+                    conv["message_count"] = len(self.messages)
+                    break
+            
+            print(f"[SAVE] Successfully saved conversation {self.current_conversation_id}")
         
         except Exception as e:
-            print(f"Error saving conversation: {e}")
+            import traceback
+            print(f"[SAVE] Error saving conversation: {e}")
+            traceback.print_exc()
     
     async def load_conversations_from_db(self):
         """Load user's conversation history from database."""
         if not self.can_access_history():
+            print("[LOAD_CONVS] Cannot access history")
             return
         
         from educhat.services.supabase_client import get_service
         
         try:
             db = get_service()
+            print(f"[LOAD_CONVS] Loading conversations for user {self.user_id}")
             conversations_data = db.get_user_conversations(user_id=self.user_id)
+            
+            if not conversations_data:
+                print("[LOAD_CONVS] No conversations found")
+                self.conversations = []
+                return
+            
+            print(f"[LOAD_CONVS] Found {len(conversations_data)} conversations")
             
             # Convert to our conversation format
             self.conversations = [
                 {
                     "id": conv["id"],
-                    "title": conv["title"],
-                    "created_at": conv["created_at"],
-                    "archived": conv.get("archived", False)
+                    "title": conv.get("title", "Nieuw gesprek"),
+                    "created_at": conv.get("created_at", ""),
+                    "last_updated": conv.get("updated_at", conv.get("created_at", "")),
+                    "archived": conv.get("archived", False),
+                    "message_count": 0  # Will be populated when loading messages
                 }
                 for conv in conversations_data
+                if not conv.get("archived", False)  # Filter out archived
             ]
+            
+            print(f"[LOAD_CONVS] Loaded {len(self.conversations)} active conversations")
         
         except Exception as e:
-            print(f"Error loading conversations: {e}")
+            import traceback
+            print(f"[LOAD_CONVS] Error loading conversations: {e}")
+            traceback.print_exc()
+            self.conversations = []
     
     async def load_conversation_messages(self, conversation_id: str):
         """Load messages for a specific conversation from database."""
         if not self.can_access_history():
+            print(f"[LOAD_MSGS] Cannot access history")
             return
         
         from educhat.services.supabase_client import get_service
         
         try:
             db = get_service()
+            print(f"[LOAD_MSGS] Fetching messages for conversation {conversation_id}")
             messages_data = db.get_conversation_messages(conversation_id)
             
+            if not messages_data:
+                print(f"[LOAD_MSGS] No messages found for conversation {conversation_id}")
+                self.messages = []
+                return
+            
+            print(f"[LOAD_MSGS] Found {len(messages_data)} messages")
+            
             # Convert to our message format
-            self.messages = [
-                {
-                    "content": msg["content"],
-                    "is_user": msg["role"] == "user",
-                    "timestamp": datetime.fromisoformat(msg["timestamp"]).strftime("%H:%M"),
-                    "feedback": msg.get("feedback"),
-                    "is_streaming": msg.get("is_streaming", False),
-                    "is_error": msg.get("is_error", False)
-                }
-                for msg in messages_data
-            ]
+            self.messages = []
+            for msg in messages_data:
+                try:
+                    # Handle timestamp parsing
+                    timestamp_str = msg.get("timestamp", "")
+                    if timestamp_str:
+                        # Handle different timestamp formats
+                        if "+" in timestamp_str or "Z" in timestamp_str:
+                            # ISO format with timezone
+                            timestamp_str = timestamp_str.replace("Z", "+00:00")
+                            dt = datetime.fromisoformat(timestamp_str)
+                        else:
+                            dt = datetime.fromisoformat(timestamp_str)
+                        formatted_time = dt.strftime("%H:%M")
+                    else:
+                        formatted_time = datetime.now().strftime("%H:%M")
+                    
+                    self.messages.append({
+                        "content": msg.get("content", ""),
+                        "is_user": msg.get("role") == "user",
+                        "timestamp": formatted_time,
+                        "feedback": msg.get("feedback"),
+                        "is_streaming": msg.get("is_streaming", False),
+                        "is_error": msg.get("is_error", False)
+                    })
+                except Exception as parse_error:
+                    print(f"[LOAD_MSGS] Error parsing message: {parse_error}")
+                    # Still add the message with current time
+                    self.messages.append({
+                        "content": msg.get("content", ""),
+                        "is_user": msg.get("role") == "user",
+                        "timestamp": datetime.now().strftime("%H:%M"),
+                        "feedback": msg.get("feedback"),
+                        "is_streaming": False,
+                        "is_error": msg.get("is_error", False)
+                    })
+            
+            print(f"[LOAD_MSGS] Loaded {len(self.messages)} messages successfully")
         
         except Exception as e:
-            print(f"Error loading messages: {e}")
+            import traceback
+            print(f"[LOAD_MSGS] Error loading messages: {e}")
+            traceback.print_exc()
+            self.messages = []
 
