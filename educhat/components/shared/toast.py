@@ -4,7 +4,7 @@ import reflex as rx
 from educhat.styles.theme import COLORS
 
 
-def toast_notification(message: str, toast_type: str = "success", show: bool = False) -> rx.Component:
+def toast_notification(message: str, toast_type: str = "success", show: bool = False, on_close=None) -> rx.Component:
     """
     Toast notification component.
     
@@ -12,6 +12,7 @@ def toast_notification(message: str, toast_type: str = "success", show: bool = F
         message: The message to display
         toast_type: Type of toast - "success", "error", "info", "warning"
         show: Whether to show the toast
+        on_close: Callback to call when close button is clicked
     """
     
     # Define colors and icons for different toast types
@@ -52,6 +53,7 @@ def toast_notification(message: str, toast_type: str = "success", show: bool = F
                 size=20,
                 color=config["text"],
                 margin_right="12px",
+                flex_shrink="0",
             ),
             rx.text(
                 message,
@@ -59,6 +61,24 @@ def toast_notification(message: str, toast_type: str = "success", show: bool = F
                 font_size="14px",
                 font_weight="500",
                 flex="1",
+                line_height="1.5",
+            ),
+            # Close button
+            rx.box(
+                rx.icon(
+                    tag="x",
+                    size=18,
+                    color=config["text"],
+                ),
+                cursor="pointer",
+                padding="4px",
+                border_radius="4px",
+                margin_left="12px",
+                flex_shrink="0",
+                _hover={
+                    "background": f"rgba(0, 0, 0, 0.1)",
+                },
+                on_click=on_close if on_close else lambda: None,
             ),
             display="flex",
             align_items="center",
@@ -73,6 +93,7 @@ def toast_notification(message: str, toast_type: str = "success", show: bool = F
             max_width="400px",
             z_index="9999",
             animation="slideInRight 0.3s ease-out",
+            custom_attrs={"data-toast": "true"},
         )
     )
 

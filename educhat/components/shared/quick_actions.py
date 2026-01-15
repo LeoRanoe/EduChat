@@ -20,10 +20,10 @@ def quick_action_button(
         rx.hstack(
             # Animated indicator bar
             rx.box(
-                width="4px",
-                height="24px",
+                width="3px",
+                height="20px",
                 background=f"linear-gradient(180deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                border_radius="4px",
+                border_radius="3px",
                 opacity="0",
                 transition="all 0.3s ease",
                 class_name="action-indicator",
@@ -34,16 +34,16 @@ def quick_action_button(
             rx.box(
                 rx.icon(
                     "sparkles",
-                    size=16,
+                    size=14,
                     color=COLORS["primary_green"],
                 ),
-                width="32px",
-                height="32px",
+                width="24px",
+                height="24px",
                 display="flex",
                 align_items="center",
                 justify_content="center",
                 background=f"linear-gradient(135deg, rgba(16, 163, 127, 0.1) 0%, rgba(13, 138, 107, 0.15) 100%)",
-                border_radius="8px",
+                border_radius="6px",
                 transition="all 0.3s ease",
                 class_name="action-icon",
             ),
@@ -51,10 +51,10 @@ def quick_action_button(
             # Text content
             rx.text(
                 text,
-                font_size=["0.9375rem", "0.9375rem", "1rem"],
+                font_size=["0.8125rem", "0.8125rem", "0.875rem"],
                 font_weight="600",
                 color=COLORS["text_primary"],
-                line_height="1.5",
+                line_height="1.4",
                 text_align="left",
                 white_space="normal",
                 word_wrap="break-word",
@@ -65,14 +65,14 @@ def quick_action_button(
             # Arrow icon
             rx.icon(
                 "arrow-right",
-                size=18,
+                size=16,
                 color=COLORS["primary_green"],
                 opacity="0",
                 class_name="action-arrow",
                 transition="all 0.3s ease",
             ),
             
-            spacing="3",
+            spacing="2",
             align="center",
             width="100%",
         ),
@@ -80,7 +80,7 @@ def quick_action_button(
         background="white",
         border=f"2px solid {COLORS['border']}",
         border_radius=RADIUS["xl"],
-        padding=["1rem 1.25rem", "1rem 1.25rem", "1.125rem 1.5rem"],
+        padding=["0.5rem 0.75rem", "0.5rem 0.75rem", "0.625rem 0.875rem"],
         cursor="pointer",
         box_shadow="0 2px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)",
         position="relative",
@@ -104,7 +104,7 @@ def quick_action_button(
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         width="100%",
         text_align="left",
-        min_height=["60px", "60px", "64px"],
+        min_height=["44px", "44px", "48px"],
         height="auto",
         display="flex",
         align_items="center",
@@ -138,10 +138,10 @@ def quick_actions_grid(on_action_click) -> rx.Component:
     return rx.vstack(
         rx.text(
             "Populaire vragen:",
-            font_size=["0.875rem", "0.9375rem", "1rem"],
+            font_size=["0.8125rem", "0.875rem", "0.9375rem"],
             font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="0.75rem",
+            margin_bottom="0.375rem",
             text_align="left",
             width="100%",
         ),
@@ -149,10 +149,10 @@ def quick_actions_grid(on_action_click) -> rx.Component:
             *buttons,
             display="grid",
             grid_template_columns=["1fr", "1fr", "repeat(2, 1fr)"],
-            gap="0.75rem",
+            gap="0.375rem",
             width="100%",
         ),
-        spacing="2",
+        spacing="1",
         width="100%",
         align_items="start",
     )
