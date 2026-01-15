@@ -252,7 +252,7 @@ class AuthService:
             if "invalid login credentials" in error_msg:
                 return {"success": False, "error": "Ongeldig e-mailadres of wachtwoord"}
             elif "email not confirmed" in error_msg:
-                return {"success": False, "error": "Bevestig eerst je e-mailadres"}
+                return {"success": False, "error": "Je e-mailadres is nog niet bevestigd. Check je inbox en spam folder voor de bevestigingsmail, of klik hieronder om een nieuwe mail te ontvangen."}
             elif "rate limit" in error_msg or "too many" in error_msg:
                 return {"success": False, "error": "Te veel inlogpogingen. Wacht even."}
             else:
@@ -392,6 +392,46 @@ class AuthService:
             return {
                 "success": True,
                 "message": "Als dit e-mailadres bij ons bekend is, ontvang je een reset link."
+            }
+    
+    async def resend_confirmation(self, email: str) -> Dict:
+        """
+        Resend confirmation email to user.
+        
+        Args:
+            email: User's email address
+            
+        Returns:
+            Dict with success status
+        """
+        try:
+            # Validate email
+            valid, error = self.validate_email(email)
+            if not valid:
+                return {"success": False, "error": error}
+            
+            email = email.strip().lower()
+            
+            # Resend confirmation email using Supabase
+            await asyncio.to_thread(
+                lambda: self.client.auth.resend(
+                    type="signup",
+                    email=email
+                )
+            )
+            
+            return {
+                "success": True,
+                "message": "Bevestigingsmail opnieuw verzonden. Check je inbox en spam folder."
+            }
+        except Exception as e:
+            error_msg = str(e).lower()
+            print(f"Resend confirmation error: {e}")
+            
+            # Even on error, return success to avoid email enumeration
+            return {
+                "success": True,
+                "message": "Als dit e-mailadres bij ons bekend is, ontvang je een bevestigingsmail."
             }
 
 

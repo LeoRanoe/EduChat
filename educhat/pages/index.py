@@ -11,16 +11,27 @@ from educhat.styles.theme import COLORS
 
 
 def index() -> rx.Component:
-    """Main chat interface page with sidebar and chat."""
+    """Main chat interface page with sidebar and chat.
     
-    # Show chat only if authenticated or guest
+    This page requires authentication (either as a logged-in user or guest).
+    Unauthenticated users are redirected to the landing page.
+    """
     return rx.box(
         rx.cond(
-            AppState.is_authenticated | AppState.is_guest,
+            (AppState.is_authenticated == True) | (AppState.is_guest == True),
+            # Show authenticated chat interface
             authenticated_chat(),
-            rx.box(),  # Empty box for redirect
+            # Redirect unauthenticated users to landing page
+            rx.box(
+                rx.text("Redirecting...", color=COLORS["text_secondary"]),
+                on_mount=AppState.redirect_to_landing,
+                display="flex",
+                justify_content="center",
+                align_items="center",
+                height="100vh",
+                width="100vw",
+            ),
         ),
-        on_mount=AppState.initialize_chat,
     )
 
 
@@ -111,6 +122,7 @@ def authenticated_chat() -> rx.Component:
         position="relative",
         # Apply dark mode class
         class_name=rx.cond(AuthState.dark_mode, "dark-mode", ""),
+        on_mount=AppState.initialize_chat,
     )
 
 

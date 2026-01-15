@@ -41,12 +41,97 @@ class AppState(AuthState):
     # Initialization flag  
     _initialized: bool = False
     
+    # ==========================================================================
+    # Authentication & Session Management
+    # ==========================================================================
+    
+    def redirect_to_landing(self):
+        """Redirect unauthenticated users to the landing page."""
+        return rx.redirect("/")
+    
+    async def check_and_restore_session(self):
+        """Check for existing session on app/page load and restore if valid.
+        
+        This should be called on page mount to restore user sessions.
+        """
+        # Skip if already authenticated or guest
+        if self.is_authenticated or self.is_guest:
+            return
+        
+        try:
+            from educhat.services.auth_service import get_auth_service
+            auth_service = get_auth_service()
+            
+            # Try to get current session from Supabase
+            result = await auth_service.get_current_user()
+            
+            if result["success"]:
+                # Restore authenticated state
+                self.is_authenticated = True
+                self.is_guest = False
+                self.user_id = result["user"]["id"]
+                self.user_email = result["user"]["email"]
+                self.user_name = result["user"]["name"]
+                
+                # Reset initialization flag so chat reinitializes with user data
+                self._initialized = False
+                
+                print(f"[SESSION] Restored session for user: {self.user_email}")
+                
+                # Load user data
+                await self._load_user_data()
+                
+                return True
+            else:
+                print("[SESSION] No active session found")
+                return False
+        except Exception as e:
+            print(f"[SESSION] Error checking session: {e}")
+            return False
+    
+    async def check_session_and_redirect(self):
+        """Check for existing session on landing page and redirect to chat if authenticated.
+        
+        This should be called on landing page mount.
+        """
+        # Skip if already authenticated or guest - redirect to chat
+        if self.is_authenticated or self.is_guest:
+            yield rx.redirect("/chat")
+            return
+        
+        try:
+            # Try to restore session
+            session_restored = await self.check_and_restore_session()
+            
+            if session_restored:
+                print("[SESSION] Session restored, redirecting to chat...")
+                yield rx.redirect("/chat")
+        except Exception as e:
+            print(f"[SESSION] Error in session check redirect: {e}")
+    
     async def initialize_chat(self):
-        """Initialize chat state when user first loads the chat page."""
+        """Initialize chat state when user first loads the chat page.
+        
+        This method:
+        1. Tries to restore existing session if not authenticated
+        2. Loads conversations from database for logged-in users
+        3. Creates initial conversation if none exist
+        """
         print(f"[INIT] Starting initialization. Already initialized: {self._initialized}")
         print(f"[INIT] Is guest: {self.is_guest}, Is authenticated: {self.is_authenticated}")
         print(f"[INIT] Current conversations: {len(self.conversations)}")
         print(f"[INIT] Current conversation ID: {self.current_conversation_id}")
+        
+        # Try to restore session if not authenticated
+        if not self.is_authenticated and not self.is_guest:
+            print("[INIT] Not authenticated, checking for existing session...")
+            await self.check_and_restore_session()
+            
+            # If still not authenticated after session check, redirect to landing
+            if not self.is_authenticated and not self.is_guest:
+                print("[INIT] No valid session, redirecting to landing...")
+                yield rx.redirect("/")
+                return
         
         # Allow re-initialization if user just logged in or went guest
         # but only if they have no conversations

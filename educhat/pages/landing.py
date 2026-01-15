@@ -2,6 +2,7 @@
 
 import reflex as rx
 from educhat.state.auth_state import AuthState
+from educhat.state.app_state import AppState
 from educhat.components.auth import auth_modal
 from educhat.styles.theme import COLORS
 
@@ -1331,6 +1332,8 @@ def landing() -> rx.Component:
         width="100vw",
         min_height="100vh",
         overflow_x="hidden",
+        # Check for existing session on page load
+        on_mount=AppState.check_session_and_redirect,
     )
 
 

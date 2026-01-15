@@ -42,6 +42,11 @@ class AuthState(rx.State):
     signup_name: str = ""
     remember_me: bool = False
     
+    # Password visibility toggles
+    show_login_password: bool = False
+    show_signup_password: bool = False
+    show_confirm_password: bool = False
+    
     # === Error/Success Messages ===
     auth_error: str = ""
     auth_success: str = ""
@@ -51,6 +56,11 @@ class AuthState(rx.State):
     password_error: str = ""
     confirm_password_error: str = ""
     name_error: str = ""
+    
+    # === Email Confirmation ===
+    email_needs_confirmation: bool = False
+    pending_confirmation_email: str = ""
+    resending_confirmation: bool = False
     
     # === Toast Notifications ===
     show_toast: bool = False
@@ -98,14 +108,27 @@ class AuthState(rx.State):
         self.password_error = ""
         self.auth_error = ""
         # Clear confirm error if passwords now match
-        if self.signup_confirm_password and value == self.signup_confirm_password:
-            self.confirm_password_error = ""
+    
+    def toggle_login_password(self):
+        """Toggle login password visibility."""
+        self.show_login_password = not self.show_login_password
+    
+    def toggle_signup_password(self):
+        """Toggle signup password visibility."""
+        self.show_signup_password = not self.show_signup_password
+    
+    def toggle_confirm_password(self):
+        """Toggle confirm password visibility."""
+        self.show_confirm_password = not self.show_confirm_password
     
     def set_signup_confirm_password(self, value: str):
         """Set signup confirm password with validation."""
         self.signup_confirm_password = value
         self.confirm_password_error = ""
         self.auth_error = ""
+        # Clear confirm error if passwords now match
+        if self.signup_password and value == self.signup_password:
+            self.confirm_password_error = ""
     
     def set_signup_name(self, value: str):
         """Set signup name."""
@@ -116,6 +139,24 @@ class AuthState(rx.State):
     def toggle_remember_me(self):
         """Toggle remember me checkbox."""
         self.remember_me = not self.remember_me
+    
+    # ==========================================================================
+    # Modal Control
+    # ==========================================================================
+    
+    def open_auth_modal(self):
+        """Open authentication modal."""
+        self.show_auth_modal = True
+        self.auth_mode = "login"
+    
+    def set_show_auth_modal(self, value: bool):
+        """Set show auth modal state."""
+        self.show_auth_modal = value
+    
+    def close_auth_modal(self):
+        """Close authentication modal."""
+        self.show_auth_modal = False
+        self._clear_errors()
     
     # ==========================================================================
     # Validation Methods
@@ -290,13 +331,29 @@ class AuthState(rx.State):
                 self.toast_type = "success"
                 self.show_toast = True
                 
+                # Reset initialization flag so chat reinitializes
+                if hasattr(self, '_initialized'):
+                    self._initialized = False
+                
                 # Load user data
                 await self._load_user_data()
                 
-                # Redirect to chat
-                yield rx.redirect("/")
+                # Yield state update before redirect
+                yield
+                
+                # Redirect to chat interface
+                yield rx.redirect("/chat")
             else:
-                self.auth_error = result.get("error", "Inloggen mislukt")
+                error_msg = result.get("error", "Inloggen mislukt")
+                self.auth_error = error_msg
+                
+                # Check if email confirmation is needed
+                if "e-mailadres" in error_msg.lower() or "bevestig" in error_msg.lower():
+                    self.email_needs_confirmation = True
+                    self.pending_confirmation_email = self.login_email.strip()
+                else:
+                    self.email_needs_confirmation = False
+                    self.pending_confirmation_email = ""
         
         except Exception as e:
             print(f"Login error: {e}")
@@ -353,8 +410,8 @@ class AuthState(rx.State):
                     self.toast_type = "success"
                     self.show_toast = True
                     
-                    # Redirect to chat
-                    yield rx.redirect("/")
+                    # Redirect to chat interface
+                    yield rx.redirect("/chat")
             else:
                 self.auth_error = result.get("error", "Registratie mislukt")
         
@@ -377,9 +434,13 @@ class AuthState(rx.State):
         finally:
             # Always clear local state
             self._clear_auth_state()
+            # Reset initialization flag
+            if hasattr(self, '_initialized'):
+                self._initialized = False
+            # Redirect to landing page
             yield rx.redirect("/")
     
-    def continue_as_guest(self):
+    async def continue_as_guest(self):
         """Continue as guest user."""
         self.is_guest = True
         self.is_authenticated = False
@@ -387,7 +448,21 @@ class AuthState(rx.State):
         self.user_name = "Gast"
         self.show_auth_modal = False
         self._clear_form()
-        return rx.redirect("/")
+        
+        # Reset initialization flag so chat initializes fresh
+        if hasattr(self, '_initialized'):
+            self._initialized = False
+        
+        # Show welcome toast
+        self.toast_message = "Welkom als gast! Je hebt toegang tot beperkte functies."
+        self.toast_type = "info"
+        self.show_toast = True
+        
+        # Yield state update before redirect
+        yield
+        
+        # Redirect to chat interface
+        yield rx.redirect("/chat")
     
     def _clear_auth_state(self):
         """Clear all authentication state."""
@@ -426,6 +501,36 @@ class AuthState(rx.State):
                 await self._load_user_data()
         except Exception as e:
             print(f"Session check error: {e}")
+    
+    # ==========================================================================
+    # Email Confirmation
+    # ==========================================================================
+    
+    async def resend_confirmation_email(self):
+        """Resend confirmation email to user."""
+        if not self.pending_confirmation_email:
+            return
+        
+        self.resending_confirmation = True
+        self._clear_errors()
+        yield
+        
+        try:
+            from educhat.services.auth_service import get_auth_service
+            auth_service = get_auth_service()
+            
+            result = await auth_service.resend_confirmation(self.pending_confirmation_email)
+            
+            if result["success"]:
+                self.auth_success = "Bevestigingsmail opnieuw verzonden. Check je inbox en spam folder."
+                self.email_needs_confirmation = True
+            else:
+                self.auth_error = result.get("error", "Kon bevestigingsmail niet verzenden")
+        except Exception as e:
+            print(f"Resend confirmation error: {e}")
+            self.auth_error = "Er is een fout opgetreden. Probeer het later opnieuw."
+        finally:
+            self.resending_confirmation = False
     
     # ==========================================================================
     # Password Reset
