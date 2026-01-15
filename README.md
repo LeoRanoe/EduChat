@@ -120,8 +120,8 @@ EduChat/
 - Python 3.11+
 - Node.js 18+
 - Git
-- Supabase account (Postgres database)
-- OpenAI API key
+- Supabase account (gratis tier beschikbaar)
+- OpenAI API key OF Google AI API key
 
 ### Installatie
 
@@ -133,9 +133,9 @@ cd EduChat
 
 2. **Maak virtuele omgeving aan**
 ```bash
-python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # macOS/Linux
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # macOS/Linux
 ```
 
 3. **Installeer dependencies**
@@ -143,26 +143,94 @@ venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 ```
 
-4. **Configureer environment variables**
+4. **Setup Supabase Database**
 ```bash
-cp .env.example .env
-# Bewerk .env met jouw API keys en database URI
+# 1. Maak Supabase project aan op https://supabase.com
+# 2. Ga naar SQL Editor in Supabase Dashboard
+# 3. Kopieer en run: prisma/create_tables.sql
+# 4. (Optioneel) Run RLS policies: prisma/rls_policies.sql
 ```
 
-5. **Initialiseer Reflex**
+5. **Configureer environment variables**
+```bash
+cp .env.example .env
+# Bewerk .env met jouw keys:
+# - SUPABASE_URL
+# - SUPABASE_ANON_KEY
+# - SUPABASE_SERVICE_ROLE_KEY
+# - OPENAI_API_KEY (of GOOGLE_AI_API_KEY)
+```
+
+6. **Initialiseer Reflex**
 ```bash
 reflex init
 ```
 
-6. **Start development server**
+7. **Start development server**
 ```bash
 reflex run
 ```
 
-7. **Open browser**
+8. **Open browser**
 ```
 http://localhost:3000
 ```
+
+## 🗄️ Database & Functionaliteiten
+
+**✅ Alle functionaliteiten gebruiken de Supabase database!**
+
+Deze applicatie is volledig database-driven met persistente opslag van:
+- 💬 **Chat geschiedenis** - Alle conversaties en berichten
+- 👤 **Authenticatie** - User management via Supabase Auth
+- 📋 **Onboarding data** - Quiz resultaten voor AI personalisatie
+- 🔔 **Herinneringen** - User reminders en deadline tracking
+- 📅 **Events** - Onderwijsevenementen en belangrijke data
+- 🏫 **Instellingen & Studies** - Surinaamse onderwijsdata
+- 👍 **Feedback** - Message likes/dislikes voor analytics
+
+### Database Architectuur
+```
+Supabase PostgreSQL Database:
+├── institutions (onderwijsinstellingen)
+├── studies (opleidingen)
+├── events (evenementen & deadlines)
+├── conversations (chat geschiedenis)
+├── messages (chat berichten + feedback)
+├── onboarding (quiz resultaten)
+├── reminders (herinneringen)
+└── auth.users (Supabase Auth)
+```
+
+**Voor complete database documentatie:**
+- 📚 **[DATABASE_OVERVIEW.md](DATABASE_OVERVIEW.md)** - Volledige technische documentatie (Engels)
+- 🇳🇱 **[DATABASE_SAMENVATTING_NL.md](DATABASE_SAMENVATTING_NL.md)** - Nederlandse samenvatting
+
+### Belangrijke Database Features
+
+**1. Chat Persistentie**
+```python
+# Automatisch opslaan na elk bericht
+AppState.save_conversation_to_db()
+
+# Laden bij login
+AppState.load_conversations_from_db()
+```
+
+**2. AI Personalisatie**
+```python
+# Quiz data wordt gebruikt voor AI context
+AppState.load_onboarding_preferences()
+AppState.get_ai_context_string()
+```
+
+**3. Sessie Herstel**
+```python
+# Automatisch herstel bij page load
+AppState.check_and_restore_session()
+```
+
+Zie [DATABASE_OVERVIEW.md](DATABASE_OVERVIEW.md) voor complete code flows en API documentatie.
 
 ## 📚 Documentatie
 

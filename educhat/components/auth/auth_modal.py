@@ -1,19 +1,55 @@
 """
-Authentication Modal Component - Clean Implementation
-Modern, responsive login/signup modal with proper validation feedback.
+Authentication Modal Component - Professional Implementation
+Modern, responsive login/signup modal with proper validation feedback,
+loading states, and accessibility features.
 """
 
 import reflex as rx
 from educhat.state.auth_state import AuthState
-from educhat.styles.theme import COLORS
+from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS
 
+
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+
+MODAL_CONFIG = {
+    "width": ["95vw", "90vw", "900px"],
+    "max_height": ["90vh", "85vh", "620px"],
+    "left_panel_width": "45%",
+    "right_panel_width": "55%",
+}
+
+INPUT_STYLES = {
+    "base": {
+        "width": "100%",
+        "padding": "14px 14px 14px 42px",
+        "border_radius": RADIUS["lg"],
+        "font_size": "15px",
+        "line_height": "1.5",
+        "height": "48px",
+        "color": COLORS["text_primary"],
+        "background": "white",
+        "outline": "none",
+        "transition": TRANSITIONS["fast"],
+    },
+    "focus": {
+        "border_color": COLORS["primary_green"],
+        "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.12)",
+    },
+}
+
+
+# ============================================================================
+# MAIN MODAL COMPONENT
+# ============================================================================
 
 def auth_modal() -> rx.Component:
     """Main authentication modal component."""
     return rx.cond(
         AuthState.show_auth_modal,
         rx.box(
-            # Backdrop
+            # Backdrop with blur
             rx.box(
                 position="fixed",
                 top="0",
@@ -21,9 +57,10 @@ def auth_modal() -> rx.Component:
                 width="100vw",
                 height="100vh",
                 background="rgba(0, 0, 0, 0.5)",
-                backdrop_filter="blur(4px)",
+                backdrop_filter="blur(8px)",
                 z_index="999",
                 on_click=AuthState.close_auth_modal,
+                class_name="animate-fadeIn",
             ),
             
             # Modal Container
@@ -32,20 +69,24 @@ def auth_modal() -> rx.Component:
                 rx.box(
                     rx.icon(
                         tag="x",
-                        size=20,
+                        size=18,
                         color=COLORS["text_secondary"],
                     ),
                     position="absolute",
                     top="16px",
                     right="16px",
-                    padding="8px",
+                    padding="10px",
                     cursor="pointer",
-                    border_radius="50%",
+                    border_radius=RADIUS["full"],
                     background="white",
-                    box_shadow="0 2px 8px rgba(0,0,0,0.1)",
+                    box_shadow=SHADOWS["sm"],
                     z_index="10",
                     on_click=AuthState.close_auth_modal,
-                    _hover={"background": COLORS["light_gray"]},
+                    transition=TRANSITIONS["fast"],
+                    _hover={
+                        "background": COLORS["light_gray"],
+                        "transform": "scale(1.05)",
+                    },
                 ),
                 
                 # Two-column layout
@@ -65,31 +106,41 @@ def auth_modal() -> rx.Component:
                 top="50%",
                 left="50%",
                 transform="translate(-50%, -50%)",
-                width=["95vw", "90vw", "900px"],
+                width=MODAL_CONFIG["width"],
                 max_width="900px",
-                max_height=["90vh", "85vh", "600px"],
+                max_height=MODAL_CONFIG["max_height"],
                 background="white",
-                border_radius="16px",
-                box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                border_radius=RADIUS["2xl"],
+                box_shadow=SHADOWS["2xl"],
                 overflow="hidden",
                 z_index="1000",
+                class_name="animate-scaleIn",
             ),
         ),
     )
+
+
+# ============================================================================
+# LEFT PANEL (BRANDING)
+# ============================================================================
 
 
 def _left_panel() -> rx.Component:
     """Left branding panel - hidden on mobile."""
     return rx.box(
         rx.box(
-            # Logo
+            # Logo with glow effect
             rx.box(
                 rx.icon(
                     tag="shield-check",
                     size=48,
                     color="white",
                 ),
+                padding="16px",
+                background="rgba(255, 255, 255, 0.15)",
+                border_radius=RADIUS["2xl"],
                 margin_bottom="24px",
+                box_shadow="0 0 40px rgba(255, 255, 255, 0.2)",
             ),
             
             # Title
@@ -99,6 +150,7 @@ def _left_panel() -> rx.Component:
                 color="white",
                 margin_bottom="12px",
                 font_weight="700",
+                letter_spacing="-0.02em",
             ),
             
             # Subtitle
@@ -107,9 +159,10 @@ def _left_panel() -> rx.Component:
                 color="rgba(255,255,255,0.9)",
                 font_size="15px",
                 margin_bottom="32px",
+                line_height="1.6",
             ),
             
-            # Benefits
+            # Benefits list
             rx.box(
                 _benefit_item("Directe antwoorden op je vragen"),
                 _benefit_item("Studiemateriaal op maat"),
@@ -117,7 +170,7 @@ def _left_panel() -> rx.Component:
                 _benefit_item("Gratis te gebruiken"),
                 display="flex",
                 flex_direction="column",
-                gap="12px",
+                gap="14px",
             ),
             
             padding="40px",
@@ -127,29 +180,68 @@ def _left_panel() -> rx.Component:
             height="100%",
         ),
         
-        width="45%",
+        width=MODAL_CONFIG["left_panel_width"],
         background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
         display=["none", "none", "flex"],
+        position="relative",
+        overflow="hidden",
+        # Decorative circles
+        _before={
+            "content": "''",
+            "position": "absolute",
+            "top": "-50px",
+            "right": "-50px",
+            "width": "150px",
+            "height": "150px",
+            "background": "rgba(255,255,255,0.1)",
+            "border_radius": "50%",
+        },
+        _after={
+            "content": "''",
+            "position": "absolute",
+            "bottom": "-30px",
+            "left": "-30px",
+            "width": "100px",
+            "height": "100px",
+            "background": "rgba(255,255,255,0.08)",
+            "border_radius": "50%",
+        },
     )
 
 
 def _benefit_item(text: str) -> rx.Component:
     """Single benefit item with checkmark."""
     return rx.box(
-        rx.icon(
-            tag="circle-check",
-            size=18,
-            color="rgba(255,255,255,0.9)",
+        rx.box(
+            rx.icon(
+                tag="check",
+                size=14,
+                color=COLORS["primary_green"],
+            ),
+            width="20px",
+            height="20px",
+            display="flex",
+            align_items="center",
+            justify_content="center",
+            background="rgba(255,255,255,0.95)",
+            border_radius=RADIUS["full"],
+            flex_shrink="0",
         ),
         rx.text(
             text,
-            color="rgba(255,255,255,0.9)",
+            color="rgba(255,255,255,0.95)",
             font_size="14px",
-            margin_left="10px",
+            margin_left="12px",
+            font_weight="500",
         ),
         display="flex",
         align_items="center",
     )
+
+
+# ============================================================================
+# RIGHT PANEL (FORM)
+# ============================================================================
 
 
 def _right_panel() -> rx.Component:
@@ -169,6 +261,7 @@ def _right_panel() -> rx.Component:
                     font_weight="700",
                     color=COLORS["primary_green"],
                     margin_left="10px",
+                    letter_spacing="-0.02em",
                 ),
                 display="flex",
                 align_items="center",
@@ -193,19 +286,32 @@ def _right_panel() -> rx.Component:
         rx.cond(
             AuthState.auth_success != "",
             rx.box(
-                rx.icon(tag="circle-check", size=16, color="#059669"),
+                rx.box(
+                    rx.icon(tag="check-circle", size=16, color=COLORS["success"]),
+                    width="24px",
+                    height="24px",
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                    background=COLORS["success_light"],
+                    border_radius=RADIUS["full"],
+                    flex_shrink="0",
+                ),
                 rx.text(
                     AuthState.auth_success,
-                    color="#059669",
+                    color=COLORS["success_dark"],
                     font_size="13px",
-                    margin_left="8px",
+                    margin_left="10px",
+                    font_weight="500",
                 ),
                 display="flex",
                 align_items="center",
-                padding="12px",
-                background="#ecfdf5",
-                border_radius="8px",
+                padding="14px 16px",
+                background=COLORS["success_light"],
+                border=f"1px solid {COLORS['success']}30",
+                border_radius=RADIUS["lg"],
                 margin_bottom="16px",
+                class_name="animate-fadeInUp",
             ),
         ),
         
@@ -214,12 +320,23 @@ def _right_panel() -> rx.Component:
             AuthState.auth_error != "",
             rx.box(
                 rx.box(
-                    rx.icon(tag="circle-alert", size=16, color="#dc2626"),
+                    rx.box(
+                        rx.icon(tag="alert-circle", size=16, color=COLORS["error"]),
+                        width="24px",
+                        height="24px",
+                        display="flex",
+                        align_items="center",
+                        justify_content="center",
+                        background=COLORS["error_light"],
+                        border_radius=RADIUS["full"],
+                        flex_shrink="0",
+                    ),
                     rx.text(
                         AuthState.auth_error,
-                        color="#dc2626",
+                        color=COLORS["error_dark"],
                         font_size="13px",
-                        margin_left="8px",
+                        margin_left="10px",
+                        font_weight="500",
                     ),
                     display="flex",
                     align_items="center",
@@ -250,21 +367,24 @@ def _right_panel() -> rx.Component:
                         background=COLORS["primary_green"],
                         color="white",
                         border="none",
-                        border_radius="6px",
+                        border_radius=RADIUS["md"],
                         cursor="pointer",
                         font_weight="500",
                         on_click=AuthState.resend_confirmation_email,
+                        transition=TRANSITIONS["fast"],
                         _hover={"background": COLORS["dark_green"]},
                         disabled=AuthState.resending_confirmation,
                     ),
                 ),
                 
-                padding="12px",
-                background="#fef2f2",
-                border_radius="8px",
+                padding="14px 16px",
+                background=COLORS["error_light"],
+                border=f"1px solid {COLORS['error']}30",
+                border_radius=RADIUS["lg"],
                 margin_bottom="16px",
                 display="flex",
                 flex_direction="column",
+                class_name="animate-shake",
             ),
         ),
         
@@ -280,18 +400,19 @@ def _right_panel() -> rx.Component:
             rx.box(
                 flex="1",
                 height="1px",
-                background=COLORS["border"],
+                background=COLORS["border_light"],
             ),
             rx.text(
                 "of",
-                color=COLORS["text_secondary"],
+                color=COLORS["text_tertiary"],
                 font_size="12px",
                 padding="0 16px",
+                font_weight="500",
             ),
             rx.box(
                 flex="1",
                 height="1px",
-                background=COLORS["border"],
+                background=COLORS["border_light"],
             ),
             display="flex",
             align_items="center",
@@ -308,24 +429,28 @@ def _right_panel() -> rx.Component:
             background="transparent",
             color=COLORS["primary_green"],
             border=f"1.5px solid {COLORS['primary_green']}",
-            border_radius="8px",
+            border_radius=RADIUS["lg"],
             cursor="pointer",
             font_size="14px",
             font_weight="500",
             on_click=AuthState.continue_as_guest,
-            _hover={"background": "rgba(16, 163, 127, 0.05)"},
+            transition=TRANSITIONS["fast"],
+            _hover={
+                "background": COLORS["light_green"],
+                "border_color": COLORS["dark_green"],
+            },
         ),
         
         # Guest info
         rx.text(
             "Gastmodus: beperkte functies",
-            color=COLORS["text_secondary"],
+            color=COLORS["text_tertiary"],
             font_size="11px",
             text_align="center",
             margin_top="8px",
         ),
         
-        width=["100%", "100%", "55%"],
+        width=["100%", "100%", MODAL_CONFIG["right_panel_width"]],
         padding=["24px", "32px", "40px"],
         display="flex",
         flex_direction="column",
@@ -333,8 +458,13 @@ def _right_panel() -> rx.Component:
     )
 
 
+# ============================================================================
+# TAB SELECTOR
+# ============================================================================
+
+
 def _tab_selector() -> rx.Component:
-    """Login/Signup tab selector."""
+    """Login/Signup tab selector with pill design."""
     return rx.box(
         rx.box(
             # Login Tab
@@ -351,15 +481,20 @@ def _tab_selector() -> rx.Component:
                 ),
                 padding="10px 0",
                 cursor="pointer",
-                border_radius="8px",
+                border_radius=RADIUS["lg"],
                 background=rx.cond(
                     AuthState.auth_mode == "login",
-                    COLORS["primary_green"],
+                    f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
                     "transparent"
+                ),
+                box_shadow=rx.cond(
+                    AuthState.auth_mode == "login",
+                    SHADOWS["primary_sm"],
+                    "none"
                 ),
                 flex="1",
                 text_align="center",
-                transition="all 0.2s",
+                transition=TRANSITIONS["fast"],
                 on_click=lambda: AuthState.set_auth_mode("login"),
             ),
             
@@ -377,15 +512,20 @@ def _tab_selector() -> rx.Component:
                 ),
                 padding="10px 0",
                 cursor="pointer",
-                border_radius="8px",
+                border_radius=RADIUS["lg"],
                 background=rx.cond(
                     AuthState.auth_mode == "signup",
-                    COLORS["primary_green"],
+                    f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
                     "transparent"
+                ),
+                box_shadow=rx.cond(
+                    AuthState.auth_mode == "signup",
+                    SHADOWS["primary_sm"],
+                    "none"
                 ),
                 flex="1",
                 text_align="center",
-                transition="all 0.2s",
+                transition=TRANSITIONS["fast"],
                 on_click=lambda: AuthState.set_auth_mode("signup"),
             ),
             
@@ -394,13 +534,18 @@ def _tab_selector() -> rx.Component:
         ),
         background=COLORS["light_gray"],
         padding="4px",
-        border_radius="10px",
+        border_radius=RADIUS["xl"],
         margin_bottom="20px",
     )
 
 
+# ============================================================================
+# LOGIN FORM
+# ============================================================================
+
+
 def _login_form() -> rx.Component:
-    """Login form."""
+    """Login form with email and password fields."""
     return rx.box(
         # Email Field
         rx.box(
@@ -415,11 +560,12 @@ def _login_form() -> rx.Component:
                 rx.icon(
                     tag="mail",
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=COLORS["text_tertiary"],
                     position="absolute",
-                    left="12px",
+                    left="14px",
                     top="50%",
                     transform="translateY(-50%)",
+                    z_index="1",
                 ),
                 rx.input(
                     value=AuthState.login_email,
@@ -427,31 +573,39 @@ def _login_form() -> rx.Component:
                     placeholder="jouw@email.com",
                     type="email",
                     width="100%",
-                    padding="14px 14px 14px 40px",
+                    padding="14px 14px 14px 42px",
                     border=rx.cond(
                         AuthState.email_error != "",
-                        "1.5px solid #dc2626",
+                        f"1.5px solid {COLORS['error']}",
                         f"1.5px solid {COLORS['border']}"
                     ),
-                    border_radius="8px",
+                    border_radius=RADIUS["lg"],
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color="#000000",
+                    color=COLORS["text_primary"],
                     background="white",
                     outline="none",
-                    _focus={"border_color": COLORS["primary_green"], "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.1)"},
-                    _placeholder={"color": COLORS["text_secondary"]},
+                    transition=TRANSITIONS["fast"],
+                    _focus={
+                        "border_color": COLORS["primary_green"],
+                        "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.12)",
+                    },
+                    _placeholder={"color": COLORS["text_tertiary"]},
                 ),
                 position="relative",
             ),
             rx.cond(
                 AuthState.email_error != "",
-                rx.text(
-                    AuthState.email_error,
-                    color="#dc2626",
-                    font_size="12px",
-                    margin_top="4px",
+                rx.hstack(
+                    rx.icon("alert-circle", size=12, color=COLORS["error"]),
+                    rx.text(
+                        AuthState.email_error,
+                        color=COLORS["error"],
+                        font_size="12px",
+                    ),
+                    spacing="1",
+                    margin_top="6px",
                 ),
             ),
             margin_bottom="16px",
@@ -470,11 +624,12 @@ def _login_form() -> rx.Component:
                 rx.icon(
                     tag="lock",
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=COLORS["text_tertiary"],
                     position="absolute",
-                    left="12px",
+                    left="14px",
                     top="50%",
                     transform="translateY(-50%)",
+                    z_index="1",
                 ),
                 rx.input(
                     value=AuthState.login_password,
@@ -482,43 +637,60 @@ def _login_form() -> rx.Component:
                     placeholder="••••••••",
                     type=rx.cond(AuthState.show_login_password, "text", "password"),
                     width="100%",
-                    padding="14px 40px 14px 40px",
+                    padding="14px 42px 14px 42px",
                     border=rx.cond(
                         AuthState.password_error != "",
-                        "1.5px solid #dc2626",
+                        f"1.5px solid {COLORS['error']}",
                         f"1.5px solid {COLORS['border']}"
                     ),
-                    border_radius="8px",
+                    border_radius=RADIUS["lg"],
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color="#000000",
+                    color=COLORS["text_primary"],
                     background="white",
                     outline="none",
-                    _focus={"border_color": COLORS["primary_green"], "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.1)"},
-                    _placeholder={"color": COLORS["text_secondary"]},
+                    transition=TRANSITIONS["fast"],
+                    _focus={
+                        "border_color": COLORS["primary_green"],
+                        "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.12)",
+                    },
+                    _placeholder={"color": COLORS["text_tertiary"]},
                 ),
-                rx.icon(
-                    tag=rx.cond(AuthState.show_login_password, "eye-off", "eye"),
-                    size=18,
-                    color=COLORS["text_secondary"],
+                rx.box(
+                    rx.icon(
+                        tag=rx.cond(AuthState.show_login_password, "eye-off", "eye"),
+                        size=18,
+                        color=COLORS["text_tertiary"],
+                    ),
                     position="absolute",
-                    right="12px",
+                    right="14px",
                     top="50%",
                     transform="translateY(-50%)",
                     cursor="pointer",
                     on_click=AuthState.toggle_login_password,
-                    _hover={"color": COLORS["primary_green"]},
+                    padding="4px",
+                    border_radius=RADIUS["sm"],
+                    transition=TRANSITIONS["fast"],
+                    _hover={
+                        "color": COLORS["primary_green"],
+                        "background": COLORS["light_green"],
+                    },
+                    z_index="1",
                 ),
                 position="relative",
             ),
             rx.cond(
                 AuthState.password_error != "",
-                rx.text(
-                    AuthState.password_error,
-                    color="#dc2626",
-                    font_size="12px",
-                    margin_top="4px",
+                rx.hstack(
+                    rx.icon("alert-circle", size=12, color=COLORS["error"]),
+                    rx.text(
+                        AuthState.password_error,
+                        color=COLORS["error"],
+                        font_size="12px",
+                    ),
+                    spacing="1",
+                    margin_top="6px",
                 ),
             ),
             margin_bottom="16px",
@@ -546,7 +718,9 @@ def _login_form() -> rx.Component:
                 color=COLORS["primary_green"],
                 cursor="pointer",
                 on_click=AuthState.request_password_reset,
-                _hover={"text_decoration": "underline"},
+                font_weight="500",
+                transition=TRANSITIONS["fast"],
+                _hover={"color": COLORS["dark_green"]},
             ),
             display="flex",
             justify_content="space-between",
@@ -559,7 +733,7 @@ def _login_form() -> rx.Component:
             rx.cond(
                 AuthState.auth_loading,
                 rx.box(
-                    rx.spinner(size="1"),
+                    rx.icon("loader-2", size=18, class_name="animate-spin"),
                     rx.text("Bezig...", margin_left="8px"),
                     display="flex",
                     align_items="center",
@@ -576,20 +750,33 @@ def _login_form() -> rx.Component:
             width="100%",
             padding="14px",
             min_height="50px",
-            background=COLORS["primary_green"],
+            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
             color="white",
             border="none",
-            border_radius="8px",
+            border_radius=RADIUS["lg"],
             cursor=rx.cond(AuthState.auth_loading, "not-allowed", "pointer"),
             font_size="15px",
             font_weight="600",
             disabled=AuthState.auth_loading,
             on_click=AuthState.login,
-            _hover={"background": COLORS["dark_green"]},
+            box_shadow=SHADOWS["primary_sm"],
+            transition=TRANSITIONS["fast"],
+            _hover={
+                "transform": "translateY(-1px)",
+                "box_shadow": SHADOWS["primary_md"],
+            },
+            _active={
+                "transform": "translateY(0)",
+            },
         ),
         
         width="100%",
     )
+
+
+# ============================================================================
+# SIGNUP FORM
+# ============================================================================
 
 
 def _signup_form() -> rx.Component:

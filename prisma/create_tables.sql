@@ -59,16 +59,8 @@ CREATE INDEX idx_events_type ON events(type);
 
 -- === User Management Tables ===
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email VARCHAR UNIQUE NOT NULL,
-    password VARCHAR NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    settings JSONB
-);
-
-CREATE INDEX idx_users_email ON users(email);
+-- Note: Users are managed by Supabase Auth (auth.users table)
+-- We can extend it with a profiles table if needed for additional user data
 
 -- Conversations table (replaces sessions)
 CREATE TABLE IF NOT EXISTS conversations (
@@ -108,11 +100,11 @@ CREATE INDEX idx_messages_role ON messages(role);
 -- Onboarding table
 CREATE TABLE IF NOT EXISTS onboarding (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     completed BOOLEAN DEFAULT FALSE,
     completed_at TIMESTAMP WITH TIME ZONE,
     current_step INTEGER DEFAULT 0,
+    answers JSONB,
     interests JSONB,
     skills JSONB,
     goals JSONB,
@@ -124,7 +116,6 @@ CREATE TABLE IF NOT EXISTS onboarding (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_onboarding_session_id ON onboarding(session_id);
 CREATE INDEX idx_onboarding_user_id ON onboarding(user_id);
 CREATE INDEX idx_onboarding_completed ON onboarding(completed);
 
@@ -165,7 +156,7 @@ CREATE TABLE IF NOT EXISTS reminders (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_reminders_user_id ON reminders(user_id);
+CREATE INDEX idx_reminders_user_id ONauth. reminders(user_id);
 CREATE INDEX idx_reminders_event_id ON reminders(event_id);
 CREATE INDEX idx_reminders_date ON reminders(date);
 CREATE INDEX idx_reminders_sent ON reminders(sent, date);
