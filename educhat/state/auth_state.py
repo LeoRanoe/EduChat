@@ -69,12 +69,14 @@ class AuthState(rx.State):
     
     # === User Settings ===
     dark_mode: bool = False
+    show_settings_modal: bool = False
     
     # === Reminders ===
     reminders: List[Dict[str, str]] = []
     show_reminder_modal: bool = False
     reminder_title: str = ""
     reminder_date: str = ""
+    reminders_loaded: bool = False
     
     # === Events ===
     upcoming_events: List[Dict[str, str]] = []
@@ -592,14 +594,24 @@ class AuthState(rx.State):
     def toggle_dark_mode(self):
         """Toggle dark mode."""
         self.dark_mode = not self.dark_mode
+        # Store preference if authenticated
+        if self.is_authenticated and self.user_id:
+            # TODO: Save to database user preferences
+            pass
+    
+    def toggle_settings_modal(self):
+        """Toggle settings modal."""
+        self.show_settings_modal = not self.show_settings_modal
     
     # ==========================================================================
     # Events Panel
     # ==========================================================================
     
-    def toggle_events_panel(self):
+    async def toggle_events_panel(self):
         """Toggle events panel visibility."""
         self.show_events_panel = not self.show_events_panel
+        if self.show_events_panel and len(self.upcoming_events) == 0:
+            await self.load_upcoming_events()
     
     async def load_upcoming_events(self):
         """Load upcoming events."""
@@ -665,9 +677,12 @@ class AuthState(rx.State):
     # Reminders
     # ==========================================================================
     
-    def toggle_reminder_modal(self):
+    async def toggle_reminder_modal(self):
         """Toggle reminder modal."""
         self.show_reminder_modal = not self.show_reminder_modal
+        if self.show_reminder_modal and not self.reminders_loaded:
+            await self.load_reminders_from_db()
+            self.reminders_loaded = True
         if not self.show_reminder_modal:
             self.reminder_title = ""
             self.reminder_date = ""
@@ -764,9 +779,20 @@ class AuthState(rx.State):
             updated.append(r)
         self.reminders = updated
     
-    def delete_reminder(self, reminder_id: str):
+    async def delete_reminder(self, reminder_id: str):
         """Delete a reminder."""
+        # Delete from database if authenticated
+        if self.is_authenticated and self.user_id:
+            try:
+                from educhat.services.supabase_client import get_service
+                db = get_service()
+                db.client.table('reminders').delete().eq('id', reminder_id).execute()
+            except Exception as e:
+                print(f"Error deleting reminder from database: {e}")
+        
+        # Remove from local state
         self.reminders = [r for r in self.reminders if r["id"] != reminder_id]
+        yield
     
     async def load_reminders_from_db(self):
         """Load reminders from database."""

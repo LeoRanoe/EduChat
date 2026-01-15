@@ -27,9 +27,11 @@ def text_input(
         "background": COLORS["white"],
         "border": f"1px solid {COLORS['border_gray']}",
         "border_radius": RADIUS["md"],
-        "padding": "0.75rem 1rem",
+        "padding": "1rem 1.125rem",
         "width": width,
         "font_size": "1rem",
+        "line_height": "1.5",
+        "min_height": "48px",
         "color": COLORS["dark_gray"],
         "_focus": {
             "outline": "none",
@@ -88,6 +90,8 @@ def search_input(
                 padding="0",
                 width="100%",
                 font_size="1rem",
+                line_height="1.5",
+                min_height="40px",
                 color=COLORS["dark_gray"],
                 _focus={
                     "outline": "none",

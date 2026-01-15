@@ -4,7 +4,7 @@ import reflex as rx
 from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
 from educhat.components.chat import sidebar, chat_container
-from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel
+from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, settings_modal
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
 from educhat.styles.theme import COLORS
@@ -41,6 +41,9 @@ def authenticated_chat() -> rx.Component:
         # Auth modal (for login/signup)
         auth_modal(),
         
+        # Settings modal
+        settings_modal(),
+        
         # Reminders modal
         reminders_modal(),
         
@@ -54,9 +57,9 @@ def authenticated_chat() -> rx.Component:
             show=AppState.show_toast,
         ),
         
-        # Guest banner (shown only for guest users)
+        # Guest banner (shown only for guest users who haven't dismissed it)
         rx.cond(
-            AppState.is_guest,
+            AppState.is_guest & ~AuthState.guest_banner_dismissed,
             guest_banner(),
         ),
         
@@ -80,6 +83,13 @@ def authenticated_chat() -> rx.Component:
         
         # Main content area
         rx.box(
+            # Guest banner padding spacer (only when banner is visible)
+            rx.cond(
+                AppState.is_guest & ~AuthState.guest_banner_dismissed,
+                rx.box(height="64px"),  # Spacer to prevent content being hidden
+                rx.fragment(),
+            ),
+            
             # Mobile header (only visible on mobile)
             rx.box(
                 mobile_header(
@@ -128,9 +138,7 @@ def authenticated_chat() -> rx.Component:
 
 def guest_banner() -> rx.Component:
     """Banner shown to guest users encouraging signup - Enhanced."""
-    return rx.cond(
-        ~AuthState.guest_banner_dismissed,
-        rx.box(
+    return rx.box(
             rx.box(
                 rx.box(
                     # Icon with gradient background
@@ -215,9 +223,9 @@ def guest_banner() -> rx.Component:
             ),
             position="fixed",
             top="0",
-            left="0",
-            width="100%",
+            left=["0", "0", "260px"],  # Offset by sidebar width on desktop
+            right="0",
+            width=["100%", "100%", "auto"],
             z_index="900",
         )
-    )
 

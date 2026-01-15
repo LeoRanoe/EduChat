@@ -353,11 +353,51 @@ def sidebar(
                 width="100%",
             ),
             
+            # Onboarding link (only when expanded)
+            rx.cond(
+                is_collapsed,
+                rx.fragment(),
+                rx.box(
+                    rx.link(
+                        rx.box(
+                            rx.hstack(
+                                rx.icon("graduation-cap", size=18, color="white"),
+                                rx.text(
+                                    "Start Onboarding",
+                                    font_size="0.875rem",
+                                    font_weight="600",
+                                    color="white",
+                                ),
+                                spacing="2",
+                                align="center",
+                                justify="center",
+                            ),
+                            width="100%",
+                            padding="0.75rem 1rem",
+                            border_radius="8px",
+                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                            _hover={
+                                "transform": "translateY(-2px)",
+                                "box_shadow": f"0 4px 12px rgba(16, 163, 127, 0.3)",
+                            },
+                            transition="all 0.3s ease",
+                        ),
+                        href="/onboarding",
+                        text_decoration="none",
+                        width="100%",
+                    ),
+                    padding="0.875rem",
+                    border_top=f"1px solid {COLORS['border_light']}",
+                    border_bottom=f"1px solid {COLORS['border_light']}",
+                    width="100%",
+                ),
+            ),
+            
             # Footer with user info
             rx.box(
                 rx.cond(
                     is_collapsed,
-                    # Collapsed: Avatar only
+                    # Collapsed: Avatar only with logout
                     rx.vstack(
                         avatar(name=user_name, size="sm"),
                         rx.box(
@@ -375,77 +415,169 @@ def sidebar(
                         spacing="2",
                         align="center",
                     ),
-                    # Expanded: Full user section
+                    # Expanded: Full user section with all features
                     rx.vstack(
+                        # User info
                         rx.hstack(
-                            avatar(name=user_name, size="sm"),
+                            avatar(name=user_name, size="md"),
                             rx.vstack(
                                 rx.text(
                                     user_name,
-                                    font_size="0.8125rem",
+                                    font_size="0.875rem",
                                     font_weight="600",
                                     color=COLORS["text_primary"],
                                     overflow="hidden",
                                     text_overflow="ellipsis",
                                     white_space="nowrap",
+                                    line_height="1.2",
                                 ),
                                 rx.cond(
                                     user_email != "",
                                     rx.text(
                                         user_email,
-                                        font_size="0.6875rem",
+                                        font_size="0.75rem",
                                         color=COLORS["text_tertiary"],
                                         overflow="hidden",
                                         text_overflow="ellipsis",
                                         white_space="nowrap",
+                                        line_height="1.2",
                                     ),
                                     rx.box(
                                         rx.text(
                                             "GAST",
-                                            font_size="0.5625rem",
+                                            font_size="0.625rem",
                                             color=COLORS["primary_green"],
                                             font_weight="700",
+                                            letter_spacing="0.5px",
                                         ),
-                                        padding="2px 8px",
+                                        padding="4px 10px",
                                         background=f"rgba(16, 163, 127, 0.1)",
-                                        border_radius="4px",
+                                        border_radius="6px",
+                                        border=f"1px solid {COLORS['primary_green']}",
                                     ),
                                 ),
-                                spacing="0",
+                                spacing="1",
                                 align_items="start",
                                 flex="1",
                                 min_width="0",
                             ),
-                            spacing="2",
+                            spacing="3",
                             align="center",
                             width="100%",
                         ),
+                        # Action buttons row 1
                         rx.hstack(
                             rx.box(
-                                rx.hstack(
-                                    rx.icon("log-out", size=14, color=COLORS["text_secondary"]),
-                                    rx.text("Uitloggen", font_size="0.75rem", color=COLORS["text_secondary"]),
-                                    spacing="1",
-                                    align="center",
-                                ),
-                                on_click=AppState.logout,
+                                rx.icon("settings", size=16, color=COLORS["text_secondary"]),
+                                rx.text("Settings", font_size="0.8125rem", color=COLORS["text_secondary"]),
+                                display="flex",
+                                align_items="center",
+                                gap="8px",
+                                on_click=AuthState.toggle_settings_modal,
                                 cursor="pointer",
-                                padding="0.5rem 0.75rem",
-                                border_radius="6px",
+                                padding="0.625rem 0.75rem",
+                                border_radius="8px",
                                 flex="1",
+                                min_height="40px",
                                 _hover={
-                                    "background": f"rgba(220, 38, 38, 0.08)",
-                                    "color": COLORS["error"],
+                                    "background": COLORS["light_gray"],
                                 },
                                 transition="all 0.2s ease",
                             ),
+                            rx.box(
+                                rx.icon("bell", size=16, color=COLORS["primary_green"]),
+                                rx.text("Reminders", font_size="0.8125rem", color=COLORS["text_secondary"]),
+                                display="flex",
+                                align_items="center",
+                                gap="8px",
+                                on_click=AuthState.toggle_reminder_modal,
+                                cursor="pointer",
+                                padding="0.625rem 0.75rem",
+                                border_radius="8px",
+                                flex="1",
+                                min_height="40px",
+                                _hover={
+                                    "background": f"rgba(16, 163, 127, 0.1)",
+                                },
+                                transition="all 0.2s ease",
+                            ),
+                            spacing="2",
                             width="100%",
+                        ),
+                        # Action buttons row 2
+                        rx.hstack(
+                            rx.box(
+                                rx.icon("calendar", size=16, color="#3B82F6"),
+                                rx.text("Events", font_size="0.8125rem", color=COLORS["text_secondary"]),
+                                display="flex",
+                                align_items="center",
+                                gap="8px",
+                                on_click=AuthState.toggle_events_panel,
+                                cursor="pointer",
+                                padding="0.625rem 0.75rem",
+                                border_radius="8px",
+                                flex="1",
+                                min_height="40px",
+                                _hover={
+                                    "background": "rgba(59, 130, 246, 0.1)",
+                                },
+                                transition="all 0.2s ease",
+                            ),
+                            rx.box(
+                                rx.cond(
+                                    AuthState.dark_mode,
+                                    rx.icon("sun", size=16, color="#F59E0B"),
+                                    rx.icon("moon", size=16, color="#6B7280"),
+                                ),
+                                rx.text(
+                                    rx.cond(AuthState.dark_mode, "Light", "Dark"),
+                                    font_size="0.8125rem",
+                                    color=COLORS["text_secondary"],
+                                ),
+                                display="flex",
+                                align_items="center",
+                                gap="8px",
+                                on_click=AuthState.toggle_dark_mode,
+                                cursor="pointer",
+                                padding="0.625rem 0.75rem",
+                                border_radius="8px",
+                                flex="1",
+                                min_height="40px",
+                                _hover={
+                                    "background": COLORS["light_gray"],
+                                },
+                                transition="all 0.2s ease",
+                            ),
+                            spacing="2",
+                            width="100%",
+                        ),
+                        # Logout button
+                        rx.box(
+                            rx.hstack(
+                                rx.icon("log-out", size=16, color=COLORS["error"]),
+                                rx.text("Uitloggen", font_size="0.8125rem", color=COLORS["error"], font_weight="500"),
+                                spacing="2",
+                                align="center",
+                                justify="center",
+                            ),
+                            on_click=AppState.logout,
+                            cursor="pointer",
+                            padding="0.625rem 0.875rem",
+                            border_radius="8px",
+                            width="100%",
+                            min_height="40px",
+                            border=f"1px solid {COLORS['error']}20",
+                            _hover={
+                                "background": f"rgba(220, 38, 38, 0.08)",
+                                "border_color": COLORS["error"],
+                            },
+                            transition="all 0.2s ease",
                         ),
                         spacing="3",
                         width="100%",
                     ),
                 ),
-                padding="0.75rem",
+                padding="1rem",
                 border_top=f"1px solid {COLORS['border_light']}",
                 width="100%",
                 background=COLORS["white"],

@@ -40,6 +40,7 @@ from educhat.components.shared.follow_up_suggestions import (
 )
 from educhat.components.shared.reminders_modal import reminders_modal
 from educhat.components.shared.events_panel import events_panel
+from educhat.components.shared.settings_modal import settings_modal
 
 __all__ = [
     "logo",
@@ -74,5 +75,6 @@ __all__ = [
     "generate_contextual_suggestions",
     "reminders_modal",
     "events_panel",
+    "settings_modal",
 ]
 
