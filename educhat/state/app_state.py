@@ -7,6 +7,7 @@ import uuid
 import asyncio
 from educhat.services.ai_service import get_ai_service
 from educhat.state.auth_state import AuthState
+from educhat.state.onboarding_state import OnboardingState
 
 
 class AppState(AuthState):
@@ -34,6 +35,7 @@ class AppState(AuthState):
     
     # User context for AI (from onboarding)
     user_context: Optional[Dict] = None
+    onboarding_loaded: bool = False
     
     # Performance metrics
     last_response_time: float = 0.0
@@ -115,7 +117,8 @@ class AppState(AuthState):
         This method:
         1. Tries to restore existing session if not authenticated
         2. Loads conversations from database for logged-in users
-        3. Creates initial conversation if none exist
+        3. Loads onboarding preferences for AI personalization
+        4. Creates initial conversation if none exist
         """
         print(f"[INIT] Starting initialization. Already initialized: {self._initialized}")
         print(f"[INIT] Is guest: {self.is_guest}, Is authenticated: {self.is_authenticated}")
@@ -145,6 +148,11 @@ class AppState(AuthState):
         if self.can_access_history():
             print("[INIT] Loading conversations from DB...")
             await self.load_conversations_from_db()
+        
+        # Load onboarding preferences for AI personalization
+        if self.is_authenticated and self.user_id and not self.onboarding_loaded:
+            print("[INIT] Loading onboarding preferences...")
+            await self.load_onboarding_preferences()
         
         # Load upcoming events (for all users - uses local fallback if DB fails)
         print("[INIT] Loading upcoming events...")
@@ -525,6 +533,73 @@ class AppState(AuthState):
                 - formality_preference
         """
         self.user_context = context
+    
+    async def load_onboarding_preferences(self):
+        """Load onboarding preferences from the database and set AI context."""
+        if not self.is_authenticated or not self.user_id:
+            return
+        
+        try:
+            # Get the onboarding state and load preferences
+            onboarding_state = await self.get_state(OnboardingState)
+            
+            # Load preferences from database
+            loaded = await onboarding_state.load_user_preferences(self.user_id)
+            
+            if loaded:
+                # Get the context for AI personalization
+                self.user_context = onboarding_state.get_user_context()
+                self.onboarding_loaded = True
+                print(f"[ONBOARDING] Loaded preferences for user {self.user_id}")
+                print(f"[ONBOARDING] Context: {self.user_context}")
+            else:
+                print(f"[ONBOARDING] No preferences found for user {self.user_id}")
+                
+        except Exception as e:
+            print(f"[ONBOARDING] Error loading preferences: {e}")
+    
+    def get_ai_context_string(self) -> str:
+        """Build a context string for the AI based on user preferences.
+        
+        Returns:
+            A formatted string to prepend to AI conversations.
+        """
+        if not self.user_context:
+            return ""
+        
+        parts = []
+        
+        if self.user_context.get("education_level"):
+            parts.append(f"De gebruiker volgt momenteel: {self.user_context['education_level']}")
+        
+        if self.user_context.get("age_group"):
+            parts.append(f"Leeftijdsgroep: {self.user_context['age_group']}")
+        
+        if self.user_context.get("district"):
+            parts.append(f"Woont in: {self.user_context['district']}")
+        
+        if self.user_context.get("study_directions"):
+            directions = self.user_context["study_directions"]
+            if directions:
+                parts.append(f"Geïnteresseerd in: {', '.join(directions)}")
+        
+        if self.user_context.get("favorite_subjects"):
+            subjects = self.user_context["favorite_subjects"]
+            if subjects:
+                parts.append(f"Favoriete vakken: {', '.join(subjects)}")
+        
+        if self.user_context.get("improvement_areas"):
+            areas = self.user_context["improvement_areas"]
+            if areas:
+                parts.append(f"Zoekt hulp bij: {', '.join(areas)}")
+        
+        if self.user_context.get("tone"):
+            parts.append(f"Communicatiestijl: {self.user_context['tone']}")
+        
+        if not parts:
+            return ""
+        
+        return "\n\nGebruikerscontext:\n" + "\n".join(f"- {p}" for p in parts)
     
     async def send_quick_action(self, prompt: str):
         """Handle quick action button click.

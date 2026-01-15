@@ -3,6 +3,7 @@
 import reflex as rx
 from educhat.styles.theme import COLORS, RADIUS
 from educhat.state.auth_state import AuthState
+from educhat.state.onboarding_state import OnboardingState
 
 
 def settings_modal() -> rx.Component:
@@ -54,6 +55,126 @@ def settings_modal() -> rx.Component:
                     
                     # Settings content
                     rx.vstack(
+                        # Personalization section - Edit onboarding
+                        rx.cond(
+                            AuthState.is_authenticated,
+                            rx.box(
+                                rx.vstack(
+                                    rx.text(
+                                        "Personalisatie",
+                                        font_size="0.875rem",
+                                        font_weight="600",
+                                        color=COLORS["text_primary"],
+                                        margin_bottom="0.5rem",
+                                    ),
+                                    # Edit preferences button
+                                    rx.link(
+                                        rx.hstack(
+                                            rx.hstack(
+                                                rx.icon("user-cog", size=18, color=COLORS["primary_green"]),
+                                                rx.vstack(
+                                                    rx.text(
+                                                        "Mijn voorkeuren aanpassen",
+                                                        font_size="0.9375rem",
+                                                        font_weight="500",
+                                                        color=COLORS["text_primary"],
+                                                        line_height="1.2",
+                                                    ),
+                                                    rx.text(
+                                                        "Wijzig je opleiding, interesses en communicatiestijl",
+                                                        font_size="0.75rem",
+                                                        color=COLORS["text_tertiary"],
+                                                        line_height="1.2",
+                                                    ),
+                                                    spacing="1",
+                                                    align_items="start",
+                                                ),
+                                                spacing="3",
+                                                align="center",
+                                                flex="1",
+                                            ),
+                                            rx.icon("chevron-right", size=18, color=COLORS["text_secondary"]),
+                                            justify="between",
+                                            align="center",
+                                            width="100%",
+                                            padding="1rem",
+                                            border_radius=RADIUS["md"],
+                                            border=f"1px solid {COLORS['border_light']}",
+                                            _hover={
+                                                "background": f"rgba(16, 163, 127, 0.05)",
+                                                "border_color": COLORS["primary_green"],
+                                            },
+                                            transition="all 0.2s ease",
+                                        ),
+                                        href="/onboarding",
+                                        text_decoration="none",
+                                        on_click=[OnboardingState.start_edit_mode, AuthState.toggle_settings_modal],
+                                        width="100%",
+                                    ),
+                                    # Show current preferences summary
+                                    rx.cond(
+                                        OnboardingState.quiz_completed,
+                                        rx.box(
+                                            rx.vstack(
+                                                rx.cond(
+                                                    OnboardingState.education_level != "",
+                                                    rx.hstack(
+                                                        rx.text("Opleiding:", font_size="0.75rem", color=COLORS["text_secondary"], font_weight="600"),
+                                                        rx.text(OnboardingState.education_level, font_size="0.75rem", color=COLORS["text_primary"]),
+                                                        spacing="2",
+                                                    ),
+                                                    rx.fragment(),
+                                                ),
+                                                rx.cond(
+                                                    OnboardingState.district != "",
+                                                    rx.hstack(
+                                                        rx.text("District:", font_size="0.75rem", color=COLORS["text_secondary"], font_weight="600"),
+                                                        rx.text(OnboardingState.district, font_size="0.75rem", color=COLORS["text_primary"]),
+                                                        spacing="2",
+                                                    ),
+                                                    rx.fragment(),
+                                                ),
+                                                rx.cond(
+                                                    OnboardingState.formality != "",
+                                                    rx.hstack(
+                                                        rx.text("Stijl:", font_size="0.75rem", color=COLORS["text_secondary"], font_weight="600"),
+                                                        rx.text(OnboardingState.formality, font_size="0.75rem", color=COLORS["text_primary"]),
+                                                        spacing="2",
+                                                    ),
+                                                    rx.fragment(),
+                                                ),
+                                                spacing="1",
+                                                align_items="start",
+                                            ),
+                                            padding="0.75rem",
+                                            margin_top="0.5rem",
+                                            border_radius=RADIUS["sm"],
+                                            background=COLORS["light_gray"],
+                                            width="100%",
+                                        ),
+                                        rx.box(
+                                            rx.text(
+                                                "Je hebt nog geen voorkeuren ingesteld. Klik hierboven om te beginnen.",
+                                                font_size="0.75rem",
+                                                color=COLORS["text_tertiary"],
+                                                font_style="italic",
+                                            ),
+                                            padding="0.75rem",
+                                            margin_top="0.5rem",
+                                            border_radius=RADIUS["sm"],
+                                            background=COLORS["light_gray"],
+                                            width="100%",
+                                        ),
+                                    ),
+                                    spacing="2",
+                                    width="100%",
+                                ),
+                                width="100%",
+                                margin_bottom="0.5rem",
+                            ),
+                            rx.fragment(),
+                        ),
+                        
                         # Appearance section
                         rx.box(
                             rx.vstack(
@@ -207,7 +328,7 @@ def settings_modal() -> rx.Component:
                                 ),
                                 rx.box(
                                     rx.text(
-                                        "EduChat is jouw persoonlijke AI-assistent voor onderwijs en studie in Nederland. Vraag naar opleidingen, inschrijvingen, deadlines en meer!",
+                                        "EduChat is jouw persoonlijke AI-assistent voor onderwijs en studie in Suriname. Vraag naar opleidingen, inschrijvingen, deadlines en meer!",
                                         font_size="0.875rem",
                                         color=COLORS["text_secondary"],
                                         line_height="1.6",

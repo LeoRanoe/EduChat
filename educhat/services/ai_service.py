@@ -429,35 +429,66 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         parts = []
         
         # Education level
-        if context.get("education"):
-            education = ", ".join(context["education"])
-            parts.append(f"De gebruiker volgt: {education}")
+        if context.get("education_level"):
+            parts.append(f"De gebruiker volgt momenteel: {context['education_level']}")
         
-        # Age
-        if context.get("age"):
-            parts.append(f"Leeftijd: {context['age']}")
+        # Age group
+        if context.get("age_group"):
+            parts.append(f"Leeftijdsgroep: {context['age_group']}")
+        
+        # District
+        if context.get("district"):
+            parts.append(f"Woont in: {context['district']}")
+        
+        # Study directions / interests
+        if context.get("study_directions"):
+            directions = context["study_directions"]
+            if isinstance(directions, list) and directions:
+                parts.append(f"Geïnteresseerd in studierichtingen: {', '.join(directions)}")
+            elif isinstance(directions, str) and directions:
+                parts.append(f"Geïnteresseerd in studierichtingen: {directions}")
         
         # Favorite subjects
         if context.get("favorite_subjects"):
-            subjects = ", ".join(context["favorite_subjects"])
-            parts.append(f"Favoriete vakken: {subjects}")
+            subjects = context["favorite_subjects"]
+            if isinstance(subjects, list) and subjects:
+                parts.append(f"Favoriete vakken: {', '.join(subjects)}")
+            elif isinstance(subjects, str) and subjects:
+                parts.append(f"Favoriete vakken: {subjects}")
         
         # Future plans
         if context.get("future_plans"):
-            parts.append(f"Studieplannen: {context['future_plans']}")
+            parts.append(f"Toekomstplannen: {context['future_plans']}")
         
-        # Formality preference
-        if context.get("formality"):
+        # Improvement areas
+        if context.get("improvement_areas"):
+            areas = context["improvement_areas"]
+            if isinstance(areas, list) and areas:
+                parts.append(f"Zoekt hulp bij: {', '.join(areas)}")
+            elif isinstance(areas, str) and areas:
+                parts.append(f"Zoekt hulp bij: {areas}")
+        
+        # Formality preference - with explicit communication style
+        if context.get("formality_preference"):
+            formality = context["formality_preference"]
             formality_map = {
-                "Heel formeel": "Gebruik een formele, professionele toon.",
-                "Gewoon normaal": "Gebruik een vriendelijke, toegankelijke toon.",
-                "Heel informeel": "Gebruik een casual, informele toon zoals je met een vriend praat."
+                "Informeel & vriendelijk": "Gebruik een casual, vriendelijke toon alsof je met een vriend praat. Wees persoonlijk en informeel.",
+                "Normaal": "Gebruik een vriendelijke, toegankelijke toon die niet te formeel of te informeel is.",
+                "Formeel & zakelijk": "Gebruik een professionele, formele toon. Wees respectvol en zakelijk.",
             }
-            if context["formality"] in formality_map:
-                parts.append(formality_map[context["formality"]])
+            if formality in formality_map:
+                parts.append(formality_map[formality])
+        
+        # Tone from derived context
+        if context.get("tone") and not context.get("formality_preference"):
+            parts.append(f"Communicatiestijl: {context['tone']}")
+        
+        # Audience level
+        if context.get("audience"):
+            parts.append(f"Let op: {context['audience']}")
         
         if parts:
-            return "Context over de gebruiker:\n" + "\n".join(parts)
+            return "=== CONTEXT OVER DE GEBRUIKER ===\nPas je antwoorden aan op basis van het volgende:\n" + "\n".join(f"- {p}" for p in parts)
         
         return None
     

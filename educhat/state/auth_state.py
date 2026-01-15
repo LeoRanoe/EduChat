@@ -412,8 +412,8 @@ class AuthState(rx.State):
                     self.toast_type = "success"
                     self.show_toast = True
                     
-                    # Redirect to chat interface
-                    yield rx.redirect("/chat")
+                    # Redirect to onboarding for new users
+                    yield rx.redirect("/onboarding")
             else:
                 self.auth_error = result.get("error", "Registratie mislukt")
         
@@ -481,6 +481,9 @@ class AuthState(rx.State):
         try:
             await self.load_reminders_from_db()
             await self.load_upcoming_events()
+            # Load onboarding preferences (handled by AppState)
+            if hasattr(self, 'load_onboarding_preferences'):
+                await self.load_onboarding_preferences()
         except Exception as e:
             print(f"Error loading user data: {e}")
     

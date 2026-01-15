@@ -1,6 +1,16 @@
 """Onboarding page with quiz interface."""
 import reflex as rx
-from educhat.state.onboarding_state import OnboardingState
+from educhat.state.onboarding_state import (
+    OnboardingState,
+    EDUCATION_LEVELS,
+    AGE_GROUPS,
+    DISTRICTS,
+    SCHOOL_SUBJECTS,
+    STUDY_DIRECTIONS,
+    IMPROVEMENT_GOALS,
+    FORMALITY_OPTIONS,
+    FUTURE_PLAN_OPTIONS,
+)
 from educhat.components.shared.logo import logo
 from educhat.components.shared.progress_bar import progress_bar
 from educhat.components.shared.quiz_components import (
@@ -51,31 +61,58 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
             rx.box(),
         ),
         rx.spacer(),
-        # Skip button (only show if not on last step)
+        # Next/Complete buttons
         rx.cond(
             state.current_step < state.total_steps - 1,
-            rx.button(
-                rx.hstack(
-                    rx.text("Overslaan", font_size="14px", font_weight="600"),
-                    rx.icon("arrow-right", size=16),
-                    spacing="2",
-                    align="center",
+            # Next button (not on last step)
+            rx.hstack(
+                # Skip button - secondary style
+                rx.button(
+                    rx.hstack(
+                        rx.text("Overslaan", font_size="13px", font_weight="500"),
+                        spacing="2",
+                        align="center",
+                    ),
+                    on_click=state.skip_step,
+                    background="white",
+                    color=COLORS["text_secondary"],
+                    border=f"1px solid {COLORS['border']}",
+                    border_radius="10px",
+                    padding="10px 20px",
+                    font_size="13px",
+                    cursor="pointer",
+                    transition="all 0.3s ease",
+                    _hover={
+                        "background": COLORS["light_gray"],
+                        "border_color": COLORS["text_secondary"],
+                    },
                 ),
-                on_click=state.skip_step,
-                background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                color="white",
-                border="none",
-                border_radius="10px",
-                padding="10px 24px",
-                font_size="14px",
-                font_weight="600",
-                cursor="pointer",
-                transition="all 0.3s ease",
-                box_shadow=f"0 4px 16px rgba(16, 163, 127, 0.3)",
-                _hover={
-                    "transform": "translateY(-2px) scale(1.02)",
-                    "box_shadow": f"0 6px 24px rgba(16, 163, 127, 0.4)",
-                },
+                # Next button - primary style
+                rx.button(
+                    rx.hstack(
+                        rx.text("Volgende", font_size="14px", font_weight="600"),
+                        rx.icon("arrow-right", size=16),
+                        spacing="2",
+                        align="center",
+                    ),
+                    on_click=state.next_step,
+                    background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                    color="white",
+                    border="none",
+                    border_radius="10px",
+                    padding="10px 24px",
+                    font_size="14px",
+                    font_weight="600",
+                    cursor="pointer",
+                    transition="all 0.3s ease",
+                    box_shadow=f"0 4px 16px rgba(16, 163, 127, 0.3)",
+                    _hover={
+                        "transform": "translateY(-2px) scale(1.02)",
+                        "box_shadow": f"0 6px 24px rgba(16, 163, 127, 0.4)",
+                    },
+                ),
+                spacing="3",
+                align="center",
             ),
             # Complete button on last step
             rx.button(
@@ -109,21 +146,26 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
 
 
 def question_step_0(state: OnboardingState) -> rx.Component:
-    """Question: Welk opleiding volgt je?"""
-    options = ["Consectetur", "Lorem", "Ipsum", "Dolor", "Adipiscing", "Dolor", "Sit", "Consectetur", "Consectetur"]
-    
+    """Question: Welke opleiding volg je momenteel?"""
     return rx.vstack(
         rx.text(
-            "Welk opleiding volgt je?",
+            "Welke opleiding volg je momenteel?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
         ),
-        multi_select_group(
-            options=options,
-            selected_values=state.education,
-            on_toggle=state.toggle_education,
+        rx.text(
+            "Dit helpt ons om informatie op jouw niveau aan te passen.",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
+        ),
+        dropdown_select(
+            options=EDUCATION_LEVELS,
+            value=state.education_level,
+            on_change=state.set_education_level,
+            placeholder="Selecteer je huidige opleiding...",
         ),
         spacing="2",
         align="start",
@@ -133,21 +175,25 @@ def question_step_0(state: OnboardingState) -> rx.Component:
 
 def question_step_1(state: OnboardingState) -> rx.Component:
     """Question: Wat is jouw leeftijd?"""
-    age_options = ["18+", "Under 18", "25+", "30+", "40+"]
-    
     return rx.vstack(
         rx.text(
             "Wat is jouw leeftijd?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
+        ),
+        rx.text(
+            "We passen onze communicatie aan op jouw leeftijdsgroep.",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
         ),
         dropdown_select(
-            options=age_options,
+            options=AGE_GROUPS,
             value=state.age,
             on_change=state.set_age,
-            placeholder="Selecteer leeftijd...",
+            placeholder="Selecteer je leeftijdsgroep...",
         ),
         spacing="2",
         align="start",
@@ -157,21 +203,25 @@ def question_step_1(state: OnboardingState) -> rx.Component:
 
 def question_step_2(state: OnboardingState) -> rx.Component:
     """Question: In welk district woon je?"""
-    district_options = ["Paramaribo", "Wanica", "Nickerie", "Commewijne", "Saramacca", "Para", "Brokopondo", "Sipaliwini", "Coronie", "Marowijne"]
-    
     return rx.vstack(
         rx.text(
             "In welk district woon je?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
+        ),
+        rx.text(
+            "We kunnen je informatie geven over scholen in jouw regio.",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
         ),
         dropdown_select(
-            options=district_options,
+            options=DISTRICTS,
             value=state.district,
             on_change=state.set_district,
-            placeholder="Selecteer district...",
+            placeholder="Selecteer je district...",
         ),
         spacing="2",
         align="start",
@@ -180,19 +230,23 @@ def question_step_2(state: OnboardingState) -> rx.Component:
 
 
 def question_step_3(state: OnboardingState) -> rx.Component:
-    """Question: Wat is je favoriete vak?"""
-    subject_options = ["Consectetur", "Lorem", "Ipsum", "Dolor", "Adipiscing", "Dolor", "Sit", "Consectetur"]
-    
+    """Question: Wat zijn je favoriete vakken?"""
     return rx.vstack(
         rx.text(
-            "Wat is je favoriete vak?",
+            "Wat zijn je favoriete vakken?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
+        ),
+        rx.text(
+            "Selecteer de vakken waar je het meest van houdt (meerdere mogelijk).",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
         ),
         multi_select_group(
-            options=subject_options,
+            options=SCHOOL_SUBJECTS,
             selected_values=state.favorite_subjects,
             on_toggle=state.toggle_subject,
         ),
@@ -204,18 +258,22 @@ def question_step_3(state: OnboardingState) -> rx.Component:
 
 def question_step_4(state: OnboardingState) -> rx.Component:
     """Question: Heb je plannen om verder te studeren na deze opleiding?"""
-    options = ["Ja", "Nee", "Weet nog niet"]
-    
     return rx.vstack(
         rx.text(
-            "Heb je plannen om verder te studeren na deze opleiding?",
+            "Heb je plannen om verder te studeren?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
+        ),
+        rx.text(
+            "We kunnen je helpen met studiekeuzes en toekomstplanning.",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
         ),
         radio_group(
-            options=options,
+            options=FUTURE_PLAN_OPTIONS,
             selected_value=state.future_plans,
             on_change=state.set_future_plans,
         ),
@@ -227,24 +285,22 @@ def question_step_4(state: OnboardingState) -> rx.Component:
 
 def question_step_5(state: OnboardingState) -> rx.Component:
     """Question: Wat wil je verbeteren met EduChat?"""
-    options = [
-        "Betere cijfers halen",
-        "Studiekeuze maken",
-        "Informatie over scholen",
-        "Leren plannen / studietips",
-        "Anders",
-    ]
-    
     return rx.vstack(
         rx.text(
-            "Wat wil je verbeteren met EduChat?",
+            "Waarmee kan EduChat je helpen?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
+        ),
+        rx.text(
+            "Selecteer alles wat van toepassing is (meerdere mogelijk).",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
         ),
         checkbox_list(
-            options=options,
+            options=IMPROVEMENT_GOALS,
             selected_values=state.improvement_areas,
             on_toggle=state.toggle_improvement_area,
         ),
@@ -256,18 +312,22 @@ def question_step_5(state: OnboardingState) -> rx.Component:
 
 def question_step_6(state: OnboardingState) -> rx.Component:
     """Question: Hoe formeel mag EduChat met je praten?"""
-    options = ["Jong & casual", "Normaal", "Zakelijk / professioneel"]
-    
     return rx.vstack(
         rx.text(
-            "Hoe formeel mag EduChat met je praten?",
+            "Hoe mag EduChat met je communiceren?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
+        ),
+        rx.text(
+            "Kies de communicatiestijl die het beste bij je past.",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
         ),
         radio_group(
-            options=options,
+            options=FORMALITY_OPTIONS,
             selected_value=state.formality,
             on_change=state.set_formality,
         ),
@@ -278,20 +338,25 @@ def question_step_6(state: OnboardingState) -> rx.Component:
 
 
 def question_step_7(state: OnboardingState) -> rx.Component:
-    """Question: Wat verwacht jij van EduChat?"""
+    """Question: Welke studierichtingen interesseren je?"""
     return rx.vstack(
         rx.text(
-            "Wat verwacht jij van EduChat?",
+            "Welke studierichtingen interesseren je?",
             font_size="16px",
-            font_weight="500",
+            font_weight="600",
             color=COLORS["text_primary"],
-            margin_bottom="8px",
+            margin_bottom="4px",
         ),
-        text_area_input(
-            value=state.expectations,
-            on_change=state.set_expectations,
-            placeholder="Vertel ons wat je verwacht...",
-            max_chars=500,
+        rx.text(
+            "Selecteer de gebieden waar je meer over wilt weten (meerdere mogelijk).",
+            font_size="13px",
+            color=COLORS["text_secondary"],
+            margin_bottom="12px",
+        ),
+        multi_select_group(
+            options=STUDY_DIRECTIONS,
+            selected_values=state.study_direction,
+            on_toggle=state.toggle_study_direction,
         ),
         spacing="2",
         align="start",
@@ -302,6 +367,30 @@ def question_step_7(state: OnboardingState) -> rx.Component:
 def quiz_content(state: OnboardingState) -> rx.Component:
     """Main quiz content with all questions - Compact non-scrollable."""
     return rx.vstack(
+        # Edit mode banner (shown when user is editing existing answers)
+        rx.cond(
+            state.is_edit_mode,
+            rx.box(
+                rx.hstack(
+                    rx.icon("pencil", size=16, color=COLORS["primary_green"]),
+                    rx.text(
+                        "Je bent je voorkeuren aan het aanpassen",
+                        font_size="13px",
+                        font_weight="600",
+                        color=COLORS["primary_green"],
+                    ),
+                    spacing="2",
+                    align="center",
+                ),
+                padding="10px 16px",
+                background=f"rgba(16, 163, 127, 0.1)",
+                border_radius="8px",
+                margin_bottom="1rem",
+                width="100%",
+            ),
+            rx.fragment(),
+        ),
+        
         # Back to chat link - compact
         rx.box(
             rx.link(
@@ -322,7 +411,7 @@ def quiz_content(state: OnboardingState) -> rx.Component:
                         "background": f"rgba(16, 163, 127, 0.08)",
                     },
                 ),
-                href="/",
+                href="/chat",
                 text_decoration="none",
             ),
             margin_bottom="1.5rem",
@@ -352,7 +441,11 @@ def quiz_content(state: OnboardingState) -> rx.Component:
         
         # Main title - smaller
         rx.heading(
-            "Vertel ons een beetje over jezelf",
+            rx.cond(
+                state.is_edit_mode,
+                "Pas je voorkeuren aan",
+                "Vertel ons over jezelf",
+            ),
             font_size=["1.25rem", "1.5rem", "1.75rem"],
             font_weight="800",
             background=f"linear-gradient(135deg, {COLORS['text_primary']} 0%, {COLORS['primary_green']} 100%)",
@@ -364,7 +457,11 @@ def quiz_content(state: OnboardingState) -> rx.Component:
         
         # Subtitle - smaller
         rx.text(
-            "Beantwoord een paar vragen zodat we EduChat kunnen personaliseren.",
+            rx.cond(
+                state.is_edit_mode,
+                "Werk je antwoorden bij zodat EduChat beter kan helpen.",
+                "Beantwoord een paar vragen zodat we EduChat kunnen personaliseren.",
+            ),
             font_size=["0.875rem", "0.9375rem", "1rem"],
             color=COLORS["text_secondary"],
             line_height="1.5",
