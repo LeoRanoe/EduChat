@@ -777,86 +777,88 @@ def welcome_panel() -> rx.Component:
 
 def onboarding() -> rx.Component:
     """Modern onboarding with side-by-side card layout."""
-    return rx.box(
-        # Background decoration
+    return rx.fragment(
         rx.box(
+            # Background decoration
             rx.box(
-                position="absolute",
-                top="-200px",
-                right="-200px",
-                width="500px",
-                height="500px",
-                background=f"radial-gradient(circle, {COLORS['primary_light']} 0%, transparent 70%)",
-                opacity="0.5",
-                pointer_events="none",
-            ),
-            rx.box(
-                position="absolute",
-                bottom="-150px",
-                left="-150px",
-                width="400px",
-                height="400px",
-                background=f"radial-gradient(circle, {COLORS['primary_light']} 0%, transparent 70%)",
-                opacity="0.4",
-                pointer_events="none",
-            ),
-            position="absolute",
-            top="0",
-            left="0",
-            right="0",
-            bottom="0",
-            overflow="hidden",
-            pointer_events="none",
-        ),
-        
-        # Main content
-        rx.box(
-            rx.hstack(
-                # Main quiz area
                 rx.box(
-                    quiz_content(OnboardingState),
-                    width="100%",
-                    height="100vh",
-                    background="transparent",
-                    position="relative",
-                    z_index="1",
-                    **{
-                        "@media (min-width: 1024px)": {
-                            "width": "60%",
-                        }
-                    }
+                    position="absolute",
+                    top="-200px",
+                    right="-200px",
+                    width="500px",
+                    height="500px",
+                    background=f"radial-gradient(circle, {COLORS['primary_light']} 0%, transparent 70%)",
+                    opacity="0.5",
+                    pointer_events="none",
                 ),
-                
-                # Right sidebar with features
                 rx.box(
-                    welcome_panel(),
-                    width="0",
-                    height="100vh",
-                    background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['primary_hover']} 100%)",
-                    position="relative",
-                    display="none",
-                    overflow="hidden",
-                    box_shadow="-8px 0 24px rgba(0,0,0,0.08)",
-                    **{
-                        "@media (min-width: 1024px)": {
-                            "display": "flex",
-                            "width": "40%",
-                        }
-                    }
+                    position="absolute",
+                    bottom="-150px",
+                    left="-150px",
+                    width="400px",
+                    height="400px",
+                    background=f"radial-gradient(circle, {COLORS['primary_light']} 0%, transparent 70%)",
+                    opacity="0.4",
+                    pointer_events="none",
                 ),
-                
-                spacing="0",
-                width="100%",
-                align="stretch",
+                position="absolute",
+                top="0",
+                left="0",
+                right="0",
+                bottom="0",
+                overflow="hidden",
+                pointer_events="none",
             ),
             
+            # Main content
+            rx.box(
+                rx.hstack(
+                    # Main quiz area
+                    rx.box(
+                        quiz_content(OnboardingState),
+                        width="100%",
+                        height="100vh",
+                        background="transparent",
+                        position="relative",
+                        z_index="1",
+                        **{
+                            "@media (min-width: 1024px)": {
+                                "width": "60%",
+                            }
+                        }
+                    ),
+                    
+                    # Right sidebar with features - visible on desktop
+                    rx.box(
+                        welcome_panel(),
+                        width="0",
+                        height="100vh",
+                        background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['primary_hover']} 100%)",
+                        position="relative",
+                        display="none",
+                        overflow="hidden",
+                        box_shadow="-8px 0 24px rgba(0,0,0,0.08)",
+                        **{
+                            "@media (min-width: 1024px)": {
+                                "display": "flex",
+                                "width": "40%",
+                            }
+                        }
+                    ),
+                    
+                    spacing="0",
+                    width="100%",
+                    align="stretch",
+                ),
+                
+                position="relative",
+                z_index="1",
+            ),
+            
+            width="100vw",
+            height="100vh",
+            overflow="hidden",
             position="relative",
-            z_index="1",
+            background=COLORS["white"],
         ),
-        
-        width="100vw",
-        height="100vh",
-        overflow="hidden",
-        position="relative",
-        background=COLORS["white"],
     )

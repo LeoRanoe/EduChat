@@ -209,53 +209,86 @@ def sidebar(
             # HEADER
             # ============================================================
             rx.box(
-                rx.hstack(
-                    # Logo (icon only when collapsed)
-                    rx.cond(
-                        is_collapsed,
+                rx.cond(
+                    is_collapsed,
+                    # Collapsed: Centered logo and toggle
+                    rx.vstack(
+                        # Logo icon
                         rx.box(
-                            rx.icon("graduation-cap", size=22, color=COLORS["primary_green"]),
-                            padding="0.25rem",
+                            rx.icon("graduation-cap", size=28, color=COLORS["primary_green"]),
+                            width="52px",
+                            height="52px",
+                            display="flex",
+                            align_items="center",
+                            justify_content="center",
+                            background=COLORS["primary_light"],
+                            border_radius="14px",
+                            margin_bottom="0.75rem",
                         ),
-                        logo(size="md"),
-                    ),
-                    rx.spacer(),
-                    # Close button (mobile) / Collapse button (desktop)
-                    rx.hstack(
-                        # Mobile close
-                        rx.box(
-                            rx.icon("x", size=20, color=COLORS["text_secondary"]),
-                            on_click=AppState.close_sidebar,
-                            cursor="pointer",
-                            padding="0.5rem",
-                            border_radius=RADIUS["lg"],
-                            display=["flex", "flex", "none"],
-                            transition=TRANSITIONS["fast"],
-                            _hover={"background": COLORS["light_gray"]},
-                        ),
-                        # Desktop collapse toggle
-                        rx.box(
-                            rx.icon(
-                                rx.cond(is_collapsed, "panel-left-open", "panel-left-close"),
-                                size=18,
-                                color=COLORS["text_secondary"],
+                        # Expand button
+                        rx.tooltip(
+                            rx.box(
+                                rx.icon("panel-left-open", size=18, color=COLORS["primary_green"]),
+                                on_click=on_toggle_collapse,
+                                cursor="pointer",
+                                width="44px",
+                                height="44px",
+                                display="flex",
+                                align_items="center",
+                                justify_content="center",
+                                border_radius="12px",
+                                border=f"1.5px solid {COLORS['primary_green']}",
+                                transition=TRANSITIONS["fast"],
+                                _hover={
+                                    "background": COLORS["primary_green"],
+                                    "transform": "scale(1.05)",
+                                },
+                                _hover_child={
+                                    "color": "white",
+                                },
                             ),
-                            on_click=on_toggle_collapse,
-                            cursor="pointer",
-                            padding="0.5rem",
-                            border_radius=RADIUS["lg"],
-                            display=["none", "none", "flex"],
-                            transition=TRANSITIONS["fast"],
-                            _hover={
-                                "background": COLORS["light_green"],
-                                "color": COLORS["primary_green"],
-                            },
+                            content="Uitklappen",
                         ),
+                        spacing="0",
+                        align="center",
+                        width="100%",
                     ),
-                    align="center",
-                    width="100%",
+                    # Expanded: Logo and buttons
+                    rx.hstack(
+                        logo(size="md"),
+                        rx.spacer(),
+                        rx.hstack(
+                            # Mobile close
+                            rx.box(
+                                rx.icon("x", size=20, color=COLORS["text_secondary"]),
+                                on_click=AppState.close_sidebar,
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius=RADIUS["lg"],
+                                display=["flex", "flex", "none"],
+                                transition=TRANSITIONS["fast"],
+                                _hover={"background": COLORS["light_gray"]},
+                            ),
+                            # Desktop collapse toggle
+                            rx.box(
+                                rx.icon("panel-left-close", size=18, color=COLORS["text_secondary"]),
+                                on_click=on_toggle_collapse,
+                                cursor="pointer",
+                                padding="0.5rem",
+                                border_radius=RADIUS["lg"],
+                                display=["none", "none", "flex"],
+                                transition=TRANSITIONS["fast"],
+                                _hover={
+                                    "background": COLORS["light_green"],
+                                    "color": COLORS["primary_green"],
+                                },
+                            ),
+                        ),
+                        align="center",
+                        width="100%",
+                    ),
                 ),
-                padding="0.875rem 0.875rem 0.75rem",
+                padding="1rem 0.75rem",
                 border_bottom=f"1px solid {COLORS['border_light']}",
                 width="100%",
             ),
@@ -266,25 +299,30 @@ def sidebar(
             rx.box(
                 rx.cond(
                     is_collapsed,
-                    # Collapsed: icon only
-                    rx.tooltip(
-                        rx.box(
-                            rx.icon("plus", size=18, color=COLORS["primary_green"]),
-                            on_click=on_new_conversation,
-                            cursor="pointer",
-                            padding="0.75rem",
-                            border_radius=RADIUS["lg"],
-                            border=f"1.5px dashed {COLORS['primary_green']}",
-                            width="100%",
-                            display="flex",
-                            justify_content="center",
-                            transition=TRANSITIONS["fast"],
-                            _hover={
-                                "background": COLORS["light_green"],
-                                "border_style": "solid",
-                            },
+                    # Collapsed: modern icon button
+                    rx.center(
+                        rx.tooltip(
+                            rx.box(
+                                rx.icon("plus", size=20, color="white"),
+                                on_click=on_new_conversation,
+                                cursor="pointer",
+                                width="48px",
+                                height="48px",
+                                display="flex",
+                                align_items="center",
+                                justify_content="center",
+                                border_radius="12px",
+                                background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['primary_hover']} 100%)",
+                                box_shadow="0 2px 8px rgba(16, 163, 127, 0.2)",
+                                transition=TRANSITIONS["fast"],
+                                _hover={
+                                    "transform": "translateY(-2px)",
+                                    "box_shadow": "0 4px 12px rgba(16, 163, 127, 0.3)",
+                                },
+                            ),
+                            content="Nieuw gesprek",
                         ),
-                        content="Nieuw gesprek",
+                        width="100%",
                     ),
                     # Expanded: full button
                     rx.box(
@@ -361,38 +399,44 @@ def sidebar(
             rx.box(
                 rx.cond(
                     is_collapsed,
-                    # Collapsed: icon indicators
+                    # Collapsed: Minimal dot indicators
                     rx.vstack(
                         rx.foreach(
                             conversations,
                             lambda conv: rx.tooltip(
                                 rx.box(
-                                    rx.icon(
-                                        "message-circle",
-                                        size=16,
-                                        color=rx.cond(
+                                    rx.box(
+                                        width=rx.cond(
+                                            conv["id"] == current_conversation_id,
+                                            "32px",
+                                            "8px"
+                                        ),
+                                        height="8px",
+                                        background=rx.cond(
                                             conv["id"] == current_conversation_id,
                                             COLORS["primary_green"],
-                                            COLORS["text_tertiary"]
+                                            COLORS["gray_300"]
                                         ),
+                                        border_radius="4px",
+                                        transition="all 0.3s ease",
                                     ),
                                     on_click=AppState.load_conversation(conv["id"]),
                                     cursor="pointer",
-                                    padding="0.5rem",
-                                    border_radius=RADIUS["lg"],
-                                    background=rx.cond(
-                                        conv["id"] == current_conversation_id,
-                                        COLORS["light_green"],
-                                        "transparent"
-                                    ),
+                                    width="100%",
+                                    display="flex",
+                                    justify_content="center",
+                                    padding="0.5rem 0",
                                     transition=TRANSITIONS["fast"],
-                                    _hover={"background": COLORS["light_gray"]},
+                                    _hover_child={
+                                        "transform": "scale(1.2)",
+                                        "background": COLORS["primary_green"],
+                                    },
                                 ),
                                 content=conv["title"],
                             ),
                         ),
                         spacing="1",
-                        padding="0.5rem",
+                        padding="1rem 0.5rem",
                         width="100%",
                     ),
                     # Expanded: full conversation list
@@ -448,7 +492,35 @@ def sidebar(
             # ============================================================
             rx.cond(
                 is_collapsed,
-                rx.fragment(),
+                # Collapsed: Show modern icon button
+                rx.center(
+                    rx.tooltip(
+                        rx.link(
+                            rx.box(
+                                rx.icon("user-cog", size=22, color="white"),
+                                width="48px",
+                                height="48px",
+                                display="flex",
+                                align_items="center",
+                                justify_content="center",
+                                background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['primary_hover']} 100%)",
+                                border_radius="14px",
+                                transition=TRANSITIONS["fast"],
+                                box_shadow="0 2px 8px rgba(16, 163, 127, 0.2)",
+                                _hover={
+                                    "transform": "translateY(-2px)",
+                                    "box_shadow": "0 4px 12px rgba(16, 163, 127, 0.3)",
+                                },
+                            ),
+                            href="/onboarding",
+                        ),
+                        content="Voorkeuren",
+                    ),
+                    padding="0.75rem 0.5rem",
+                    border_top=f"1px solid {COLORS['border_light']}",
+                    border_bottom=f"1px solid {COLORS['border_light']}",
+                    width="100%",
+                ),
                 rx.box(
                     rx.link(
                         rx.box(
@@ -492,25 +564,39 @@ def sidebar(
             rx.box(
                 rx.cond(
                     is_collapsed,
-                    # Collapsed: avatar and logout only
+                    # Collapsed: modern icon stack
                     rx.vstack(
-                        avatar(name=user_name, size="sm"),
+                        # Avatar with better styling
+                        rx.box(
+                            avatar(name=user_name, size="md"),
+                            margin_bottom="0.5rem",
+                        ),
+                        # Logout button - modern
                         rx.tooltip(
                             rx.box(
-                                rx.icon("log-out", size=16, color=COLORS["text_tertiary"]),
+                                rx.icon("log-out", size=18, color=COLORS["text_secondary"]),
                                 on_click=AppState.logout,
                                 cursor="pointer",
-                                padding="0.5rem",
-                                border_radius=RADIUS["md"],
+                                width="44px",
+                                height="44px",
+                                display="flex",
+                                align_items="center",
+                                justify_content="center",
+                                border_radius="12px",
+                                border=f"1.5px solid {COLORS['border']}",
+                                background="white",
                                 transition=TRANSITIONS["fast"],
                                 _hover={
-                                    "background": f"rgba(239, 68, 68, 0.1)",
+                                    "background": "rgba(239, 68, 68, 0.08)",
+                                    "border_color": "rgba(239, 68, 68, 0.3)",
+                                    "color": "#DC2626",
                                 },
                             ),
                             content="Uitloggen",
                         ),
-                        spacing="2",
+                        spacing="3",
                         align="center",
+                        width="100%",
                     ),
                     # Expanded: full user section
                     rx.vstack(
