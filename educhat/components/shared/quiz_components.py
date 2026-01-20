@@ -20,18 +20,27 @@ def multi_select_button(
     return rx.button(
         label,
         on_click=on_click,
-        background=rx.cond(is_selected, COLORS["primary_green"], "#FFFFFF"),
-        color=rx.cond(is_selected, "#FFFFFF", COLORS["text_primary"]),
-        border=f"1px solid {COLORS['border']}",
-        border_radius=RADIUS["pill"],
-        padding="10px 20px",
-        font_size="14px",
-        font_weight="400",
+        background=rx.cond(is_selected, COLORS["primary_green"], "white"),
+        color=rx.cond(is_selected, "white", COLORS["text_primary"]),
+        border=rx.cond(
+            is_selected,
+            f"2px solid {COLORS['primary_green']}",
+            f"1px solid {COLORS['border']}"
+        ),
+        border_radius="10px",
+        padding="10px 18px",
+        font_size="0.875rem",
+        font_weight="500",
         cursor="pointer",
-        transition="all 0.2s ease",
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        min_height="44px",
         _hover={
             "border_color": COLORS["primary_green"],
-            "transform": "translateY(-1px)",
+            "background": rx.cond(is_selected, COLORS["primary_hover"], COLORS["primary_light"]),
+        },
+        _focus_visible={
+            "outline": f"2px solid {COLORS['primary_green']}",
+            "outline_offset": "2px",
         },
     )
 
@@ -60,8 +69,8 @@ def multi_select_group(
         ),
         display="flex",
         flex_wrap="wrap",
-        gap="12px",
-        margin_top="16px",
+        gap="10px",
+        margin_top="0.75rem",
     )
 
 
@@ -87,14 +96,23 @@ def checkbox_item(
         ),
         rx.text(
             label,
-            font_size="14px",
+            font_size="0.9375rem",
             color=COLORS["text_primary"],
             cursor="pointer",
             on_click=on_change,
+            line_height="1.4",
         ),
         spacing="3",
         align="center",
-        padding="8px 0",
+        padding="10px 12px",
+        margin_left="-12px",
+        border_radius="8px",
+        cursor="pointer",
+        transition="background 0.15s ease",
+        min_height="44px",
+        _hover={
+            "background": COLORS["gray_100"],
+        },
     )
 
 
@@ -121,9 +139,9 @@ def checkbox_list(
             )
         ),
         spacing="1",
-        align="start",
+        align="stretch",
         width="100%",
-        margin_top="16px",
+        margin_top="0.5rem",
     )
 
 
@@ -147,8 +165,8 @@ def radio_button(
             rx.cond(
                 selected_value == value,
                 rx.box(
-                    width="12px",
-                    height="12px",
+                    width="10px",
+                    height="10px",
                     border_radius="50%",
                     background=COLORS["primary_green"],
                 ),
@@ -157,23 +175,38 @@ def radio_button(
             width="20px",
             height="20px",
             border_radius="50%",
-            border=f"2px solid {COLORS['primary_green']}",
+            border=rx.cond(
+                selected_value == value,
+                f"2px solid {COLORS['primary_green']}",
+                f"2px solid {COLORS['gray_300']}"
+            ),
             display="flex",
             align_items="center",
             justify_content="center",
             cursor="pointer",
+            transition="all 0.15s ease",
             on_click=lambda: on_change(value),
+            flex_shrink="0",
         ),
         rx.text(
             label,
-            font_size="14px",
+            font_size="0.9375rem",
             color=COLORS["text_primary"],
             cursor="pointer",
             on_click=lambda: on_change(value),
+            line_height="1.4",
         ),
         spacing="3",
         align="center",
-        padding="8px 0",
+        padding="10px 12px",
+        margin_left="-12px",
+        border_radius="8px",
+        cursor="pointer",
+        transition="background 0.15s ease",
+        min_height="44px",
+        _hover={
+            "background": COLORS["gray_100"],
+        },
     )
 
 
@@ -201,9 +234,9 @@ def radio_group(
             )
         ),
         spacing="1",
-        align="start",
+        align="stretch",
         width="100%",
-        margin_top="16px",
+        margin_top="0.5rem",
     )
 
 
@@ -229,15 +262,20 @@ def text_area_input(
             placeholder=placeholder,
             width="100%",
             min_height="120px",
-            padding="12px 16px",
-            font_size="14px",
+            padding="14px 16px",
+            font_size="0.9375rem",
             border=f"1px solid {COLORS['border']}",
-            border_radius=RADIUS["md"],
+            border_radius="12px",
             resize="vertical",
+            background="white",
+            transition="border-color 0.2s ease, box-shadow 0.2s ease",
             _focus={
                 "border_color": COLORS["primary_green"],
                 "outline": "none",
-                "box_shadow": f"0 0 0 1px {COLORS['primary_green']}",
+                "box_shadow": f"0 0 0 3px {COLORS['primary_light']}",
+            },
+            _placeholder={
+                "color": COLORS["text_muted"],
             },
         ),
         rx.text(
@@ -246,13 +284,13 @@ def text_area_input(
                 f"{value.length()} / {max_chars}",
                 f"0 / {max_chars}"
             ),
-            font_size="12px",
+            font_size="0.75rem",
             color=COLORS["text_secondary"],
             align_self="end",
         ),
         spacing="2",
         width="100%",
-        margin_top="16px",
+        margin_top="0.75rem",
     )
 
 
@@ -277,16 +315,8 @@ def dropdown_select(
         on_change=on_change,
         placeholder=placeholder,
         width="100%",
-        max_width="300px",
-        padding="12px 16px",
-        font_size="14px",
-        border=f"1px solid {COLORS['border']}",
-        border_radius=RADIUS["md"],
-        background="#FFFFFF",
-        margin_top="16px",
-        _focus={
-            "border_color": COLORS["primary_green"],
-            "outline": "none",
-        },
+        max_width="340px",
+        font_size="0.9375rem",
+        margin_top="0.75rem",
     )
 

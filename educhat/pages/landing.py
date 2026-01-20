@@ -201,33 +201,41 @@ def landing() -> rx.Component:
                     ),
                     
                     rx.heading(
-                        "Jouw AI Assistent voor Surinaams Onderwijs",
+                        "Welkom bij ",
+                        rx.text(
+                            "EduChat",
+                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                            background_clip="text",
+                            color="transparent",
+                            as_="span",
+                        ),
                         size="9",
                         color=COLORS["text_primary"],
-                        margin_bottom="24px",
+                        margin_bottom="20px",
                         animation="fadeInLeft 0.8s ease-out",
                         font_weight="800",
                         line_height="1.15",
                         letter_spacing="-0.02em",
                     ),
-                    rx.heading(
-                        "Vind de Juiste Opleiding in Suriname",
-                        size="7",
-                        background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                        background_clip="text",
-                        color="transparent",
-                        margin_bottom="24px",
-                        animation="fadeInLeft 0.8s ease-out 0.1s backwards",
-                        font_weight="700",
-                    ),
                     rx.text(
-                        "Krijg direct antwoord op al je vragen over opleidingen, inschrijvingen, toelatingseisen en deadlines in Suriname. EduChat helpt je de beste studiekeuze te maken.",
-                        font_size="18px",
+                        "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
+                        font_size="17px",
                         color=COLORS["text_secondary"],
                         line_height="1.7",
-                        margin_bottom="40px",
+                        margin_bottom="24px",
                         animation="fadeIn 0.8s ease-out 0.2s backwards",
                         max_width="580px",
+                        font_weight="450",
+                    ),
+                    rx.text(
+                        "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
+                        font_size="17px",
+                        color=COLORS["text_secondary"],
+                        line_height="1.7",
+                        margin_bottom="36px",
+                        animation="fadeIn 0.8s ease-out 0.3s backwards",
+                        max_width="580px",
+                        font_weight="450",
                     ),
                     
                     # CTA buttons
@@ -369,7 +377,8 @@ def landing() -> rx.Component:
                         rx.box(
                             education_illustration_svg(),
                             width="100%",
-                            max_width="350px",
+                            max_width="450px",
+                            height="400px",
                             margin_x="auto",
                             animation="fadeIn 1s ease-out 0.5s backwards",
                         ),
@@ -1646,37 +1655,135 @@ def benefit_item(icon_name: str, text: str) -> rx.Component:
 
 
 def education_illustration_svg() -> rx.Component:
-    """SVG illustratie voor onderwijs."""
+    """Modern SVG illustratie voor onderwijs met student en AI elementen."""
     return rx.html(
-        f'''<svg width="100%" height="100%" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Achtergrond cirkel -->
-            <circle cx="200" cy="150" r="120" fill="{COLORS['light_green']}" opacity="0.3"/>
+        f'''<svg width="100%" height="100%" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:{COLORS['primary_green']};stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:{COLORS['dark_green']};stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                </linearGradient>
+                <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                    <feOffset dx="0" dy="4" result="offsetblur"/>
+                    <feComponentTransfer>
+                        <feFuncA type="linear" slope="0.15"/>
+                    </feComponentTransfer>
+                    <feMerge>
+                        <feMergeNode/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
             
-            <!-- Boek -->
-            <rect x="140" y="140" width="120" height="80" rx="4" fill="{COLORS['primary_green']}" opacity="0.2"/>
-            <rect x="145" y="145" width="110" height="70" rx="3" fill="white"/>
-            <line x1="200" y1="145" x2="200" y2="215" stroke="{COLORS['primary_green']}" stroke-width="2"/>
-            <line x1="160" y1="165" x2="190" y2="165" stroke="{COLORS['primary_green']}" stroke-width="2" opacity="0.5"/>
-            <line x1="160" y1="180" x2="190" y2="180" stroke="{COLORS['primary_green']}" stroke-width="2" opacity="0.5"/>
-            <line x1="210" y1="165" x2="240" y2="165" stroke="{COLORS['primary_green']}" stroke-width="2" opacity="0.5"/>
-            <line x1="210" y1="180" x2="240" y2="180" stroke="{COLORS['primary_green']}" stroke-width="2" opacity="0.5"/>
+            <!-- Floating background elements -->
+            <circle cx="80" cy="60" r="40" fill="url(#grad1)" opacity="0.1">
+                <animate attributeName="cy" values="60;50;60" dur="4s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="420" cy="320" r="50" fill="url(#grad2)" opacity="0.1">
+                <animate attributeName="cy" values="320;310;320" dur="5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="400" cy="80" r="30" fill="{COLORS['primary_green']}" opacity="0.08">
+                <animate attributeName="r" values="30;35;30" dur="3s" repeatCount="indefinite"/>
+            </circle>
             
-            <!-- Afstudeerhoed -->
-            <polygon points="200,100 240,115 200,120 160,115" fill="{COLORS['primary_green']}"/>
-            <rect x="195" y="120" width="10" height="20" fill="{COLORS['primary_green']}"/>
-            <circle cx="200" cy="95" r="3" fill="{COLORS['dark_green']}"/>
-            <line x1="200" y1="95" x2="200" y2="100" stroke="{COLORS['dark_green']}" stroke-width="2"/>
+            <!-- Main computer/laptop -->
+            <g filter="url(#shadow)">
+                <!-- Screen -->
+                <rect x="120" y="140" width="260" height="160" rx="8" fill="#2d3748"/>
+                <rect x="130" y="150" width="240" height="135" rx="4" fill="#f7fafc"/>
+                
+                <!-- Screen content - AI interface -->
+                <rect x="145" y="165" width="80" height="20" rx="4" fill="url(#grad1)" opacity="0.9"/>
+                <text x="155" y="179" font-family="Arial" font-size="10" fill="white" font-weight="bold">AI Assistant</text>
+                
+                <!-- Chat lines -->
+                <rect x="145" y="195" width="180" height="6" rx="3" fill="{COLORS['primary_green']}" opacity="0.3"/>
+                <rect x="145" y="207" width="150" height="6" rx="3" fill="{COLORS['primary_green']}" opacity="0.3"/>
+                <rect x="145" y="219" width="200" height="6" rx="3" fill="{COLORS['primary_green']}" opacity="0.3"/>
+                <rect x="145" y="231" width="130" height="6" rx="3" fill="{COLORS['primary_green']}" opacity="0.3"/>
+                
+                <!-- Response bubble -->
+                <rect x="145" y="245" width="160" height="30" rx="12" fill="url(#grad1)" opacity="0.15"/>
+                <circle cx="158" cy="260" r="2" fill="{COLORS['primary_green']}"/>
+                <circle cx="166" cy="260" r="2" fill="{COLORS['primary_green']}"/>
+                <circle cx="174" cy="260" r="2" fill="{COLORS['primary_green']}"/>
+                
+                <!-- Keyboard base -->
+                <rect x="120" y="300" width="260" height="10" rx="6" fill="#2d3748"/>
+            </g>
             
-            <!-- Decoratieve elementen -->
-            <circle cx="280" cy="100" r="8" fill="{COLORS['primary_green']}" opacity="0.3"/>
-            <circle cx="120" cy="180" r="6" fill="{COLORS['primary_green']}" opacity="0.3"/>
-            <circle cx="290" cy="200" r="10" fill="{COLORS['primary_green']}" opacity="0.2"/>
+            <!-- Student character -->
+            <g transform="translate(330, 180)">
+                <!-- Head -->
+                <circle cx="0" cy="0" r="35" fill="#667eea" opacity="0.9"/>
+                <!-- Face features -->
+                <circle cx="-10" cy="-5" r="3" fill="white"/>
+                <circle cx="10" cy="-5" r="3" fill="white"/>
+                <!-- Smile -->
+                <path d="M -12,8 Q 0,15 12,8" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <!-- Hair/cap -->
+                <ellipse cx="0" cy="-20" rx="25" ry="18" fill="#2d3748" opacity="0.8"/>
+                
+                <!-- Body -->
+                <ellipse cx="0" cy="60" rx="30" ry="35" fill="#667eea" opacity="0.8"/>
+                
+                <!-- Arm pointing to screen -->
+                <path d="M -25,45 L -60,30" stroke="#667eea" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+                <circle cx="-60" cy="30" r="6" fill="#667eea" opacity="0.8"/>
+            </g>
             
-            <!-- Chat bubbel -->
-            <circle cx="280" cy="160" r="25" fill="{COLORS['primary_green']}" opacity="0.9"/>
-            <circle cx="275" cy="155" r="3" fill="white"/>
-            <circle cx="280" cy="155" r="3" fill="white"/>
-            <circle cx="285" cy="155" r="3" fill="white"/>
+            <!-- Floating icons around -->
+            <!-- Book icon -->
+            <g transform="translate(90, 250)" opacity="0.6">
+                <rect x="0" y="0" width="30" height="36" rx="2" fill="{COLORS['primary_green']}"/>
+                <line x1="15" y1="0" x2="15" y2="36" stroke="white" stroke-width="2"/>
+                <line x1="7" y1="12" x2="13" y2="12" stroke="white" stroke-width="1.5"/>
+                <line x1="17" y1="12" x2="23" y2="12" stroke="white" stroke-width="1.5"/>
+                <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+            </g>
+            
+            <!-- Graduation cap icon -->
+            <g transform="translate(410, 140)" opacity="0.6">
+                <polygon points="15,0 30,7 15,10 0,7" fill="{COLORS['dark_green']}"/>
+                <rect x="12" y="10" width="6" height="12" fill="{COLORS['dark_green']}"/>
+                <circle cx="15" cy="-3" r="2" fill="{COLORS['primary_green']}"/>
+                <line x1="15" y1="-3" x2="15" y2="0" stroke="{COLORS['primary_green']}" stroke-width="1"/>
+                <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/>
+            </g>
+            
+            <!-- Star sparkles -->
+            <g opacity="0.7">
+                <circle cx="70" cy="120" r="3" fill="#ffd700">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="440" cy="240" r="4" fill="#ffd700">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                </circle>
+                <circle cx="100" cy="340" r="3" fill="#ffd700">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+                </circle>
+            </g>
+            
+            <!-- AI sparkle effect around character -->
+            <g opacity="0.5">
+                <circle cx="400" cy="150" r="2" fill="{COLORS['primary_green']}">
+                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="385" cy="200" r="2" fill="{COLORS['primary_green']}">
+                    <animate attributeName="r" values="2;4;2" dur="2.2s" repeatCount="indefinite" begin="0.3s"/>
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2.2s" repeatCount="indefinite" begin="0.3s"/>
+                </circle>
+                <circle cx="420" cy="185" r="2" fill="{COLORS['primary_green']}">
+                    <animate attributeName="r" values="2;4;2" dur="1.8s" repeatCount="indefinite" begin="0.6s"/>
+                    <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite" begin="0.6s"/>
+                </circle>
+            </g>
         </svg>'''
     )
 

@@ -5,7 +5,7 @@ from educhat.styles.theme import COLORS
 
 def progress_bar(current_step: rx.Var[int], total_steps: rx.Var[int]) -> rx.Component:
     """
-    Progress bar with dots indicating current step.
+    Progress bar with segments indicating current step.
     
     Args:
         current_step: Current step number (0-indexed)
@@ -15,22 +15,23 @@ def progress_bar(current_step: rx.Var[int], total_steps: rx.Var[int]) -> rx.Comp
         rx.foreach(
             rx.Var.range(total_steps),
             lambda i: rx.box(
-                width="60px",
-                height="3px",
+                width="100%",
+                height="4px",
                 background=rx.cond(
                     i <= current_step,
                     COLORS["primary_green"],
-                    COLORS["border"]
+                    COLORS["gray_200"]
                 ),
                 border_radius="2px",
-                transition="background 0.3s ease",
+                transition="background 0.3s ease, transform 0.2s ease",
+                _hover={
+                    "transform": "scaleY(1.25)",
+                },
             )
         ),
         spacing="2",
         width="100%",
-        max_width="400px",
-        margin_top="24px",
-        margin_bottom="24px",
+        max_width="360px",
     )
 
 
