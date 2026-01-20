@@ -212,14 +212,42 @@ class AppState(AuthState):
             # Get AI service
             ai_service = get_ai_service()
             
-            # Build conversation history (last 10 messages, excluding the new empty one)
+            # Build conversation history with context preservation
+            # Include more context for complex follow-up questions
             conversation_history = []
-            for msg in self.messages[:-1][-10:]:
+            recent_messages = self.messages[:-1][-10:]  # Last 10 messages excluding current
+            
+            # Track the main topic from conversation for context consistency
+            conversation_topic = None
+            for msg in recent_messages:
+                if msg.get("is_user"):
+                    # Extract potential topic keywords for context tracking
+                    content_lower = msg["content"].lower()
+                    # Check for institution mentions to maintain topic focus
+                    institutions = ['adekus', 'iob', 'natin', 'ptc', 'ahkco', 'fhi', 'universiteit', 'minov']
+                    for inst in institutions:
+                        if inst in content_lower:
+                            conversation_topic = inst
+                            break
+            
+            # Build history with proper formatting
+            for msg in recent_messages:
                 role = "user" if msg["is_user"] else "assistant"
+                content = msg["content"]
+                
+                # Skip error messages from history
+                if msg.get("is_error"):
+                    continue
+                
                 conversation_history.append({
                     "role": role,
-                    "content": msg["content"]
+                    "content": content
                 })
+            
+            # Add topic context to user context if detected
+            enhanced_context = self.user_context.copy() if self.user_context else {}
+            if conversation_topic:
+                enhanced_context["conversation_topic"] = conversation_topic
             
             # Stream AI response with typing animation
             full_response = ""
@@ -231,7 +259,7 @@ class AppState(AuthState):
                 lambda: ai_service.chat_stream(
                     message=user_input_text,
                     conversation_history=conversation_history,
-                    context=self.user_context
+                    context=enhanced_context
                 )
             )
             

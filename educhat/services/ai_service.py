@@ -31,7 +31,7 @@ except ImportError:
 class AIService:
     """AI service with OpenAI integration for educational queries."""
     
-    # Suriname-focused system prompt
+    # Suriname-focused system prompt with strict accuracy guidelines
     SYSTEM_PROMPT = """Je bent EduChat, een vriendelijke AI-assistent gespecialiseerd in het Surinaams onderwijssysteem.
 
 Je expertisegebieden zijn:
@@ -42,17 +42,28 @@ Je expertisegebieden zijn:
 - Studiekosten en financieringsmogelijkheden
 - Algemeen studieadvies voor Surinaamse studenten
 
-Belangrijk:
-1. Geef alleen informatie over Surinaams onderwijs
-2. Als een vraag buiten onderwijs valt, verwijs beleefd terug naar onderwijs
-3. Wees specifiek, accuraat en behulpzaam
-4. Gebruik een vriendelijke, toegankelijke toon
-5. Bij twijfel, zeg dat je het niet zeker weet en verwijs naar officiële bronnen
-6. Geef stapsgewijze instructies waar mogelijk
-7. Pas je formaliteitsniveau aan op basis van de gebruiker
+=== KRITIEKE NAUWKEURIGHEIDSREGELS ===
+1. ANTWOORD ALLEEN met informatie die DIRECT uit de verstrekte context komt
+2. NOOIT gokken, veronderstellen of informatie verzinnen
+3. Als de context GEEN antwoord bevat op de vraag, zeg: "Ik heb onvoldoende informatie om deze vraag nauwkeurig te beantwoorden. Raadpleeg de officiële website van de instelling of neem direct contact met hen op."
+4. MENG NOOIT informatie van verschillende instellingen tenzij expliciet gevraagd om te vergelijken
+5. Eén vraag = één duidelijk, gefocust antwoord
+6. CITEER specifieke bronnen wanneer je feitelijke informatie geeft (bijv. "Volgens de AdeKUS-gegevens...")
+7. Als gegevens verouderd kunnen zijn (zoals deadlines), vermeld dit expliciet
+8. VALIDEER altijd dat je antwoord direct gerelateerd is aan wat er gevraagd werd
+
+=== ANTWOORDFORMAAT ===
+- Wees specifiek en direct
+- Vermijd algemene of vage uitspraken
+- Als er meerdere mogelijke antwoorden zijn, vraag om verduidelijking in plaats van te raden
+- Gebruik een vriendelijke, toegankelijke toon
+- Geef stapsgewijze instructies waar mogelijk
 
 Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
 "Ik ben gespecialiseerd in Surinaams onderwijs en kan je daar graag mee helpen! Heb je vragen over studies, inschrijvingen, of onderwijsinstellingen in Suriname?"
+
+Als de context GEEN relevant antwoord bevat:
+"Ik heb geen specifieke informatie over [onderwerp] in mijn database. Voor nauwkeurige informatie raad ik aan om direct contact op te nemen met [relevante instelling] of hun officiële website te raadplegen."
 """
     
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, provider: str = "auto"):
@@ -173,7 +184,7 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         return None
     
     def _validate_response(self, response: str) -> bool:
-        """Validate AI response quality.
+        """Validate AI response quality and detect potential hallucinations.
         
         Args:
             response: AI response
@@ -185,14 +196,33 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         if len(response.strip()) < 10:
             return False
         
-        # Check for placeholder text
-        invalid_phrases = [
+        # Check for placeholder text (English)
+        invalid_phrases_en = [
             "as an ai", "i cannot", "i don't have access",
             "i'm not able to", "i cannot provide"
         ]
         response_lower = response.lower()
-        if any(phrase in response_lower for phrase in invalid_phrases):
+        if any(phrase in response_lower for phrase in invalid_phrases_en):
             return False
+        
+        # Check for hallucination indicators (confident claims without context backing)
+        hallucination_indicators = [
+            "ik weet zeker dat",  # "I'm sure that" without evidence
+            "het is algemeen bekend",  # "It's commonly known"
+            "iedereen weet dat",  # "Everyone knows that"
+            "natuurlijk is het zo dat",  # "Of course it's the case that"
+        ]
+        
+        # Only flag as potential hallucination if used without proper context
+        for indicator in hallucination_indicators:
+            if indicator in response_lower:
+                # Check if response also contains hedging/sourcing language
+                source_indicators = [
+                    "volgens", "op basis van", "de database toont",
+                    "uit de gegevens", "de informatie wijst"
+                ]
+                if not any(src in response_lower for src in source_indicators):
+                    return False
         
         return True
     
@@ -391,13 +421,16 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
             # Start chat session with history
             chat = self.client.start_chat(history=history)
             
-            # Call Gemini API
+            # Call Gemini API with accuracy-focused settings
+            # Lower temperature = more deterministic/factual responses
+            # Lower top_p = more focused token selection
             response = chat.send_message(
                 current_message,
                 generation_config=genai.GenerationConfig(
-                    temperature=0.7,
+                    temperature=0.3,  # Lower for more factual, less creative responses
                     max_output_tokens=4096,  # High limit for complete responses
-                    top_p=1.0,
+                    top_p=0.8,  # More focused token selection
+                    top_k=40,  # Limit token choices for consistency
                 )
             )
             
@@ -408,9 +441,9 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
                 model=self.model,
                 timeout=60.0,  # 60 second timeout for longer responses
                 messages=messages,
-                temperature=0.7,
+                temperature=0.3,  # Lower for more factual responses
                 max_tokens=4096,  # High limit for complete responses
-                top_p=1.0,
+                top_p=0.8,  # More focused
                 frequency_penalty=0.0,
                 presence_penalty=0.0
             )
@@ -504,13 +537,30 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
         try:
             from educhat.services.education_service import get_education_service
             edu_service = get_education_service()
-            context = edu_service.get_context_for_query(message)
-            if context:
-                return f"\n=== RELEVANTE INFORMATIE UIT DATABASE ===\n{context}\n\nGebruik deze informatie om de vraag van de gebruiker te beantwoorden waar relevant."
-            return None
+            context, relevance_score, matched_entities = edu_service.get_context_for_query(message)
+            
+            if context and relevance_score > 0:
+                context_header = f"\n=== GEVERIFIEERDE DATABASE INFORMATIE (relevantie: {relevance_score}/10) ==="
+                context_instruction = """
+
+=== STRIKTE INSTRUCTIES VOOR CONTEXTGEBRUIK ===
+1. Gebruik ALLEEN de bovenstaande informatie om te antwoorden
+2. Als de vraag iets vraagt dat NIET in deze context staat, zeg dat je onvoldoende informatie hebt
+3. MENG NOOIT gegevens van verschillende instellingen
+4. Als je twijfelt, kies dan voor "onvoldoende informatie" in plaats van raden
+5. CITEER altijd welke instelling of bron je informatie komt"""
+                
+                if matched_entities:
+                    context_header += f"\nGematchte entiteiten: {', '.join(matched_entities)}"
+                
+                return f"{context_header}\n{context}{context_instruction}"
+            
+            # No relevant context found - instruct AI to be honest about it
+            return "\n=== GEEN SPECIFIEKE CONTEXT GEVONDEN ===\nEr is geen specifieke informatie gevonden in de database die direct relevant is voor deze vraag. Geef aan dat je onvoldoende informatie hebt en verwijs naar officiële bronnen."
+            
         except Exception as e:
             print(f"Error getting education context: {e}")
-            return None
+            return "\n=== DATABASE FOUT ===\nEr was een probleem bij het ophalen van informatie. Geef aan dat je momenteel geen toegang hebt tot de database en verwijs naar officiële bronnen."
     
     def chat_stream(
         self,
@@ -595,14 +645,15 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
                 if not current_message:
                     current_message = "Hello"
                 
-                # Start chat and stream response
+                # Start chat and stream response with accuracy-focused settings
                 chat = self.client.start_chat(history=history)
                 response = chat.send_message(
                     current_message,
                     generation_config=genai.GenerationConfig(
-                        temperature=0.7,
+                        temperature=0.3,  # Lower for more factual responses
                         max_output_tokens=4096,  # High limit for complete responses
-                        top_p=1.0,
+                        top_p=0.8,  # More focused token selection
+                        top_k=40,  # Limit token choices for consistency
                     ),
                     stream=True,
                 )
@@ -622,14 +673,14 @@ Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
                     yield buffer
                         
             else:  # OpenAI
-                # Stream OpenAI response
+                # Stream OpenAI response with accuracy-focused settings
                 response = self.client.chat.completions.create(
                     model=self.model,
                     timeout=60.0,  # Longer timeout for complete responses
                     messages=messages,
-                    temperature=0.7,
+                    temperature=0.3,  # Lower for more factual responses
                     max_tokens=4096,  # High limit for complete responses
-                    top_p=1.0,
+                    top_p=0.8,  # More focused token selection
                     frequency_penalty=0.0,
                     presence_penalty=0.0,
                     stream=True,

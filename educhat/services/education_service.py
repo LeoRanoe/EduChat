@@ -127,13 +127,13 @@ class EducationDataService:
             return []
     
     def search_institutions(self, query: str) -> List[Dict]:
-        """Search institutions by name, type, or programs.
+        """Search institutions by name, type, or programs with strict relevance filtering.
         
         Args:
             query: Search query string.
             
         Returns:
-            List of matching institutions.
+            List of matching institutions, sorted by relevance.
         """
         self.load_data()
         
@@ -141,33 +141,76 @@ class EducationDataService:
             return []
         
         query_lower = query.lower()
+        query_words = set(query_lower.split())
+        
+        # Remove common stop words for better matching
+        stop_words = {'de', 'het', 'een', 'van', 'in', 'op', 'met', 'voor', 'is', 'en', 'te', 'naar', 'om', 'wat', 'hoe', 'welke', 'waar', 'ik', 'je', 'wil', 'kan', 'graag', 'over', 'mij', 'meer'}
+        query_words = query_words - stop_words
+        
         results = []
         
         for inst in self._data.get('institutions', []):
-            # Check name
-            if query_lower in inst.get('name', '').lower():
-                results.append(inst)
-                continue
+            relevance_score = 0
+            match_type = None
             
-            # Check type
-            if query_lower in inst.get('type', '').lower():
-                results.append(inst)
-                continue
+            inst_name_lower = inst.get('name', '').lower()
+            inst_type_lower = inst.get('type', '').lower()
+            inst_desc_lower = inst.get('description', '').lower()
             
-            # Check programs
-            programs = inst.get('programs', [])
-            for program in programs:
-                if query_lower in program.lower():
-                    results.append(inst)
-                    break
+            # Exact name match (highest priority)
+            if query_lower in inst_name_lower or inst_name_lower in query_lower:
+                relevance_score = 10
+                match_type = 'name_exact'
+            # ID match
+            elif query_lower == inst.get('id', '').lower():
+                relevance_score = 10
+                match_type = 'id_exact'
+            # Partial name match
+            elif any(word in inst_name_lower for word in query_words if len(word) > 2):
+                matching_words = sum(1 for word in query_words if word in inst_name_lower and len(word) > 2)
+                relevance_score = min(8, 4 + matching_words)
+                match_type = 'name_partial'
+            # Type match
+            elif any(word in inst_type_lower for word in query_words if len(word) > 2):
+                relevance_score = 5
+                match_type = 'type'
+            # Program match
+            else:
+                programs = inst.get('programs', [])
+                program_text = ' '.join(programs).lower()
+                matching_programs = sum(1 for word in query_words if word in program_text and len(word) > 3)
+                if matching_programs > 0:
+                    relevance_score = min(6, 3 + matching_programs)
+                    match_type = 'program'
+                # Description match (lowest priority)
+                elif any(word in inst_desc_lower for word in query_words if len(word) > 3):
+                    matching_words = sum(1 for word in query_words if word in inst_desc_lower and len(word) > 3)
+                    if matching_words >= 2:  # Require at least 2 matching words for description
+                        relevance_score = min(4, 2 + matching_words)
+                        match_type = 'description'
             
-            # Check description
-            if query_lower in inst.get('description', '').lower():
-                results.append(inst)
-                continue
+            if relevance_score > 0:
+                results.append({
+                    **inst,
+                    '_relevance_score': relevance_score,
+                    '_match_type': match_type
+                })
         
-        # Also search Supabase if enabled
-        if self._use_supabase and len(results) < 5:
+        # Sort by relevance score (highest first)
+        results.sort(key=lambda x: x.get('_relevance_score', 0), reverse=True)
+        
+        # Filter out low relevance matches if we have high relevance ones
+        if results and results[0].get('_relevance_score', 0) >= 8:
+            # Keep only high relevance matches
+            results = [r for r in results if r.get('_relevance_score', 0) >= 5]
+        
+        # Clean up internal fields before returning
+        for r in results:
+            r.pop('_relevance_score', None)
+            r.pop('_match_type', None)
+        
+        # Also search Supabase if enabled and local results are insufficient
+        if self._use_supabase and len(results) < 2:
             supabase_results = self.search_institutions_supabase(query)
             # Avoid duplicates
             result_ids = {r.get('id') for r in results}
@@ -235,101 +278,263 @@ class EducationDataService:
         self.load_data()
         return self._data.get('ministry', {})
     
-    def get_context_for_query(self, user_query: str) -> str:
-        """Generate relevant context for an AI query.
+    def _calculate_relevance_score(self, query: str, text: str) -> int:
+        """Calculate relevance score between query and text.
         
-        This method analyzes the user's query and returns relevant
-        education data to inject into the AI prompt.
+        Args:
+            query: User query
+            text: Text to check relevance against
+            
+        Returns:
+            Relevance score from 0-10
+        """
+        if not query or not text:
+            return 0
+        
+        query_words = set(query.lower().split())
+        text_lower = text.lower()
+        
+        # Remove common stop words
+        stop_words = {'de', 'het', 'een', 'van', 'in', 'op', 'met', 'voor', 'is', 'en', 'te', 'naar', 'om', 'wat', 'hoe', 'welke', 'waar', 'ik', 'je', 'wil', 'kan', 'graag'}
+        query_words = query_words - stop_words
+        
+        if not query_words:
+            return 0
+        
+        # Count matching words
+        matches = sum(1 for word in query_words if word in text_lower)
+        
+        # Calculate score
+        score = min(10, int((matches / len(query_words)) * 10))
+        
+        return score
+    
+    def _extract_query_entities(self, query: str) -> Dict[str, List[str]]:
+        """Extract named entities and key concepts from query.
+        
+        Args:
+            query: User query
+            
+        Returns:
+            Dictionary with entity types and their values
+        """
+        query_lower = query.lower()
+        entities = {
+            'institutions': [],
+            'programs': [],
+            'topics': []
+        }
+        
+        # Institution name patterns
+        institution_patterns = {
+            'adekus': ['adekus', 'anton de kom', 'universiteit', 'uvs'],
+            'iob': ['iob', 'opleiding van leraren', 'lerarenopleiding', 'kweekschool'],
+            'natin': ['natin', 'natuurtechnisch'],
+            'ptc': ['ptc', 'polytechnic', 'hbo'],
+            'ahkco': ['ahkco', 'kunstacademie', 'kunst en cultuur'],
+            'fhi': ['fhi', 'business school']
+        }
+        
+        for inst_id, patterns in institution_patterns.items():
+            if any(p in query_lower for p in patterns):
+                entities['institutions'].append(inst_id)
+        
+        # Topic detection
+        topic_patterns = {
+            'admission': ['toelating', 'inschrijv', 'aanmeld', 'requirements', 'vereisten', 'hoe schrijf'],
+            'programs': ['opleiding', 'studie', 'programma', 'richting', 'faculteit'],
+            'dates': ['deadline', 'datum', 'wanneer', 'periode'],
+            'costs': ['kosten', 'geld', 'betalen', 'financier', 'beurs'],
+            'contact': ['contact', 'adres', 'telefoon', 'email', 'website'],
+            'education_system': ['onderwijs', 'systeem', 'niveau', 'mulo', 'vwo', 'havo']
+        }
+        
+        for topic, patterns in topic_patterns.items():
+            if any(p in query_lower for p in patterns):
+                entities['topics'].append(topic)
+        
+        return entities
+    
+    def get_context_for_query(self, user_query: str) -> tuple:
+        """Generate strictly relevant context for an AI query.
+        
+        This method analyzes the user's query and returns ONLY relevant
+        education data to inject into the AI prompt. It maintains context
+        integrity and prevents mixing of unrelated data.
         
         Args:
             user_query: The user's question.
             
         Returns:
-            Formatted context string for AI prompt.
+            Tuple of (context_string, relevance_score, matched_entities)
         """
         self.load_data()
         
         context_parts = []
+        matched_entities = []
+        total_relevance = 0
         query_lower = user_query.lower()
         
-        # Check for institution-specific queries
-        institutions = self.search_institutions(user_query)
-        if institutions:
-            context_parts.append("=== RELEVANTE INSTELLINGEN ===")
-            for inst in institutions[:3]:  # Limit to top 3
-                context_parts.append(f"\n📚 {inst['name']}")
-                context_parts.append(f"   Type: {inst.get('type', 'N/A')}")
-                context_parts.append(f"   Locatie: {inst.get('location', 'N/A')}")
-                context_parts.append(f"   {inst.get('description', '')}")
-                if inst.get('programs'):
-                    context_parts.append(f"   Opleidingen: {', '.join(inst['programs'][:5])}")
-                if inst.get('requirements'):
-                    context_parts.append(f"   Toelatingseisen: {inst['requirements']}")
-                if inst.get('admission_period'):
-                    context_parts.append(f"   Inschrijvingsperiode: {inst['admission_period']}")
+        # Extract entities from query for focused retrieval
+        entities = self._extract_query_entities(user_query)
         
-        # Check for education system queries
-        edu_keywords = ['onderwijs', 'systeem', 'school', 'niveau', 'mulo', 'vwo', 'havo', 'hbo', 'wo']
-        if any(kw in query_lower for kw in edu_keywords):
+        # Determine if query is about general system vs specific institutions
+        is_system_query = 'education_system' in entities['topics']
+        is_institution_query = bool(entities['institutions'])
+        
+        # =====================================================================
+        # INSTITUTION-SPECIFIC QUERIES (highest priority - most precise)
+        # =====================================================================
+        if is_institution_query:
+            # User asked about specific institution(s) - ONLY return those
+            for inst_id in entities['institutions']:
+                inst = self.get_institution_by_id(inst_id)
+                if inst:
+                    matched_entities.append(inst['name'])
+                    relevance = self._calculate_relevance_score(user_query, inst.get('description', '') + ' ' + inst.get('name', ''))
+                    total_relevance = max(total_relevance, relevance)
+                    
+                    context_parts.append(f"\n=== {inst['name'].upper()} (EXACTE MATCH) ===")
+                    context_parts.append(f"Type: {inst.get('type', 'N/A')}")
+                    context_parts.append(f"Locatie: {inst.get('location', 'N/A')}")
+                    context_parts.append(f"Beschrijving: {inst.get('description', 'N/A')}")
+                    
+                    # Only include relevant sections based on query topics
+                    if 'programs' in entities['topics'] or not entities['topics']:
+                        if inst.get('programs'):
+                            context_parts.append(f"Opleidingen: {', '.join(inst['programs'])}")
+                    
+                    if 'admission' in entities['topics'] or not entities['topics']:
+                        if inst.get('requirements'):
+                            context_parts.append(f"Toelatingseisen: {inst['requirements']}")
+                        if inst.get('admission_period'):
+                            context_parts.append(f"Inschrijvingsperiode: {inst['admission_period']}")
+                    
+                    if 'contact' in entities['topics'] or not entities['topics']:
+                        contact = inst.get('contact', {})
+                        if contact:
+                            context_parts.append("Contactgegevens:")
+                            if contact.get('phone'):
+                                context_parts.append(f"  Telefoon: {contact['phone']}")
+                            if contact.get('email'):
+                                context_parts.append(f"  Email: {contact['email']}")
+                            if contact.get('address'):
+                                context_parts.append(f"  Adres: {contact['address']}")
+                    
+                    if inst.get('website'):
+                        context_parts.append(f"Website: {inst['website']}")
+        
+        # If no specific institution matched and NOT a system-level query, try broader search
+        elif not is_institution_query and not is_system_query:
+            # Search institutions but require high relevance
+            institutions = self.search_institutions(user_query)
+            
+            # Filter by relevance score
+            relevant_institutions = []
+            for inst in institutions:
+                score = self._calculate_relevance_score(
+                    user_query, 
+                    f"{inst.get('name', '')} {inst.get('description', '')} {' '.join(inst.get('programs', []))}"
+                )
+                if score >= 3:  # Minimum relevance threshold
+                    relevant_institutions.append((inst, score))
+            
+            # Sort by relevance and take only top match to avoid mixing
+            relevant_institutions.sort(key=lambda x: x[1], reverse=True)
+            
+            if relevant_institutions:
+                # Only return the MOST relevant institution to prevent mixing
+                inst, score = relevant_institutions[0]
+                total_relevance = max(total_relevance, score)
+                matched_entities.append(inst['name'])
+                
+                context_parts.append(f"\n=== {inst['name'].upper()} (BESTE MATCH - relevantie {score}/10) ===")
+                context_parts.append(f"Type: {inst.get('type', 'N/A')}")
+                context_parts.append(f"Locatie: {inst.get('location', 'N/A')}")
+                context_parts.append(f"Beschrijving: {inst.get('description', 'N/A')}")
+                
+                if inst.get('programs'):
+                    context_parts.append(f"Opleidingen: {', '.join(inst['programs'])}")
+                if inst.get('requirements'):
+                    context_parts.append(f"Toelatingseisen: {inst['requirements']}")
+                if inst.get('admission_period'):
+                    context_parts.append(f"Inschrijvingsperiode: {inst['admission_period']}")
+        
+        # =====================================================================
+        # EDUCATION SYSTEM QUERIES (only if specifically asked)
+        # =====================================================================
+        if 'education_system' in entities['topics']:
             edu_system = self.get_education_system_info()
             if edu_system:
+                matched_entities.append("Onderwijssysteem Suriname")
+                total_relevance = max(total_relevance, 7)
+                
                 context_parts.append("\n=== ONDERWIJSSYSTEEM SURINAME ===")
                 
                 # Primary
                 primary = edu_system.get('primary', {})
                 if primary:
-                    context_parts.append(f"\n🎒 Basisonderwijs: {primary.get('name', 'GLO')}")
-                    context_parts.append(f"   Duur: {primary.get('duration', '6 jaar')}")
-                    context_parts.append(f"   Leeftijd: {primary.get('age_range', '6-12 jaar')}")
+                    context_parts.append(f"Basisonderwijs ({primary.get('name', 'GLO')}): Duur {primary.get('duration', '6 jaar')}, Leeftijd {primary.get('age_range', '6-12 jaar')}")
                 
                 # Secondary Junior
                 sec_junior = edu_system.get('secondary_junior', {})
                 if sec_junior:
-                    context_parts.append(f"\n📖 {sec_junior.get('name', 'VOJ')}:")
+                    context_parts.append(f"{sec_junior.get('name', 'VOJ')}:")
                     for t in sec_junior.get('types', []):
-                        context_parts.append(f"   - {t['name']}: {t.get('description', '')}")
+                        context_parts.append(f"  - {t['name']}: {t.get('description', '')}")
                 
                 # Secondary Senior
                 sec_senior = edu_system.get('secondary_senior', {})
                 if sec_senior:
-                    context_parts.append(f"\n📚 {sec_senior.get('name', 'VOS')}:")
+                    context_parts.append(f"{sec_senior.get('name', 'VOS')}:")
                     for t in sec_senior.get('types', []):
-                        context_parts.append(f"   - {t['name']}: {t.get('description', '')}")
+                        context_parts.append(f"  - {t['name']}: {t.get('description', '')}")
         
-        # Check for MINOV queries
-        minov_keywords = ['minov', 'ministerie', 'onderwijs']
-        if any(kw in query_lower for kw in minov_keywords):
-            ministry = self.get_ministry_info()
-            if ministry:
-                context_parts.append("\n=== MINISTERIE VAN ONDERWIJS (MINOV) ===")
-                context_parts.append(f"📍 {ministry.get('name', '')}")
-                context_parts.append(f"   {ministry.get('description', '')}")
-                if ministry.get('responsibilities'):
-                    context_parts.append(f"   Verantwoordelijkheden: {', '.join(ministry['responsibilities'][:4])}")
-        
-        # Check for date-related queries
-        date_keywords = ['deadline', 'datum', 'wanneer', 'inschrijv', 'examen', 'aanmeld']
-        if any(kw in query_lower for kw in date_keywords):
+        # =====================================================================
+        # DATE QUERIES (only if specifically asked about dates/deadlines)
+        # =====================================================================
+        if 'dates' in entities['topics']:
             dates = self.get_important_dates()
             if dates:
-                context_parts.append("\n=== BELANGRIJKE DATA ===")
+                matched_entities.append("Belangrijke Data")
+                total_relevance = max(total_relevance, 6)
+                
+                context_parts.append("\n=== BELANGRIJKE DATA (controleer actualiteit!) ===")
                 
                 app_periods = dates.get('application_periods', {})
                 if app_periods:
-                    context_parts.append("📅 Inschrijvingsperiodes:")
+                    context_parts.append("Inschrijvingsperiodes:")
                     for level, period in app_periods.items():
-                        context_parts.append(f"   - {level.upper()}: {period}")
+                        context_parts.append(f"  - {level.upper()}: {period}")
                 
                 exam_periods = dates.get('exam_periods', {})
                 if exam_periods:
-                    context_parts.append("📝 Examenperiodes:")
+                    context_parts.append("Examenperiodes:")
                     for exam, period in exam_periods.items():
-                        context_parts.append(f"   - {exam.replace('_', ' ').title()}: {period}")
+                        context_parts.append(f"  - {exam.replace('_', ' ').title()}: {period}")
         
+        # =====================================================================
+        # MINISTRY QUERIES (only if specifically about MINOV)
+        # =====================================================================
+        minov_specific = any(kw in query_lower for kw in ['minov', 'ministerie van onderwijs'])
+        if minov_specific:
+            ministry = self.get_ministry_info()
+            if ministry:
+                matched_entities.append("MINOV")
+                total_relevance = max(total_relevance, 8)
+                
+                context_parts.append("\n=== MINISTERIE VAN ONDERWIJS (MINOV) ===")
+                context_parts.append(f"Naam: {ministry.get('name', '')}")
+                context_parts.append(f"Beschrijving: {ministry.get('description', '')}")
+                if ministry.get('responsibilities'):
+                    context_parts.append(f"Verantwoordelijkheden: {', '.join(ministry['responsibilities'])}")
+        
+        # Return context with metadata
         if context_parts:
-            return "\n".join(context_parts)
+            context_string = "\n".join(context_parts)
+            return (context_string, total_relevance, matched_entities)
         
-        return ""
+        return ("", 0, [])
 
 
 # Singleton instance
