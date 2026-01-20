@@ -4,6 +4,7 @@ import reflex as rx
 from educhat.state.auth_state import AuthState
 from educhat.state.app_state import AppState
 from educhat.components.auth import auth_modal
+from educhat.components.shared.institution_logos import compact_logos_row
 from educhat.styles.theme import COLORS
 
 
@@ -760,6 +761,102 @@ def landing() -> rx.Component:
             
             padding="120px 32px",
             background=f"linear-gradient(180deg, white 0%, {COLORS['light_gray']} 100%)",
+            position="relative",
+            overflow="hidden",
+        ),
+        
+        # Partner Institutions Section - Dedicated
+        rx.box(
+            # Animated background decoration
+            rx.box(
+                rx.box(
+                    position="absolute",
+                    top="-100px",
+                    right="-100px",
+                    width="400px",
+                    height="400px",
+                    background=f"radial-gradient(circle, {COLORS['primary_light']} 0%, transparent 70%)",
+                    opacity="0.3",
+                    pointer_events="none",
+                ),
+                rx.box(
+                    position="absolute",
+                    bottom="-100px",
+                    left="-100px",
+                    width="350px",
+                    height="350px",
+                    background=f"radial-gradient(circle, {COLORS['primary_light']} 0%, transparent 70%)",
+                    opacity="0.25",
+                    pointer_events="none",
+                ),
+                position="absolute",
+                top="0",
+                left="0",
+                right="0",
+                bottom="0",
+                overflow="hidden",
+                pointer_events="none",
+            ),
+            
+            rx.box(
+                # Section header
+                rx.vstack(
+                    rx.box(
+                        rx.icon("building-2", size=16, color=COLORS["primary_green"]),
+                        rx.text("Vertrouwde Partners", font_size="14px", font_weight="600", color=COLORS["primary_green"]),
+                        display="flex",
+                        align_items="center",
+                        gap="8px",
+                        padding="8px 20px",
+                        background="white",
+                        border_radius="50px",
+                        border=f"2px solid {COLORS['primary_green']}",
+                        box_shadow="0 4px 12px rgba(16, 163, 127, 0.15)",
+                        margin_bottom="20px",
+                        width="fit-content",
+                    ),
+                    rx.heading(
+                        "Onderwijsinstellingen in Suriname",
+                        size="9",
+                        color=COLORS["text_primary"],
+                        margin_bottom="16px",
+                        font_weight="800",
+                        text_align="center",
+                        line_height="1.2",
+                    ),
+                    rx.text(
+                        "EduChat heeft toegang tot informatie van alle belangrijke onderwijsinstellingen",
+                        font_size="18px",
+                        color=COLORS["text_secondary"],
+                        text_align="center",
+                        max_width="600px",
+                        margin_bottom="48px",
+                        line_height="1.6",
+                    ),
+                    spacing="0",
+                    align="center",
+                    width="100%",
+                ),
+                
+                # Logos with infinite scroll
+                rx.box(
+                    compact_logos_row(),
+                    width="100%",
+                    padding="50px 40px",
+                    background="white",
+                    border_radius="24px",
+                    box_shadow="0 12px 48px rgba(0, 0, 0, 0.08)",
+                    border=f"1px solid {COLORS['border_light']}",
+                ),
+                
+                max_width="1400px",
+                margin="0 auto",
+                position="relative",
+                z_index="1",
+            ),
+            
+            padding="100px 32px",
+            background=f"linear-gradient(180deg, {COLORS['light_gray']} 0%, white 100%)",
             position="relative",
             overflow="hidden",
         ),

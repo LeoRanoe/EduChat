@@ -348,7 +348,7 @@ def question_step_5(state: OnboardingState) -> rx.Component:
             line_height="1.4",
             margin_bottom="0.625rem",
         ),
-        checkbox_list(
+        multi_select_group(
             options=IMPROVEMENT_GOALS,
             selected_values=state.improvement_areas,
             on_toggle=state.toggle_improvement_area,
