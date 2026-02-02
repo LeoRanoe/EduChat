@@ -4,6 +4,7 @@ Handles all authentication operations with Supabase Auth.
 """
 
 import re
+import os
 import asyncio
 from typing import Dict, Optional, Tuple
 from educhat.services.supabase_client import get_client
@@ -98,14 +99,16 @@ class AuthService:
     
     # === Core Auth Methods ===
     
-    async def signup(self, email: str, password: str, name: str) -> Dict:
+    async def signup(self, email: str, password: str, name: str, firstname: str = "", lastname: str = "") -> Dict:
         """
         Register a new user with Supabase Auth.
         
         Args:
             email: User's email address
             password: User's password
-            name: User's display name
+            name: User's full display name
+            firstname: User's first name (optional)
+            lastname: User's last name (optional)
             
         Returns:
             Dict with success status, user data, session, or error
@@ -127,6 +130,8 @@ class AuthService:
             # Clean inputs
             email = email.strip().lower()
             name = name.strip()
+            firstname = firstname.strip() if firstname else ""
+            lastname = lastname.strip() if lastname else ""
             
             # Sign up with Supabase Auth
             response = await asyncio.to_thread(
@@ -136,7 +141,9 @@ class AuthService:
                     "options": {
                         "data": {
                             "name": name,
-                            "display_name": name
+                            "display_name": name,
+                            "firstname": firstname,
+                            "lastname": lastname
                         }
                     }
                 })
@@ -433,6 +440,178 @@ class AuthService:
                 "success": True,
                 "message": "Als dit e-mailadres bij ons bekend is, ontvang je een bevestigingsmail."
             }
+    
+    async def google_signin(self) -> Dict:
+        """
+        Initiate Google OAuth sign-in flow.
+        
+        Returns:
+            Dict with success status and OAuth URL
+        """
+        try:
+            print("[AUTH SERVICE] Initiating Google OAuth sign-in...")
+            
+            # Use OAuth with implicit flow (fragment-based) to avoid PKCE issues
+            # The access token will be in the URL fragment instead of query params
+            response = await asyncio.to_thread(
+                lambda: self.client.auth.sign_in_with_oauth({
+                    "provider": "google",
+                    "options": {
+                        "redirect_to": f"{os.getenv('SITE_URL', 'http://localhost:3000')}/auth/callback",
+                        "skip_browser_redirect": False,
+                        "query_params": {
+                            "access_type": "offline",
+                            "prompt": "consent"
+                        }
+                    }
+                })
+            )
+            
+            print(f"[AUTH SERVICE] OAuth response: {response}")
+            
+            if response and hasattr(response, 'url'):
+                print(f"[AUTH SERVICE] OAuth URL generated: {response.url[:80] if len(response.url) > 80 else response.url}...")
+                return {
+                    "success": True,
+                    "url": response.url
+                }
+            else:
+                print("[AUTH SERVICE] No URL in OAuth response")
+                return {
+                    "success": False,
+                    "error": "Kon geen OAuth URL genereren"
+                }
+        except Exception as e:
+            print(f"[AUTH SERVICE] Google sign-in error: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Google sign-in mislukt: {str(e)}"
+            }
+    
+    async def handle_oauth_callback(self, code: str) -> Dict:
+        """
+        Handle OAuth callback and exchange code for session.
+        
+        Args:
+            code: OAuth authorization code
+            
+        Returns:
+            Dict with success status and user data
+        """
+        print(f"[AUTH SERVICE] Handling OAuth callback with code: {code[:20] if code else 'None'}...")
+        
+        try:
+            # Exchange code for session
+            print("[AUTH SERVICE] Exchanging code for session...")
+            response = await asyncio.to_thread(
+                lambda: self.client.auth.exchange_code_for_session({"auth_code": code})
+            )
+            
+            print(f"[AUTH SERVICE] Response received. User: {response.user.id if response.user else 'None'}")
+            
+            if response.user:
+                # Extract user metadata
+                user_metadata = response.user.user_metadata or {}
+                full_name = user_metadata.get('full_name') or user_metadata.get('name') or ''
+                
+                # Try to split name into first and last
+                name_parts = full_name.split(' ', 1)
+                firstname = name_parts[0] if name_parts else ''
+                lastname = name_parts[1] if len(name_parts) > 1 else ''
+                
+                print(f"[AUTH SERVICE] User authenticated: {response.user.email}")
+                
+                return {
+                    "success": True,
+                    "user": {
+                        "id": response.user.id,
+                        "email": response.user.email,
+                        "name": full_name,
+                        "firstname": firstname,
+                        "lastname": lastname,
+                        "provider": "google"
+                    },
+                    "session": {
+                        "access_token": response.session.access_token if response.session else None,
+                        "refresh_token": response.session.refresh_token if response.session else None,
+                        "expires_at": response.session.expires_at if response.session else None
+                    }
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "Google authenticatie mislukt"
+                }
+        except Exception as e:
+            print(f"[AUTH SERVICE] OAuth callback error: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Authenticatie mislukt: {str(e)}"
+            }
+
+
+    async def get_session(self) -> Dict:
+        """
+        Get current session from Supabase.
+        
+        Returns:
+            Dict with success status and session data
+        """
+        print("[AUTH SERVICE] Getting current session...")
+        
+        try:
+            # Get current session
+            response = await asyncio.to_thread(
+                lambda: self.client.auth.get_session()
+            )
+            
+            print(f"[AUTH SERVICE] Session response: {response}")
+            
+            if response:
+                user = response.user
+                session = response.session
+                
+                if user and session:
+                    # Extract user metadata
+                    user_metadata = user.user_metadata or {}
+                    full_name = user_metadata.get('full_name') or user_metadata.get('name') or user.email
+                    
+                    print(f"[AUTH SERVICE] Session found for user: {user.email}")
+                    
+                    return {
+                        "success": True,
+                        "user": {
+                            "id": user.id,
+                            "email": user.email,
+                            "name": full_name,
+                        },
+                        "session": {
+                            "access_token": session.access_token,
+                            "refresh_token": session.refresh_token,
+                            "expires_at": session.expires_at
+                        }
+                    }
+            
+            print("[AUTH SERVICE] No session found")
+            return {
+                "success": False,
+                "error": "Geen actieve sessie"
+            }
+        except Exception as e:
+            print(f"[AUTH SERVICE] Get session error: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "success": False,
+                "error": f"Sessie ophalen mislukt: {str(e)}"
+            }
+
+
+import os  # Add at top of file if not present
 
 
 # Singleton instance

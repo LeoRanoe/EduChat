@@ -33,6 +33,10 @@ class ThemeTokens:
     primary_light = "var(--color-primary-light)"
     primary_muted = "var(--color-primary-muted)"
     
+    # Accent colors (for secondary branding)
+    accent = "var(--color-accent)"
+    accent_light = "var(--color-accent-light)"
+    
     # Backgrounds
     bg_primary = "var(--bg-primary)"
     bg_secondary = "var(--bg-secondary)"
@@ -200,6 +204,71 @@ LINE_HEIGHTS = {
     "relaxed": "1.625",
     "loose": "1.75",
 }
+
+# =============================================================================
+# SOLID BACKGROUND COLORS (for fixing transparency issues)
+# Use these instead of CSS variables when solid backgrounds are required
+# =============================================================================
+SOLID_COLORS = {
+    # Light mode backgrounds
+    "bg_primary_light": "#F9FAFB",
+    "bg_secondary_light": "#FFFFFF",
+    "bg_tertiary_light": "#F3F4F6",
+    "bg_card_light": "#FFFFFF",
+    "bg_input_light": "#FFFFFF",
+    "modal_bg_light": "#FFFFFF",
+    
+    # Dark mode backgrounds
+    "bg_primary_dark": "#0b0b0d",
+    "bg_secondary_dark": "#111217",
+    "bg_tertiary_dark": "#1a1b21",
+    "bg_card_dark": "#111217",
+    "bg_input_dark": "#1a1b21",
+    "modal_bg_dark": "#111217",
+    
+    # Border colors for solid backgrounds
+    "border_light": "#E5E7EB",
+    "border_dark": "#2d3039",
+}
+
+
+class SolidBackgrounds:
+    """Solid background color values for components that need non-transparent backgrounds.
+    
+    Use these instead of ThemeTokens when you need guaranteed solid backgrounds,
+    especially in modals, forms, and panels.
+    """
+    # Modal backgrounds
+    modal_light = "#FFFFFF"
+    modal_dark = "#111217"
+    
+    # Form/Panel backgrounds
+    panel_light = "#FFFFFF"
+    panel_dark = "#111217"
+    
+    # Card backgrounds
+    card_light = "#FFFFFF"
+    card_dark = "#111217"
+    
+    # Input backgrounds
+    input_light = "#FFFFFF"
+    input_dark = "#1a1b21"
+    
+    # Chat input background
+    chat_input_light = "#FFFFFF"
+    chat_input_dark = "#1a1b21"
+    
+    # Sidebar backgrounds
+    sidebar_light = "#FFFFFF"
+    sidebar_dark = "#111217"
+    
+    # Dropdown/Popover backgrounds
+    dropdown_light = "#FFFFFF"
+    dropdown_dark = "#111217"
+
+
+# Alias for easier imports
+SB = SolidBackgrounds
 
 # =============================================================================
 # SPACING SCALE

@@ -79,13 +79,14 @@ def reminders_modal() -> rx.Component:
                 left="0",
                 right="0",
                 bottom="0",
-                background="rgba(0, 0, 0, 0.5)",
+                background=T.overlay,
                 z_index="1000",
                 on_click=AuthState.toggle_reminder_modal,
             ),
             # Modal content
             rx.box(
-                rx.vstack(
+                rx.box(
+                    rx.vstack(
                     # Header
                     rx.hstack(
                         rx.hstack(
@@ -161,13 +162,13 @@ def reminders_modal() -> rx.Component:
                                 padding="0.875rem",
                                 min_height="48px",
                                 background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                                color="white",
+                                color=T.text_on_primary,
                                 font_weight="600",
                                 border_radius=RADIUS["md"],
                                 cursor="pointer",
                                 _hover={
                                     "transform": "translateY(-1px)",
-                                    "box_shadow": f"0 4px 12px {COLORS['primary_green']}40",
+                                    "box_shadow": T.shadow_md,
                                 },
                                 transition="all 0.2s ease",
                             ),
@@ -220,16 +221,30 @@ def reminders_modal() -> rx.Component:
                     spacing="4",
                     width="100%",
                 ),
-                position="fixed",
+                background=rx.color_mode_cond(
+                    light="#FFFFFF",
+                    dark="#111217"
+                ),
+                border=rx.color_mode_cond(
+                    light="1px solid #E5E7EB",
+                    dark="1px solid #2d3039"
+                ),
+                width="100%",
+                height="100%",
+                border_radius=RADIUS["xl"],
+                padding="1.5rem",
+                position="relative",
+                z_index="2",
+            ),
+            position="fixed",
                 top="50%",
                 left="50%",
                 transform="translate(-50%, -50%)",
                 width=["90%", "400px", "450px"],
                 max_width="90vw",
                 max_height="85vh",
-                background=T.modal_bg,
+                class_name="reminder-modal",
                 border_radius=RADIUS["xl"],
-                padding="1.5rem",
                 box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                 z_index="1001",
                 overflow="hidden",

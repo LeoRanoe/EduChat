@@ -4,7 +4,7 @@ import reflex as rx
 from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
 from educhat.components.chat import sidebar, chat_container
-from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, settings_modal
+from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, settings_modal, calendar_view
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
 from educhat.styles.theme import COLORS, T
@@ -49,6 +49,9 @@ def authenticated_chat() -> rx.Component:
         
         # Events panel
         events_panel(),
+        
+        # Calendar view
+        calendar_view(),
         
         # Toast notification
         toast_notification(

@@ -22,6 +22,10 @@
   --color-primary-light: #E6F7F1;
   --color-primary-muted: rgba(16, 163, 127, 0.1);
   
+  /* Accent Colors - Secondary branding */
+  --color-accent: #3B82F6;
+  --color-accent-light: rgba(59, 130, 246, 0.15);
+  
   /* Backgrounds */
   --bg-primary: #F9FAFB;
   --bg-secondary: #FFFFFF;
@@ -120,6 +124,10 @@ html.dark {
   --color-primary-active: #6EE7B7;
   --color-primary-light: rgba(16, 163, 127, 0.15);
   --color-primary-muted: rgba(16, 163, 127, 0.12);
+  
+  /* Accent Colors - Adjusted for dark mode */
+  --color-accent: #60A5FA;
+  --color-accent-light: rgba(96, 165, 250, 0.15);
   
   /* Backgrounds - Dark slate palette */
   --bg-primary: #0b0b0d;
@@ -493,71 +501,294 @@ select:focus {
 }
 
 /* =============================================================================
-   COMPONENT STYLES - MODALS
+   COMPONENT STYLES - MODALS & PANELS (SOLID BACKGROUNDS)
+   Fix transparency issues by using solid color values, not just CSS variables
    ============================================================================= */
+
+/* Modal overlay - standard blur backdrop */
 .modal-overlay {
-  background: var(--overlay-bg) !important;
+  background: var(--overlay-bg);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.modal-content {
-  background: var(--modal-bg) !important;
-  border-color: var(--border-color) !important;
-}
-
-/* Auth modal - ensure solid background in dark mode */
-.animate-scaleIn {
-  background: var(--modal-bg) !important;
-  background-color: var(--modal-bg) !important;
-}
-
-.dark .animate-scaleIn,
-.radix-themes.dark .animate-scaleIn {
-  background: #111217 !important;
-  background-color: #111217 !important;
-}
-
-/* Auth modal box specific styling */
-.auth-modal-box {
-  background: var(--modal-bg) !important;
-  background-color: var(--modal-bg) !important;
-}
-
-.dark .auth-modal-box,
-.radix-themes.dark .auth-modal-box,
-[data-theme="dark"] .auth-modal-box {
-  background: #111217 !important;
-  background-color: #111217 !important;
-}
-
-/* Ensure all child elements of auth modal have solid backgrounds */
-.auth-modal-box > * {
-  background: var(--modal-bg) !important;
-}
-
-.dark .auth-modal-box > *,
-.radix-themes.dark .auth-modal-box > * {
-  background: #111217 !important;
-}
-
-/* Auth form panel styling */
-.auth-form-panel {
-  background: #111217 !important;
-  background-color: #111217 !important;
-}
-
-/* Light mode override for auth form panel */
-:root .auth-form-panel {
-  background: #FFFFFF !important;
+/* Modal content - ensure solid backgrounds with maximum specificity */
+.modal-content,
+.auth-modal-box,
+.settings-modal,
+.reminder-modal,
+.calendar-modal,
+div.reminder-modal,
+div.calendar-modal,
+[class*="reminder-modal"],
+[class*="calendar-modal"] {
   background-color: #FFFFFF !important;
+  border: 1px solid var(--border-color) !important;
+  opacity: 1 !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-/* Ensure it stays dark in dark mode */
-.dark .auth-form-panel,
-.radix-themes.dark .auth-form-panel,
-[data-theme="dark"] .auth-form-panel {
-  background: #111217 !important;
+.dark .modal-content,
+.dark .auth-modal-box,
+.dark .settings-modal,
+.dark .reminder-modal,
+.dark .calendar-modal,
+.dark div.reminder-modal,
+.dark div.calendar-modal,
+.dark [class*="reminder-modal"],
+.dark [class*="calendar-modal"],
+.radix-themes.dark .modal-content,
+.radix-themes.dark .auth-modal-box,
+.radix-themes.dark .settings-modal,
+.radix-themes.dark .reminder-modal,
+.radix-themes.dark .calendar-modal,
+.radix-themes.dark div.reminder-modal,
+.radix-themes.dark div.calendar-modal,
+.radix-themes.dark [class*="reminder-modal"],
+.radix-themes.dark [class*="calendar-modal"],
+html.dark .reminder-modal,
+html.dark .calendar-modal,
+body.dark .reminder-modal,
+body.dark .calendar-modal {
   background-color: #111217 !important;
+  border-color: #2d3039 !important;
+  opacity: 1 !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Z-index hierarchy for overlapping modals */
+/* Base: reminder-modal and calendar-modal z-index: 1001 */
+/* Calendar overlay: z-index: 1002 */
+/* Calendar modal: z-index: 1003 */
+
+.reminder-modal {
+  z-index: 1001;
+}
+
+.calendar-modal {
+  z-index: 1003;
+}
+
+/* Auth form panel - right side of auth modal */
+.auth-form-panel {
+  background-color: #FFFFFF;
+}
+
+.dark .auth-form-panel,
+.radix-themes.dark .auth-form-panel {
+  background-color: #111217;
+}
+
+/* Auth branding panel - left side of auth modal */
+.auth-branding-panel {
+  background: linear-gradient(135deg, #10A37F 0%, #0D8F6F 100%);
+}
+
+/* Generic solid panel class for any content that needs solid bg */
+.solid-panel {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+}
+
+.dark .solid-panel,
+.radix-themes.dark .solid-panel {
+  background-color: #111217;
+  border-color: #2d3039;
+}
+
+/* Card panels with solid backgrounds */
+.card-panel,
+.form-panel,
+.content-panel {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+
+.dark .card-panel,
+.dark .form-panel,
+.dark .content-panel,
+.radix-themes.dark .card-panel,
+.radix-themes.dark .form-panel,
+.radix-themes.dark .content-panel {
+  background-color: #111217;
+  border-color: #2d3039;
+}
+
+/* Onboarding panels */
+.onboarding-card,
+.quiz-panel {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.dark .onboarding-card,
+.dark .quiz-panel,
+.radix-themes.dark .onboarding-card,
+.radix-themes.dark .quiz-panel {
+  background-color: #111217;
+  border-color: #2d3039;
+}
+
+/* Settings panels */
+.settings-panel,
+.preferences-panel {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+
+.dark .settings-panel,
+.dark .preferences-panel,
+.radix-themes.dark .settings-panel,
+.radix-themes.dark .preferences-panel {
+  background-color: #111217;
+  border-color: #2d3039;
+}
+
+/* Chat input container */
+.chat-input-container {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+}
+
+.dark .chat-input-container,
+.radix-themes.dark .chat-input-container {
+  background-color: #1a1b21;
+  border-color: #2d3039;
+}
+
+/* Message bubbles with solid backgrounds */
+.message-bot {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+}
+
+.dark .message-bot,
+.radix-themes.dark .message-bot {
+  background-color: #111217;
+  border-color: #2d3039;
+}
+
+/* Bot message content - ensure text is visible in both themes */
+.bot-message-content,
+.bot-message-content p,
+.bot-message-content li,
+.bot-message-content span,
+.message-bot .bot-message-content {
+  color: #111827 !important;
+}
+
+.dark .bot-message-content,
+.dark .bot-message-content p,
+.dark .bot-message-content li,
+.dark .bot-message-content span,
+.dark .message-bot .bot-message-content,
+.radix-themes.dark .bot-message-content,
+.radix-themes.dark .bot-message-content p,
+.radix-themes.dark .bot-message-content li,
+.radix-themes.dark .bot-message-content span,
+.radix-themes.dark .message-bot .bot-message-content {
+  color: #e6eef6 !important;
+}
+
+/* Dropdown menus and popovers */
+.dropdown-menu,
+.popover-content,
+[data-radix-popper-content-wrapper] > div {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
+}
+
+.dark .dropdown-menu,
+.dark .popover-content,
+.dark [data-radix-popper-content-wrapper] > div,
+.radix-themes.dark .dropdown-menu,
+.radix-themes.dark .popover-content,
+.radix-themes.dark [data-radix-popper-content-wrapper] > div {
+  background-color: #111217;
+  border-color: #2d3039;
+}
+
+/* Tooltip backgrounds */
+.tooltip-content {
+  background-color: #1a1b21;
+  color: #e6eef6;
+}
+
+.dark .tooltip-content,
+.radix-themes.dark .tooltip-content {
+  background-color: #FFFFFF;
+  color: #111827;
+}
+
+/* Guest banner */
+.guest-banner {
+  background: linear-gradient(90deg, rgba(16, 163, 127, 0.1) 0%, rgba(16, 163, 127, 0.05) 100%);
+  border-bottom: 1px solid rgba(16, 163, 127, 0.2);
+}
+
+.dark .guest-banner,
+.radix-themes.dark .guest-banner {
+  background: linear-gradient(90deg, rgba(16, 163, 127, 0.15) 0%, rgba(16, 163, 127, 0.08) 100%);
+  border-bottom-color: rgba(16, 163, 127, 0.25);
+}
+
+/* Calendar view panels */
+.calendar-panel,
+.calendar-day-cell {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+
+.dark .calendar-panel,
+.dark .calendar-day-cell,
+.radix-themes.dark .calendar-panel,
+.radix-themes.dark .calendar-day-cell {
+  background-color: #111217;
+  border-color: #2d3039;
+}
+
+/* Calendar grid container - ensure proper layout */
+.calendar-grid-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Event cards */
+.event-card {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.dark .event-card,
+.radix-themes.dark .event-card {
+  background-color: #1a1b21;
+  border-color: #2d3039;
+}
+
+/* Language switcher */
+.language-switcher {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.dark .language-switcher,
+.radix-themes.dark .language-switcher {
+  background-color: #1a1b21;
+  border-color: #2d3039;
 }
 
 /* =============================================================================

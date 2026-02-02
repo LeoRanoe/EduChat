@@ -81,7 +81,7 @@ def chat_input(
                                 is_loading,
                                 # Loading spinner
                                 rx.box(
-                                    rx.icon("loader-2", size=18, color="white"),
+                                    rx.icon("loader-circle", size=18, color="white"),
                                     width="40px",
                                     height="40px",
                                     display="flex",

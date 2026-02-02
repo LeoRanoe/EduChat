@@ -6,11 +6,24 @@ from educhat.state.app_state import AppState
 from educhat.components.auth import auth_modal
 from educhat.components.shared.institution_logos import compact_logos_row
 from educhat.styles.theme import COLORS, T
+from educhat.utils.translations import t
 
 
 # Static color values for SVG elements (which can't use CSS variables)
 PRIMARY_HEX = "#10A37F"
 PRIMARY_HOVER_HEX = "#0D8F6F"
+
+
+def tx(key: str) -> rx.Var:
+    """Reactive translation helper for landing page.
+    
+    Returns a reactive var that updates when language changes.
+    """
+    return rx.cond(
+        AuthState.is_dutch,
+        t(key, "nl"),
+        t(key, "en"),
+    )
 
 
 def svg_icon(path: str, size: int = 24, color: str = None) -> rx.Component:
@@ -75,7 +88,7 @@ def landing() -> rx.Component:
                             margin_bottom="2px",
                         ),
                         rx.text(
-                            "Surinaams Onderwijs AI",
+                            tx("landing_subtitle"),
                             font_size="11px",
                             color=T.text_secondary,
                             font_weight="600",
@@ -95,7 +108,7 @@ def landing() -> rx.Component:
                     rx.button(
                         rx.hstack(
                             rx.icon("log-in", size=18),
-                            rx.text("Inloggen", display=["none", "block", "block"]),
+                            rx.text(tx("login"), display=["none", "block", "block"]),
                             spacing="2",
                             align="center",
                         ),
@@ -114,6 +127,27 @@ def landing() -> rx.Component:
                             "transform": "translateY(-2px)",
                         },
                         on_click=AuthState.toggle_auth_modal,
+                    ),
+                    # Language toggle
+                    rx.button(
+                        rx.cond(
+                            AuthState.is_dutch,
+                            rx.text("EN", font_weight="600"),
+                            rx.text("NL", font_weight="600"),
+                        ),
+                        background="transparent",
+                        color=T.text_primary,
+                        border="none",
+                        cursor="pointer",
+                        padding="10px 16px",
+                        border_radius="10px",
+                        transition="all 0.3s ease",
+                        title="Switch language / Taal wisselen",
+                        _hover={
+                            "background": f"rgba(16, 163, 127, 0.08)",
+                            "transform": "translateY(-2px)",
+                        },
+                        on_click=AuthState.toggle_language,
                     ),
                     # Dark mode toggle
                     rx.button(
@@ -135,7 +169,7 @@ def landing() -> rx.Component:
                     rx.button(
                         rx.hstack(
                             rx.icon("sparkles", size=18),
-                            rx.text("Start Nu"),
+                            rx.text(tx("start_now")),
                             spacing="2",
                             align="center",
                         ),
@@ -212,7 +246,7 @@ def landing() -> rx.Component:
                     # Premium badge
                     rx.box(
                         rx.icon("zap", size=16, color=T.primary),
-                        rx.text("AI-Powered Studiegids", font_size="13px", font_weight="700", color=T.primary),
+                        rx.text(tx("ai_powered_badge"), font_size="13px", font_weight="700", color=T.primary),
                         display="flex",
                         align_items="center",
                         gap="8px",
@@ -227,7 +261,7 @@ def landing() -> rx.Component:
                     ),
                     
                     rx.heading(
-                        "Welkom bij ",
+                        tx("welcome_to"),
                         rx.text(
                             "EduChat",
                             background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
@@ -244,7 +278,7 @@ def landing() -> rx.Component:
                         letter_spacing="-0.02em",
                     ),
                     rx.text(
-                        "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
+                        tx("hero_description_1"),
                         font_size="17px",
                         color=T.text_secondary,
                         line_height="1.7",
@@ -254,7 +288,7 @@ def landing() -> rx.Component:
                         font_weight="450",
                     ),
                     rx.text(
-                        "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
+                        tx("hero_description_2"),
                         font_size="17px",
                         color=T.text_secondary,
                         line_height="1.7",
@@ -269,7 +303,7 @@ def landing() -> rx.Component:
                         rx.button(
                             rx.hstack(
                                 rx.icon("sparkles", size=22),
-                                rx.text("Begin Chat", font_size="17px", font_weight="700"),
+                                rx.text(tx("start_chat"), font_size="17px", font_weight="700"),
                                 rx.icon("arrow-right", size=20),
                                 spacing="2",
                                 align="center",
@@ -293,7 +327,7 @@ def landing() -> rx.Component:
                         rx.button(
                             rx.hstack(
                                 rx.icon("circle-play", size=20),
-                                rx.text("Probeer als Gast", font_size="16px"),
+                                rx.text(tx("try_as_guest"), font_size="16px"),
                                 spacing="2",
                             ),
                             padding="18px 36px",
@@ -325,7 +359,7 @@ def landing() -> rx.Component:
                             rx.box(
                                 check_circle_svg(18, T.primary),
                                 rx.text(
-                                    "Gratis te gebruiken",
+                                    tx("free_to_use"),
                                     font_size="15px",
                                     color=T.text_secondary,
                                     font_weight="600",
@@ -337,7 +371,7 @@ def landing() -> rx.Component:
                             rx.box(
                                 check_circle_svg(18, T.primary),
                                 rx.text(
-                                    "24/7 beschikbaar",
+                                    tx("available_24_7"),
                                     font_size="15px",
                                     color=T.text_secondary,
                                     font_weight="600",
@@ -349,7 +383,7 @@ def landing() -> rx.Component:
                             rx.box(
                                 check_circle_svg(18, T.primary),
                                 rx.text(
-                                    "Focus op Suriname",
+                                    tx("focus_suriname"),
                                     font_size="15px",
                                     color=T.text_secondary,
                                     font_weight="600",
@@ -414,7 +448,7 @@ def landing() -> rx.Component:
                             rx.box(
                                 rx.box(
                                     rx.text(
-                                        "Welke opleidingen biedt MINOV aan?",
+                                        tx("chat_preview_question"),
                                         font_size="14px",
                                         color=T.text_primary,
                                         font_weight="600",
@@ -435,7 +469,7 @@ def landing() -> rx.Component:
                                     rx.hstack(
                                         rx.icon("sparkles", size=16, color=T.primary),
                                         rx.text(
-                                            "MINOV biedt diverse technische opleidingen...",
+                                            tx("chat_preview_answer"),
                                             font_size="14px",
                                             color=T.text_secondary,
                                             font_weight="500",
@@ -514,7 +548,7 @@ def landing() -> rx.Component:
         rx.box(
             rx.box(
                 rx.heading(
-                    "Alles wat je Nodig Hebt voor je Studiekeuze",
+                    tx("features_title"),
                     size="8",
                     color=T.text_primary,
                     text_align="center",
@@ -522,7 +556,7 @@ def landing() -> rx.Component:
                     font_weight="700",
                 ),
                 rx.text(
-                    "Complete ondersteuning voor het Surinaamse onderwijssysteem",
+                    tx("features_subtitle"),
                     font_size="18px",
                     color=T.text_secondary,
                     text_align="center",
@@ -535,38 +569,38 @@ def landing() -> rx.Component:
                 rx.box(
                     feature_card(
                         icon="school",
-                        title="Opleidingen Vinden",
-                        description="Ontdek alle beschikbare opleidingen bij MINOV, universiteiten en andere instellingen in Suriname",
+                        title=tx("feature_find_programs"),
+                        description=tx("feature_find_programs_desc"),
                         accent_color=COLORS["primary_green"],
                     ),
                     feature_card(
                         icon="clipboard-list",
-                        title="Toelatingseisen",
-                        description="Krijg duidelijke informatie over toelatingseisen, benodigde documenten en inschrijvingsprocedures",
+                        title=tx("feature_requirements"),
+                        description=tx("feature_requirements_desc"),
                         accent_color=COLORS["primary_green"],
                     ),
                     feature_card(
                         icon="calendar",
-                        title="Deadlines & Data",
-                        description="Blijf op de hoogte van belangrijke deadlines voor inschrijvingen en aanmeldingen",
+                        title=tx("feature_deadlines"),
+                        description=tx("feature_deadlines_desc"),
                         accent_color=COLORS["primary_green"],
                     ),
                     feature_card(
                         icon="message-circle",
-                        title="Directe Antwoorden",
-                        description="Stel je vraag in het Nederlands en krijg meteen een helder antwoord van onze AI",
+                        title=tx("feature_direct_answers"),
+                        description=tx("feature_direct_answers_desc"),
                         accent_color=COLORS["primary_green"],
                     ),
                     feature_card(
                         icon="compass",
-                        title="Studiekeuzebegeleiding",
-                        description="Persoonlijk advies om de opleiding te vinden die bij jou past",
+                        title=tx("feature_guidance"),
+                        description=tx("feature_guidance_desc"),
                         accent_color=COLORS["primary_green"],
                     ),
                     feature_card(
                         icon="shield",
-                        title="Veilig & Privé",
-                        description="Jouw gegevens zijn veilig en al je gesprekken blijven privé",
+                        title=tx("feature_privacy"),
+                        description=tx("feature_privacy_desc"),
                         accent_color=COLORS["primary_green"],
                     ),
                     
@@ -608,7 +642,7 @@ def landing() -> rx.Component:
                 rx.box(
                     rx.icon("zap", size=18, color=T.primary, margin_right="8px"),
                     rx.text(
-                        "Supersnel en Makkelijk",
+                        tx("superfast_badge"),
                         font_size="14px",
                         font_weight="600",
                         color=T.primary,
@@ -625,7 +659,7 @@ def landing() -> rx.Component:
                 ),
                 
                 rx.heading(
-                    "Zo Werkt EduChat",
+                    tx("how_it_works"),
                     size="8",
                     color=T.text_primary,
                     text_align="center",
@@ -633,7 +667,7 @@ def landing() -> rx.Component:
                     font_weight="700",
                 ),
                 rx.text(
-                    "In drie eenvoudige stappen naar de juiste studiekeuze",
+                    tx("how_it_works_subtitle"),
                     font_size="18px",
                     color=T.text_secondary,
                     text_align="center",
@@ -649,8 +683,8 @@ def landing() -> rx.Component:
                     rx.box(
                         enhanced_step_card(
                             number="1",
-                            title="Stel je Vraag",
-                            description="Typ je vraag over opleidingen, toelatingseisen, inschrijvingen of studiefinanciering",
+                            title=tx("step1_title"),
+                            description=tx("step1_desc"),
                             icon="message-square-plus",
                             color="#10a37f",
                         ),
@@ -684,8 +718,8 @@ def landing() -> rx.Component:
                     rx.box(
                         enhanced_step_card(
                             number="2",
-                            title="Krijg Direct Antwoord",
-                            description="Ontvang binnen seconden een helder en compleet antwoord met alle benodigde informatie",
+                            title=tx("step2_title"),
+                            description=tx("step2_desc"),
                             icon="sparkles",
                             color="#0d8a6b",
                         ),
@@ -719,8 +753,8 @@ def landing() -> rx.Component:
                     rx.box(
                         enhanced_step_card(
                             number="3",
-                            title="Maak je Keuze",
-                            description="Gebruik de informatie om een weloverwogen studiekeuze te maken en je toekomst vorm te geven",
+                            title=tx("step3_title"),
+                            description=tx("step3_desc"),
                             icon="graduation-cap",
                             color="#0a7052",
                         ),
@@ -1341,7 +1375,7 @@ def landing() -> rx.Component:
                 ),
                 
                 rx.heading(
-                    "Klaar om te Beginnen?",
+                    tx("cta_title"),
                     size="9",
                     color="white",
                     text_align="center",
@@ -1350,7 +1384,7 @@ def landing() -> rx.Component:
                     line_height="1.2",
                 ),
                 rx.text(
-                    "Start nu met EduChat en krijg alle antwoorden die je nodig hebt voor je studiekeuze in Suriname",
+                    tx("cta_subtitle"),
                     font_size="20px",
                     color="rgba(255, 255, 255, 0.95)",
                     text_align="center",
@@ -1365,7 +1399,7 @@ def landing() -> rx.Component:
                     rx.button(
                         rx.hstack(
                             rx.icon("sparkles", size=22),
-                            rx.text("Begin Nu Gratis", font_size="18px", font_weight="700"),
+                            rx.text(tx("start_free"), font_size="18px", font_weight="700"),
                             rx.icon("arrow-right", size=20),
                             spacing="3",
                             align="center",
@@ -1393,7 +1427,7 @@ def landing() -> rx.Component:
                 rx.box(
                     rx.box(
                         rx.heading("100+", size="6", color="white", font_weight="700", margin_bottom="4px"),
-                        rx.text("Tevreden Studenten", font_size="14px", color="rgba(255, 255, 255, 0.8)"),
+                        rx.text(tx("stat_students"), font_size="14px", color="rgba(255, 255, 255, 0.8)"),
                         text_align="center",
                     ),
                     rx.box(
@@ -1404,7 +1438,7 @@ def landing() -> rx.Component:
                     ),
                     rx.box(
                         rx.heading("<5 sec", size="6", color="white", font_weight="700", margin_bottom="4px"),
-                        rx.text("Gemiddelde Reactietijd", font_size="14px", color="rgba(255, 255, 255, 0.8)"),
+                        rx.text(tx("stat_response_time"), font_size="14px", color="rgba(255, 255, 255, 0.8)"),
                         text_align="center",
                     ),
                     rx.box(
@@ -1415,7 +1449,7 @@ def landing() -> rx.Component:
                     ),
                     rx.box(
                         rx.heading("24/7", size="6", color="white", font_weight="700", margin_bottom="4px"),
-                        rx.text("Altijd Beschikbaar", font_size="14px", color="rgba(255, 255, 255, 0.8)"),
+                        rx.text(tx("stat_available"), font_size="14px", color="rgba(255, 255, 255, 0.8)"),
                         text_align="center",
                     ),
                     display="flex",
@@ -1434,7 +1468,7 @@ def landing() -> rx.Component:
                 rx.box(
                     rx.icon("shield-check", size=18, color="rgba(255, 255, 255, 0.9)"),
                     rx.text(
-                        "100% Gratis • Geen Registratie Vereist • Direct Beginnen",
+                        tx("trust_badge"),
                         font_size="14px",
                         color="rgba(255, 255, 255, 0.9)",
                         font_weight="600",

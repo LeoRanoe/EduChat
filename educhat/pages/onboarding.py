@@ -11,6 +11,7 @@ from educhat.state.onboarding_state import (
     FORMALITY_OPTIONS,
     FUTURE_PLAN_OPTIONS,
 )
+from educhat.state.auth_state import AuthState
 from educhat.components.shared.logo import logo
 from educhat.components.shared.progress_bar import progress_bar
 from educhat.components.shared.quiz_components import (
@@ -22,6 +23,16 @@ from educhat.components.shared.quiz_components import (
 )
 from educhat.components.shared.buttons import primary_button, secondary_button
 from educhat.styles.theme import COLORS, FONTS, T
+from educhat.utils.translations import t
+
+
+def tx(key: str) -> rx.Var:
+    """Reactive translation helper for onboarding page."""
+    return rx.cond(
+        AuthState.is_dutch,
+        t(key, "nl"),
+        t(key, "en"),
+    )
 
 
 def navigation_buttons(state: OnboardingState) -> rx.Component:
@@ -84,7 +95,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                 rx.cond(
                     state.current_step < state.total_steps - 1,
                     rx.button(
-                        "Skip",
+                        tx("skip"),
                         on_click=state.skip_step,
                         background="transparent",
                         color=T.text_tertiary,
@@ -107,7 +118,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                     state.current_step < state.total_steps - 1,
                     rx.button(
                         rx.hstack(
-                            rx.text("Next", font_weight="600"),
+                            rx.text(tx("next"), font_weight="600"),
                             rx.icon("arrow-right", size=18),
                             spacing="2",
                             align="center",
@@ -132,7 +143,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                     rx.button(
                         rx.hstack(
                             rx.icon("check-circle", size=18),
-                            rx.text("Complete", font_weight="600"),
+                            rx.text(tx("complete"), font_weight="600"),
                             spacing="2",
                             align="center",
                         ),
@@ -180,7 +191,7 @@ def question_step_0(state: OnboardingState) -> rx.Component:
     """Question: Welke opleiding volg je momenteel?"""
     return rx.vstack(
         rx.heading(
-            "Welke opleiding volg je momenteel?",
+            tx("onboarding_q0_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -189,7 +200,7 @@ def question_step_0(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "Dit helpt ons om informatie op jouw niveau aan te passen.",
+            tx("onboarding_q0_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",
@@ -211,7 +222,7 @@ def question_step_1(state: OnboardingState) -> rx.Component:
     """Question: Wat is jouw leeftijd?"""
     return rx.vstack(
         rx.heading(
-            "Wat is jouw leeftijd?",
+            tx("onboarding_q1_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -220,7 +231,7 @@ def question_step_1(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "We passen onze communicatie aan op jouw leeftijdsgroep.",
+            tx("onboarding_q1_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",
@@ -242,7 +253,7 @@ def question_step_2(state: OnboardingState) -> rx.Component:
     """Question: In welk district woon je?"""
     return rx.vstack(
         rx.heading(
-            "In welk district woon je?",
+            tx("onboarding_q2_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -251,7 +262,7 @@ def question_step_2(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "We kunnen je informatie geven over scholen in jouw regio.",
+            tx("onboarding_q2_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",
@@ -273,7 +284,7 @@ def question_step_3(state: OnboardingState) -> rx.Component:
     """Question: Wat zijn je favoriete vakken?"""
     return rx.vstack(
         rx.heading(
-            "Wat zijn je favoriete vakken?",
+            tx("onboarding_q3_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -282,7 +293,7 @@ def question_step_3(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "Selecteer de vakken waar je het meest van houdt (meerdere mogelijk).",
+            tx("onboarding_q3_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",
@@ -303,7 +314,7 @@ def question_step_4(state: OnboardingState) -> rx.Component:
     """Question: Heb je plannen om verder te studeren na deze opleiding?"""
     return rx.vstack(
         rx.heading(
-            "Heb je plannen om verder te studeren?",
+            tx("onboarding_q4_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -312,7 +323,7 @@ def question_step_4(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "We kunnen je helpen met studiekeuzes en toekomstplanning.",
+            tx("onboarding_q4_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",
@@ -333,7 +344,7 @@ def question_step_5(state: OnboardingState) -> rx.Component:
     """Question: Wat wil je verbeteren met EduChat?"""
     return rx.vstack(
         rx.heading(
-            "Waarmee kan EduChat je helpen?",
+            tx("onboarding_q5_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -342,7 +353,7 @@ def question_step_5(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "Selecteer alles wat van toepassing is (meerdere mogelijk).",
+            tx("onboarding_q5_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",
@@ -363,7 +374,7 @@ def question_step_6(state: OnboardingState) -> rx.Component:
     """Question: Hoe formeel mag EduChat met je praten?"""
     return rx.vstack(
         rx.heading(
-            "Hoe mag EduChat met je communiceren?",
+            tx("onboarding_q6_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -372,7 +383,7 @@ def question_step_6(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "Kies de communicatiestijl die het beste bij je past.",
+            tx("onboarding_q6_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",
@@ -393,7 +404,7 @@ def question_step_7(state: OnboardingState) -> rx.Component:
     """Question: Welke studierichtingen interesseren je?"""
     return rx.vstack(
         rx.heading(
-            "Welke studierichtingen interesseren je?",
+            tx("onboarding_q7_title"),
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
             color=T.text_primary,
@@ -402,7 +413,7 @@ def question_step_7(state: OnboardingState) -> rx.Component:
             as_="h2",
         ),
         rx.text(
-            "Selecteer de gebieden waar je meer over wilt weten (meerdere mogelijk).",
+            tx("onboarding_q7_desc"),
             font_size="0.875rem",
             color=T.text_secondary,
             line_height="1.4",

@@ -33,6 +33,11 @@ ENV/
 .env
 .env.local
 
+# Google Calendar Credentials (NEVER COMMIT!)
+credentials/
+credentials.json
+token*.pickle
+
 # IDEs
 .vscode/
 .idea/

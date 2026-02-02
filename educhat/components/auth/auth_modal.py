@@ -7,6 +7,19 @@ loading states, and accessibility features.
 import reflex as rx
 from educhat.state.auth_state import AuthState
 from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
+from educhat.utils.translations import t
+
+
+def tx(key: str) -> rx.Var:
+    """Reactive translation helper for auth modal.
+    
+    Returns a reactive var that updates when language changes.
+    """
+    return rx.cond(
+        AuthState.is_dutch,
+        t(key, "nl"),
+        t(key, "en"),
+    )
 
 
 # ============================================================================
@@ -108,11 +121,15 @@ def auth_modal() -> rx.Component:
                 transform="translate(-50%, -50%)",
                 width=MODAL_CONFIG["width"],
                 max_width="900px",
-                max_height=MODAL_CONFIG["max_height"],
-                background=T.modal_bg,
+                max_height=["95vh", "90vh", "720px"],
+                background=rx.color_mode_cond(
+                    light="#FFFFFF",
+                    dark="#111217"
+                ),
                 border_radius=RADIUS["2xl"],
                 box_shadow=SHADOWS["2xl"],
                 overflow="hidden",
+                display="flex",
                 z_index="1000",
                 class_name="animate-scaleIn auth-modal-box",
             ),
@@ -145,7 +162,7 @@ def _left_panel() -> rx.Component:
             
             # Title
             rx.heading(
-                "Welkom bij EduChat",
+                tx("auth_welcome"),
                 size="7",
                 color=T.text_on_primary,
                 margin_bottom="12px",
@@ -155,7 +172,7 @@ def _left_panel() -> rx.Component:
             
             # Subtitle
             rx.text(
-                "Jouw AI-assistent voor Surinaams onderwijs",
+                tx("auth_subtitle"),
                 color=T.text_on_primary,
                 font_size="15px",
                 margin_bottom="32px",
@@ -164,10 +181,10 @@ def _left_panel() -> rx.Component:
             
             # Benefits list
             rx.box(
-                _benefit_item("Directe antwoorden op je vragen"),
-                _benefit_item("Studiemateriaal op maat"),
-                _benefit_item("24/7 beschikbaar"),
-                _benefit_item("Gratis te gebruiken"),
+                _benefit_item(tx("benefit_direct_answers")),
+                _benefit_item(tx("benefit_study_material")),
+                _benefit_item(tx("benefit_24_7")),
+                _benefit_item(tx("benefit_free")),
                 display="flex",
                 flex_direction="column",
                 gap="14px",
@@ -209,7 +226,7 @@ def _left_panel() -> rx.Component:
     )
 
 
-def _benefit_item(text: str) -> rx.Component:
+def _benefit_item(text) -> rx.Component:
     """Single benefit item with checkmark."""
     return rx.box(
         rx.box(
@@ -252,12 +269,12 @@ def _right_panel() -> rx.Component:
             rx.box(
                 rx.icon(
                     tag="graduation-cap",
-                    size=28,
+                    size=32,
                     color=COLORS["primary_green"],
                 ),
                 rx.text(
                     "EduChat",
-                    font_size="24px",
+                    font_size="26px",
                     font_weight="700",
                     color=COLORS["primary_green"],
                     margin_left="10px",
@@ -270,13 +287,14 @@ def _right_panel() -> rx.Component:
             rx.text(
                 rx.cond(
                     AuthState.auth_mode == "login",
-                    "Log in op je account",
-                    "Maak een account aan"
+                    tx("auth_login_title"),
+                    tx("auth_signup_title"),
                 ),
                 color=T.text_secondary,
                 font_size="14px",
+                line_height="1.4",
             ),
-            margin_bottom="24px",
+            margin_bottom="20px",
         ),
         
         # Tab Selector
@@ -416,7 +434,7 @@ def _right_panel() -> rx.Component:
             ),
             display="flex",
             align_items="center",
-            margin="20px 0",
+            margin="16px 0",
         ),
         
         # Guest Button
@@ -451,11 +469,11 @@ def _right_panel() -> rx.Component:
         ),
         
         width=["100%", "100%", MODAL_CONFIG["right_panel_width"]],
-        padding=["24px", "32px", "40px"],
+        padding=["24px 18px", "28px 24px", "32px 28px"],
         display="flex",
         flex_direction="column",
         overflow_y="auto",
-        background="#111217",
+        background=T.bg_primary,
         class_name="auth-form-panel",
     )
 
@@ -472,7 +490,7 @@ def _tab_selector() -> rx.Component:
             # Login Tab
             rx.box(
                 rx.text(
-                    "Inloggen",
+                    tx("auth_login_btn"),
                     font_size="14px",
                     font_weight="600",
                     color=rx.cond(
@@ -503,7 +521,7 @@ def _tab_selector() -> rx.Component:
             # Signup Tab
             rx.box(
                 rx.text(
-                    "Registreren",
+                    tx("auth_signup_btn"),
                     font_size="14px",
                     font_weight="600",
                     color=rx.cond(
@@ -538,6 +556,91 @@ def _tab_selector() -> rx.Component:
         padding="4px",
         border_radius=RADIUS["xl"],
         margin_bottom="20px",
+    )
+
+
+# ============================================================================
+# GOOGLE LOGIN BUTTON
+# ============================================================================
+
+
+def _google_login_button() -> rx.Component:
+    """Google OAuth login button."""
+    return rx.box(
+        # Divider with "of" text
+        rx.box(
+            rx.box(
+                height="1px",
+                background=T.border,
+                flex="1",
+            ),
+            rx.text(
+                "of",
+                font_size="13px",
+                color=T.text_secondary,
+                padding="0 12px",
+            ),
+            rx.box(
+                height="1px",
+                background=T.border,
+                flex="1",
+            ),
+            display="flex",
+            align_items="center",
+            margin="20px 0",
+        ),
+        
+        # Google Button
+        rx.button(
+            rx.cond(
+                AuthState.google_auth_loading,
+                rx.box(
+                    rx.icon("loader-circle", size=18, class_name="animate-spin"),
+                    rx.text("Bezig...", margin_left="8px"),
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                ),
+                rx.box(
+                    # Google icon (using a circle with "G")
+                    rx.box(
+                        rx.html(
+                            """<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                                <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18L12.05 13.56c-.806.54-1.837.86-3.047.86-2.344 0-4.328-1.584-5.036-3.711H.96v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
+                                <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957C.347 6.175 0 7.55 0 9.002c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                                <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.96 4.958L3.967 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                            </svg>"""
+                        ),
+                        display="inline-block",
+                        margin_right="10px",
+                    ),
+                    rx.text("Doorgaan met Google"),
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                ),
+            ),
+            width="100%",
+            padding="14px",
+            min_height="50px",
+            background=T.bg_card,
+            color=T.text_primary,
+            border=f"1.5px solid {T.border}",
+            border_radius=RADIUS["lg"],
+            cursor=rx.cond(AuthState.google_auth_loading, "not-allowed", "pointer"),
+            font_size="15px",
+            font_weight="600",
+            disabled=AuthState.google_auth_loading,
+            on_click=AuthState.google_signin,
+            transition=TRANSITIONS["fast"],
+            _hover={
+                "background": T.bg_hover,
+                "border_color": COLORS["primary_green"],
+            },
+        ),
+        
+        width="100%",
     )
 
 
@@ -600,7 +703,7 @@ def _login_form() -> rx.Component:
             rx.cond(
                 AuthState.email_error != "",
                 rx.hstack(
-                    rx.icon("alert-circle", size=12, color=T.error),
+                    rx.icon("circle-alert", size=12, color=T.error),
                     rx.text(
                         AuthState.email_error,
                         color=T.error,
@@ -610,7 +713,7 @@ def _login_form() -> rx.Component:
                     margin_top="6px",
                 ),
             ),
-            margin_bottom="16px",
+            margin_bottom="14px",
         ),
         
         # Password Field
@@ -685,7 +788,7 @@ def _login_form() -> rx.Component:
             rx.cond(
                 AuthState.password_error != "",
                 rx.hstack(
-                    rx.icon("alert-circle", size=12, color=T.error),
+                    rx.icon("circle-alert", size=12, color=T.error),
                     rx.text(
                         AuthState.password_error,
                         color=T.error,
@@ -695,7 +798,7 @@ def _login_form() -> rx.Component:
                     margin_top="6px",
                 ),
             ),
-            margin_bottom="16px",
+            margin_bottom="14px",
         ),
         
         # Remember me & Forgot password row
@@ -727,7 +830,7 @@ def _login_form() -> rx.Component:
             display="flex",
             justify_content="space-between",
             align_items="center",
-            margin_bottom="20px",
+            margin_bottom="16px",
         ),
         
         # Submit Button
@@ -735,7 +838,7 @@ def _login_form() -> rx.Component:
             rx.cond(
                 AuthState.auth_loading,
                 rx.box(
-                    rx.icon("loader-2", size=18, class_name="animate-spin"),
+                    rx.icon("loader-circle", size=18, class_name="animate-spin"),
                     rx.text("Bezig...", margin_left="8px"),
                     display="flex",
                     align_items="center",
@@ -772,6 +875,9 @@ def _login_form() -> rx.Component:
             },
         ),
         
+        # Google Login Button
+        _google_login_button(),
+        
         width="100%",
     )
 
@@ -784,10 +890,10 @@ def _login_form() -> rx.Component:
 def _signup_form() -> rx.Component:
     """Signup form."""
     return rx.box(
-        # Name Field
+        # First Name Field
         rx.box(
             rx.text(
-                "Naam",
+                "Voornaam",
                 font_size="13px",
                 font_weight="500",
                 color=T.text_primary,
@@ -804,13 +910,13 @@ def _signup_form() -> rx.Component:
                     transform="translateY(-50%)",
                 ),
                 rx.input(
-                    value=AuthState.signup_name,
-                    on_change=AuthState.set_signup_name,
-                    placeholder="Je naam",
+                    value=AuthState.signup_firstname,
+                    on_change=AuthState.set_signup_firstname,
+                    placeholder="Je voornaam",
                     width="100%",
                     padding="14px 14px 14px 40px",
                     border=rx.cond(
-                        AuthState.name_error != "",
+                        AuthState.firstname_error != "",
                         f"1.5px solid {T.error}",
                         f"1.5px solid {T.border}"
                     ),
@@ -827,15 +933,69 @@ def _signup_form() -> rx.Component:
                 position="relative",
             ),
             rx.cond(
-                AuthState.name_error != "",
+                AuthState.firstname_error != "",
                 rx.text(
-                    AuthState.name_error,
+                    AuthState.firstname_error,
                     color=T.error,
                     font_size="12px",
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="12px",
+            margin_bottom="10px",
+        ),
+        
+        # Last Name Field
+        rx.box(
+            rx.text(
+                "Achternaam",
+                font_size="13px",
+                font_weight="500",
+                color=T.text_primary,
+                margin_bottom="6px",
+            ),
+            rx.box(
+                rx.icon(
+                    tag="user",
+                    size=18,
+                    color=T.text_secondary,
+                    position="absolute",
+                    left="12px",
+                    top="50%",
+                    transform="translateY(-50%)",
+                ),
+                rx.input(
+                    value=AuthState.signup_lastname,
+                    on_change=AuthState.set_signup_lastname,
+                    placeholder="Je achternaam",
+                    width="100%",
+                    padding="14px 14px 14px 40px",
+                    border=rx.cond(
+                        AuthState.lastname_error != "",
+                        f"1.5px solid {T.error}",
+                        f"1.5px solid {T.border}"
+                    ),
+                    border_radius="8px",
+                    font_size="15px",
+                    line_height="1.5",
+                    height="48px",
+                    color=T.text_primary,
+                    background=T.bg_input,
+                    outline="none",
+                    _focus={"border_color": COLORS["primary_green"], "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.1)"},
+                    _placeholder={"color": T.text_secondary},
+                ),
+                position="relative",
+            ),
+            rx.cond(
+                AuthState.lastname_error != "",
+                rx.text(
+                    AuthState.lastname_error,
+                    color=T.error,
+                    font_size="12px",
+                    margin_top="4px",
+                ),
+            ),
+            margin_bottom="10px",
         ),
         
         # Email Field
@@ -890,7 +1050,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="12px",
+            margin_bottom="10px",
         ),
         
         # Password Field
@@ -957,7 +1117,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="12px",
+            margin_bottom="10px",
         ),
         
         # Confirm Password Field
@@ -1024,7 +1184,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="20px",
+            margin_bottom="16px",
         ),
         
         # Submit Button
@@ -1061,6 +1221,9 @@ def _signup_form() -> rx.Component:
             _hover={"background": COLORS["dark_green"]},
         ),
         
+        # Google Login Button
+        _google_login_button(),
+        
         width="100%",
     )
 
@@ -1073,7 +1236,7 @@ def toast_notification() -> rx.Component:
             rx.box(
                 rx.cond(
                     AuthState.toast_type == "success",
-                    rx.icon(tag="circle-check", size=20, color="white"),
+                    rx.icon(tag="circle-check-big", size=20, color="white"),
                     rx.cond(
                         AuthState.toast_type == "error",
                         rx.icon(tag="circle-alert", size=20, color="white"),

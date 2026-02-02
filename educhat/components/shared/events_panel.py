@@ -13,13 +13,13 @@ def event_item(event: dict) -> rx.Component:
     return rx.box(
         rx.hstack(
             rx.box(
-                rx.icon("calendar", size=18, color="#3B82F6"),
+                rx.icon("calendar", size=18, color=T.accent),
                 width="40px",
                 height="40px",
                 display="flex",
                 align_items="center",
                 justify_content="center",
-                background="rgba(59, 130, 246, 0.15)",
+                background=T.accent_light,
                 border_radius=RADIUS["md"],
                 flex_shrink="0",
             ),
@@ -79,8 +79,8 @@ def event_item(event: dict) -> rx.Component:
         border=f"1px solid {T.border_light}",
         border_radius=RADIUS["lg"],
         _hover={
-            "border_color": "#3B82F6",
-            "box_shadow": "0 2px 8px rgba(59, 130, 246, 0.15)",
+            "border_color": T.accent,
+            "box_shadow": T.shadow_sm,
         },
         transition="all 0.2s ease",
     )
@@ -98,17 +98,18 @@ def events_panel() -> rx.Component:
                 left="0",
                 right="0",
                 bottom="0",
-                background="rgba(0, 0, 0, 0.5)",
+                background=T.overlay,
                 z_index="1000",
                 on_click=AuthState.toggle_events_panel,
             ),
             # Panel content
             rx.box(
-                rx.vstack(
+                rx.box(
+                    rx.vstack(
                     # Header
                     rx.hstack(
                         rx.hstack(
-                            rx.icon("calendar", size=20, color="#3B82F6"),
+                            rx.icon("calendar", size=20, color=T.accent),
                             rx.text(
                                 "Belangrijke Datums",
                                 font_size="1.125rem",
@@ -130,6 +131,30 @@ def events_panel() -> rx.Component:
                             transition="all 0.2s ease",
                         ),
                         justify="between",
+                        width="100%",
+                    ),
+                    
+                    # Action buttons
+                    rx.hstack(
+                        rx.button(
+                            rx.icon("calendar", size=16),
+                            "Kalender Weergave",
+                            on_click=AuthState.toggle_calendar_view,
+                            size="2",
+                            variant="soft",
+                            color_scheme="green",
+                            width="100%",
+                        ),
+                        rx.button(
+                            rx.icon("refresh-cw", size=16),
+                            "Sync",
+                            on_click=AuthState.sync_calendar_events,
+                            size="2",
+                            variant="soft",
+                            color_scheme="blue",
+                            loading=AuthState.is_syncing_calendar,
+                        ),
+                        spacing="2",
                         width="100%",
                     ),
                     
@@ -159,13 +184,13 @@ def events_panel() -> rx.Component:
                             rx.box(
                                 rx.vstack(
                                     rx.box(
-                                        rx.icon("calendar-search", size=56, color="#94A3B8"),
+                                        rx.icon("calendar-search", size=56, color=T.text_tertiary),
                                         width="80px",
                                         height="80px",
                                         display="flex",
                                         align_items="center",
                                         justify_content="center",
-                                        background="rgba(148, 163, 184, 0.1)",
+                                        background=T.bg_tertiary,
                                         border_radius="50%",
                                         margin_bottom="1rem",
                                     ),
@@ -199,7 +224,7 @@ def events_panel() -> rx.Component:
                                 text_align="center",
                             ),
                         ),
-                        max_height="50vh",
+                        max_height="280px",
                         overflow_y="auto",
                         width="100%",
                         padding_right="0.5rem",
@@ -242,17 +267,30 @@ def events_panel() -> rx.Component:
                     spacing="4",
                     width="100%",
                 ),
-                position="fixed",
+                background=rx.color_mode_cond(
+                    light="#FFFFFF",
+                    dark="#111217"
+                ),
+                border=rx.color_mode_cond(
+                    light="1px solid #E5E7EB",
+                    dark="1px solid #2d3039"
+                ),
+                width="100%",
+                border_radius=RADIUS["xl"],
+                padding="1.5rem",
+                position="relative",
+                z_index="2",
+            ),
+            position="fixed",
                 top="50%",
                 left="50%",
                 transform="translate(-50%, -50%)",
-                background=T.modal_bg,
+                class_name="calendar-modal",
                 border_radius=RADIUS["xl"],
-                padding="1.5rem",
-                width=["90%", "420px", "480px"],
+                width=["90%", "420px", "500px"],
                 max_width="90vw",
-                max_height="85vh",
-                overflow_y="auto",
+                height=["auto", "auto", "auto"],
+                max_height="90vh",
                 box_shadow="0 20px 60px rgba(0, 0, 0, 0.15)",
                 z_index="1001",
             ),

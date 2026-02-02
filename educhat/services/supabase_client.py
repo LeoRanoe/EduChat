@@ -40,10 +40,12 @@ def get_client():
     
     if _supabase_client is None:
         url = os.getenv("SUPABASE_URL")
-        key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_ANON_KEY")
+        # SECURITY: Use anon key to enforce Row-Level Security policies
+        # Service role key bypasses RLS and would allow users to see each other's data!
+        key = os.getenv("SUPABASE_ANON_KEY")
         
         if not url or not key:
-            raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY/SUPABASE_ANON_KEY must be set in environment")
+            raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment")
         
         _supabase_client = create_client(url, key)
     
@@ -494,6 +496,16 @@ class SupabaseService:
         Returns:
             List of conversation data
         """
+        # SECURITY: Validate user_id to prevent data leakage
+        if not user_id or not isinstance(user_id, str) or user_id.strip() == "":
+            print("[SECURITY] Blocked conversation query - empty user_id")
+            return []
+        
+        # SECURITY: Guest users should never query the database
+        if user_id.startswith("guest_"):
+            print(f"[SECURITY] Blocked database query for guest user: {user_id}")
+            return []
+        
         self._ensure_connected()
         query = self.client.table('conversations').select('*').eq('user_id', user_id)
         

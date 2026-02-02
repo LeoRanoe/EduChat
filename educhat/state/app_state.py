@@ -42,10 +42,35 @@ class AppState(AuthState):
     
     # Initialization flag  
     _initialized: bool = False
+    _conversations_loaded_for_user: str = ""  # Track which user_id conversations were loaded for
     
     # ==========================================================================
     # Authentication & Session Management
     # ==========================================================================
+    
+    def _reset_chat_state_for_user_switch(self):
+        """Explicitly reset all chat state when switching users.
+        
+        This is CRITICAL for preventing conversation leakage between users.
+        Call this before any user login/logout/guest transition.
+        """
+        print(f"[SECURITY] Resetting chat state. Previous user: {self._conversations_loaded_for_user}")
+        self.conversations = []
+        self.messages = []
+        self.current_conversation_id = ""
+        self._conversations_loaded_for_user = ""
+        self._initialized = False
+        self.onboarding_loaded = False
+        
+        # Clear pagination
+        self.messages_current_page = 1
+        self.has_more_messages = False
+        
+        # Clear search
+        self.search_query = ""
+        self.search_expanded = False
+        
+        print("[SECURITY] Chat state reset complete")
     
     def redirect_to_landing(self):
         """Redirect unauthenticated users to the landing page."""
@@ -75,8 +100,9 @@ class AppState(AuthState):
                 self.user_email = result["user"]["email"]
                 self.user_name = result["user"]["name"]
                 
-                # Reset initialization flag so chat reinitializes with user data
-                self._initialized = False
+                # SECURITY: Clear any previous session data before loading user data
+                if hasattr(self, '_reset_chat_state_for_user_switch'):
+                    self._reset_chat_state_for_user_switch()
                 
                 print(f"[SESSION] Restored session for user: {self.user_email}")
                 
@@ -122,6 +148,7 @@ class AppState(AuthState):
         """
         print(f"[INIT] Starting initialization. Already initialized: {self._initialized}")
         print(f"[INIT] Is guest: {self.is_guest}, Is authenticated: {self.is_authenticated}")
+        print(f"[INIT] User ID: {self.user_id}")
         print(f"[INIT] Current conversations: {len(self.conversations)}")
         print(f"[INIT] Current conversation ID: {self.current_conversation_id}")
         
@@ -136,18 +163,43 @@ class AppState(AuthState):
                 yield rx.redirect("/")
                 return
         
-        # Allow re-initialization if user just logged in or went guest
-        # but only if they have no conversations
-        if self._initialized and self.conversations:
-            print("[INIT] Already initialized with conversations, skipping")
+        # SECURITY: Check if conversations belong to current user
+        conversations_match_user = (
+            self._conversations_loaded_for_user == self.user_id 
+            if (self.user_id and not self.user_id.startswith("guest_")) 
+            else False
+        )
+        
+        # SECURITY: Clear conversations if they don't match current user
+        if self.is_authenticated and self._conversations_loaded_for_user and self._conversations_loaded_for_user != self.user_id:
+            print(f"[SECURITY] Clearing stale conversations. Was: {self._conversations_loaded_for_user}, Now: {self.user_id}")
+            self._reset_chat_state_for_user_switch()
+        
+        # Check if guest has auth user's conversations (critical security issue)
+        if self.is_guest and self._conversations_loaded_for_user and not self._conversations_loaded_for_user.startswith("guest_"):
+            print(f"[SECURITY] Guest has auth user's conversations! Clearing. Was: {self._conversations_loaded_for_user}")
+            self._reset_chat_state_for_user_switch()
+        
+        should_reinit = (
+            not self._initialized or
+            not self.conversations or
+            (self.is_authenticated and not conversations_match_user)
+        )
+        
+        if not should_reinit:
+            print(f"[INIT] Already initialized for user {self._conversations_loaded_for_user}, skipping")
             return
         
         self._initialized = True
         
         # For logged-in users, load conversations from database
         if self.can_access_history():
-            print("[INIT] Loading conversations from DB...")
+            print(f"[INIT] Loading conversations from DB for user {self.user_id}...")
             await self.load_conversations_from_db()
+            self._conversations_loaded_for_user = self.user_id  # Mark as loaded for this user
+        else:
+            print("[INIT] Guest mode - conversations will be in-memory only")
+            self._conversations_loaded_for_user = self.user_id if self.user_id else "guest"
         
         # Load onboarding preferences for AI personalization
         if self.is_authenticated and self.user_id and not self.onboarding_loaded:
@@ -157,6 +209,11 @@ class AppState(AuthState):
         # Load upcoming events (for all users - uses local fallback if DB fails)
         print("[INIT] Loading upcoming events...")
         await self.load_upcoming_events()
+        
+        # Load and sync Google Calendar events
+        if self.is_authenticated:
+            print("[INIT] Syncing Google Calendar events...")
+            await self.sync_calendar_events()
         
         # If no conversations exist (guest or new user), create initial conversation
         if not self.conversations:
@@ -981,6 +1038,16 @@ class AppState(AuthState):
             print("[LOAD_CONVS] Cannot access history")
             return
         
+        # SECURITY: Double-check authentication state
+        if not self.is_authenticated or self.is_guest:
+            print("[SECURITY] Blocked conversation load - not authenticated")
+            return
+        
+        # SECURITY: Validate user_id
+        if not self.user_id or self.user_id.startswith("guest_"):
+            print(f"[SECURITY] Blocked conversation load - invalid user_id: {self.user_id}")
+            return
+        
         from educhat.services.supabase_client import get_service
         
         try:
@@ -989,11 +1056,11 @@ class AppState(AuthState):
             conversations_data = db.get_user_conversations(user_id=self.user_id)
             
             if not conversations_data:
-                print("[LOAD_CONVS] No conversations found")
+                print("[LOAD_CONVS] No conversations found in database")
                 self.conversations = []
                 return
             
-            print(f"[LOAD_CONVS] Found {len(conversations_data)} conversations")
+            print(f"[LOAD_CONVS] Found {len(conversations_data)} conversations in database for user {self.user_id}")
             
             # Convert to our conversation format
             self.conversations = [

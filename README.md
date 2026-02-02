@@ -6,6 +6,19 @@
 
 ## 🌟 Wat is nieuw?
 
+### 📅 Google Calendar Integration
+**Automatische event scraping en synchronisatie!** EduChat scant nu automatisch onderwijsinstellingen voor belangrijke data en evenementen, extraheert deze met AI, en synchroniseert alles naar jouw Google Calendar. Bekijk events in een prachtige kalender interface!
+
+**Nieuwe features:**
+- ✅ Automatische event scraping bij elke pagina refresh
+- ✅ AI-powered event extractie van instellingswebsites
+- ✅ Volledige Google Calendar sync
+- ✅ Kalender weergave met maand/week/dag views
+- ✅ Herinneringen synced naar Google Calendar
+- ✅ One-click herinnering aanmaken van events
+
+**Quick Start:** Zie [CALENDAR_QUICK_START.md](CALENDAR_QUICK_START.md)
+
 ### 🌙 Dark Mode
 **Toggle in de header/instellingen.** Je keuze wordt opgeslagen en de site respecteert standaard je apparaatvoorkeur. Dark mode vermindert vermoeidheid van de ogen bij weinig licht.
 

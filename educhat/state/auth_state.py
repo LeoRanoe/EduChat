@@ -27,6 +27,9 @@ class AuthState(rx.State):
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
     
+    # === Language Settings ===
+    language: str = "nl"  # "nl" for Dutch, "en" for English
+    
     # === UI State ===
     show_auth_modal: bool = False
     auth_mode: str = "login"  # "login" or "signup"
@@ -39,8 +42,12 @@ class AuthState(rx.State):
     signup_email: str = ""
     signup_password: str = ""
     signup_confirm_password: str = ""
-    signup_name: str = ""
+    signup_firstname: str = ""
+    signup_lastname: str = ""
     remember_me: bool = False
+    
+    # === Google OAuth ===
+    google_auth_loading: bool = False
     
     # Password visibility toggles
     show_login_password: bool = False
@@ -55,7 +62,8 @@ class AuthState(rx.State):
     email_error: str = ""
     password_error: str = ""
     confirm_password_error: str = ""
-    name_error: str = ""
+    firstname_error: str = ""
+    lastname_error: str = ""
     
     # === Email Confirmation ===
     email_needs_confirmation: bool = False
@@ -81,6 +89,122 @@ class AuthState(rx.State):
     # === Events ===
     upcoming_events: List[Dict[str, str]] = []
     show_events_panel: bool = False
+    events_was_open_before_calendar: bool = False
+    
+    # === Calendar ===
+    show_calendar_view: bool = False
+    calendar_view: str = "month"  # "month", "week", "day"
+    calendar_year: int = datetime.now().year
+    calendar_month: int = datetime.now().month
+    calendar_day: int = datetime.now().day
+    calendar_events: List[Dict] = []
+    selected_day_events: List[Dict] = []
+    is_syncing_calendar: bool = False
+    last_calendar_sync: Optional[str] = None
+    
+    # ==========================================================================
+    # Language Methods
+    # ==========================================================================
+    
+    def toggle_language(self):
+        """Toggle between Dutch and English."""
+        self.language = "en" if self.language == "nl" else "nl"
+    
+    def set_language(self, lang: str):
+        """Set language directly."""
+        if lang in ["nl", "en"]:
+            self.language = lang
+    
+    @rx.var
+    def is_dutch(self) -> bool:
+        """Check if current language is Dutch."""
+        return self.language == "nl"
+    
+    @rx.var
+    def is_english(self) -> bool:
+        """Check if current language is English."""
+        return self.language == "en"
+    
+    @rx.var
+    def current_calendar_month_year(self) -> str:
+        """Get formatted month and year for calendar header."""
+        months = ["Januari", "Februari", "Maart", "April", "Mei", "Juni",
+                  "Juli", "Augustus", "September", "Oktober", "November", "December"]
+        return f"{months[self.calendar_month - 1]} {self.calendar_year}"
+    
+    @rx.var
+    def selected_day_formatted(self) -> str:
+        """Get formatted selected day."""
+        months = ["januari", "februari", "maart", "april", "mei", "juni",
+                  "juli", "augustus", "september", "oktober", "november", "december"]
+        return f"{self.calendar_day} {months[self.calendar_month - 1]} {self.calendar_year}"
+    
+    @rx.var
+    def calendar_days(self) -> List[Dict]:
+        """Generate calendar days for current month."""
+        from calendar import monthrange
+        
+        # Get number of days in current month
+        _, num_days = monthrange(self.calendar_year, self.calendar_month)
+        
+        # Get first day of month (0 = Monday, 6 = Sunday)
+        first_day = datetime(self.calendar_year, self.calendar_month, 1).weekday()
+        
+        # Get previous month days to fill
+        if self.calendar_month == 1:
+            prev_month = 12
+            prev_year = self.calendar_year - 1
+        else:
+            prev_month = self.calendar_month - 1
+            prev_year = self.calendar_year
+        
+        _, prev_month_days = monthrange(prev_year, prev_month)
+        
+        days = []
+        
+        # Add previous month days
+        for i in range(first_day):
+            day = prev_month_days - first_day + i + 1
+            days.append({
+                "day": day,
+                "is_current_month": False,
+                "is_today": False,
+                "events_count": 0
+            })
+        
+        # Add current month days
+        today = datetime.now()
+        for day in range(1, num_days + 1):
+            is_today = (day == today.day and 
+                       self.calendar_month == today.month and 
+                       self.calendar_year == today.year)
+            
+            # Count events for this day
+            events_count = sum(1 for event in self.calendar_events
+                             if event.get("date", "").startswith(
+                                 f"{self.calendar_year}-{self.calendar_month:02d}-{day:02d}"))
+            
+            days.append({
+                "day": day,
+                "is_current_month": True,
+                "is_today": is_today,
+                "events_count": events_count
+            })
+        
+        # Add next month days to fill grid (usually 35 or 42 days)
+        remaining = 35 - len(days)
+        if remaining < 0:
+            remaining = 42 - len(days)
+        
+        for day in range(1, remaining + 1):
+            days.append({
+                "day": day,
+                "is_current_month": False,
+                "is_today": False,
+                "events_count": 0
+            })
+        
+        return days
     
     # ==========================================================================
     # Form Input Handlers
@@ -132,10 +256,16 @@ class AuthState(rx.State):
         if self.signup_password and value == self.signup_password:
             self.confirm_password_error = ""
     
-    def set_signup_name(self, value: str):
-        """Set signup name."""
-        self.signup_name = value
-        self.name_error = ""
+    def set_signup_firstname(self, value: str):
+        """Set signup firstname."""
+        self.signup_firstname = value
+        self.firstname_error = ""
+        self.auth_error = ""
+    
+    def set_signup_lastname(self, value: str):
+        """Set signup lastname."""
+        self.signup_lastname = value
+        self.lastname_error = ""
         self.auth_error = ""
     
     def toggle_remember_me(self):
@@ -220,10 +350,16 @@ class AuthState(rx.State):
             self.email_error = error
             is_valid = False
         
-        # Validate name
-        valid, error = self._validate_name(self.signup_name)
+        # Validate firstname
+        valid, error = self._validate_name(self.signup_firstname)
         if not valid:
-            self.name_error = error
+            self.firstname_error = error if error != "Naam is verplicht" else "Voornaam is verplicht"
+            is_valid = False
+        
+        # Validate lastname
+        valid, error = self._validate_name(self.signup_lastname)
+        if not valid:
+            self.lastname_error = error if error != "Naam is verplicht" else "Achternaam is verplicht"
             is_valid = False
         
         # Validate password
@@ -276,7 +412,8 @@ class AuthState(rx.State):
         self.signup_email = ""
         self.signup_password = ""
         self.signup_confirm_password = ""
-        self.signup_name = ""
+        self.signup_firstname = ""
+        self.signup_lastname = ""
         self._clear_errors()
     
     def _clear_errors(self):
@@ -286,7 +423,8 @@ class AuthState(rx.State):
         self.email_error = ""
         self.password_error = ""
         self.confirm_password_error = ""
-        self.name_error = ""
+        self.firstname_error = ""
+        self.lastname_error = ""
     
     # ==========================================================================
     # Authentication Actions
@@ -323,6 +461,16 @@ class AuthState(rx.State):
                 self.user_name = result["user"]["name"]
                 self.access_token = result["session"]["access_token"]
                 self.refresh_token = result["session"]["refresh_token"]
+                
+                # Clear any previous session data (e.g., guest conversations)
+                if hasattr(self, 'conversations'):
+                    self.conversations = []
+                if hasattr(self, 'messages'):
+                    self.messages = []
+                if hasattr(self, 'current_conversation_id'):
+                    self.current_conversation_id = ""
+                if hasattr(self, '_conversations_loaded_for_user'):
+                    self._conversations_loaded_for_user = ""
                 
                 # Close modal and clear form
                 self.show_auth_modal = False
@@ -381,10 +529,15 @@ class AuthState(rx.State):
             from educhat.services.auth_service import get_auth_service
             auth_service = get_auth_service()
             
+            # Combine firstname and lastname
+            full_name = f"{self.signup_firstname.strip()} {self.signup_lastname.strip()}"
+            
             result = await auth_service.signup(
                 self.signup_email.strip(),
                 self.signup_password,
-                self.signup_name.strip()
+                full_name,
+                firstname=self.signup_firstname.strip(),
+                lastname=self.signup_lastname.strip()
             )
             
             if result["success"]:
@@ -394,6 +547,10 @@ class AuthState(rx.State):
                     self.auth_mode = "login"
                     self._clear_form()
                 else:
+                    # SECURITY: Reset chat state FIRST to prevent conversation leakage
+                    if hasattr(self, '_reset_chat_state_for_user_switch'):
+                        self._reset_chat_state_for_user_switch()
+                    
                     # Set authenticated state
                     self.is_authenticated = True
                     self.is_guest = False
@@ -424,6 +581,83 @@ class AuthState(rx.State):
         finally:
             self.auth_loading = False
     
+    async def google_signin(self):
+        """Handle Google OAuth sign-in."""
+        self.google_auth_loading = True
+        yield
+        
+        try:
+            from educhat.services.auth_service import get_auth_service
+            auth_service = get_auth_service()
+            
+            result = await auth_service.google_signin()
+            
+            if result["success"] and result.get("url"):
+                # Redirect to Google OAuth URL (use window.open for external redirect)
+                yield rx.redirect(result["url"])
+            else:
+                self.auth_error = result.get("error", "Google inloggen mislukt")
+                self.google_auth_loading = False
+        except Exception as e:
+            print(f"Google sign-in error: {e}")
+            self.auth_error = "Er is een fout opgetreden met Google inloggen"
+            self.google_auth_loading = False
+    
+    async def handle_oauth_callback(self, code: str):
+        """Handle OAuth callback from Google."""
+        print(f"[OAuth Callback] Received code: {code[:20] if code else 'None'}...")
+        
+        # Validate code
+        if not code or not isinstance(code, str):
+            print(f"[OAuth Callback] Invalid code received: {type(code)}")
+            self.auth_error = "Ongeldige authenticatie code"
+            yield rx.redirect("/")
+            return
+            
+        try:
+            from educhat.services.auth_service import get_auth_service
+            auth_service = get_auth_service()
+            
+            result = await auth_service.handle_oauth_callback(code)
+            print(f"[OAuth Callback] Result: {result.get('success') if isinstance(result, dict) else 'Invalid result'}")
+            
+            if isinstance(result, dict) and result.get("success") and result.get("user"):
+                user = result["user"]
+                session = result.get("session", {})
+                
+                # Set authenticated state
+                self.is_authenticated = True
+                self.is_guest = False
+                self.user_id = user["id"]
+                self.user_email = user["email"]
+                self.user_name = user["name"]
+                self.access_token = session.get("access_token")
+                self.refresh_token = session.get("refresh_token")
+                
+                # Close modal
+                self.show_auth_modal = False
+                
+                # Show success toast
+                self.toast_message = f"Ingelogd met Google! Welkom, {self.user_name}!"
+                self.toast_type = "success"
+                self.show_toast = True
+                
+                # Load user data
+                await self._load_user_data()
+                
+                # Redirect to chat
+                yield rx.redirect("/chat")
+            else:
+                error_msg = result.get("error", "Google authenticatie mislukt") if isinstance(result, dict) else "Onverwachte fout"
+                self.auth_error = error_msg
+                yield rx.redirect("/")
+        except Exception as e:
+            print(f"OAuth callback error: {e}")
+            import traceback
+            traceback.print_exc()
+            self.auth_error = "Er is een fout opgetreden met Google authenticatie"
+            yield rx.redirect("/")
+    
     async def logout(self):
         """Handle user logout."""
         try:
@@ -436,14 +670,18 @@ class AuthState(rx.State):
         finally:
             # Always clear local state
             self._clear_auth_state()
-            # Reset initialization flag
-            if hasattr(self, '_initialized'):
-                self._initialized = False
+            # SECURITY: Reset chat state to prevent conversation leakage
+            if hasattr(self, '_reset_chat_state_for_user_switch'):
+                self._reset_chat_state_for_user_switch()
             # Redirect to landing page
             yield rx.redirect("/")
     
     async def continue_as_guest(self):
         """Continue as guest user."""
+        # SECURITY: Reset chat state FIRST to prevent conversation leakage
+        if hasattr(self, '_reset_chat_state_for_user_switch'):
+            self._reset_chat_state_for_user_switch()
+        
         self.is_guest = True
         self.is_authenticated = False
         self.user_id = f"guest_{uuid.uuid4().hex[:8]}"
@@ -455,10 +693,8 @@ class AuthState(rx.State):
         if hasattr(self, '_initialized'):
             self._initialized = False
         
-        # Show welcome toast
-        self.toast_message = "Welkom als gast! Je hebt toegang tot beperkte functies."
-        self.toast_type = "info"
-        self.show_toast = True
+        # Don't show toast - guest banner will appear on chat page instead
+        self.show_toast = False
         
         # Yield state update before redirect
         yield
@@ -609,8 +845,11 @@ class AuthState(rx.State):
     async def toggle_events_panel(self):
         """Toggle events panel visibility."""
         self.show_events_panel = not self.show_events_panel
-        if self.show_events_panel and len(self.upcoming_events) == 0:
-            await self.load_upcoming_events()
+        # Close calendar when opening events panel
+        if self.show_events_panel:
+            self.show_calendar_view = False
+            if len(self.upcoming_events) == 0:
+                await self.load_upcoming_events()
     
     async def load_upcoming_events(self):
         """Load upcoming events."""
@@ -695,7 +934,7 @@ class AuthState(rx.State):
         self.reminder_date = value
     
     async def create_reminder(self):
-        """Create a new reminder."""
+        """Create a new reminder and sync to Google Calendar."""
         if not self.reminder_title.strip() or not self.reminder_date:
             return
         
@@ -707,6 +946,7 @@ class AuthState(rx.State):
             "created_at": datetime.now().isoformat()
         }
         
+        # Save to database if authenticated
         if self.is_authenticated and self.user_id:
             try:
                 from educhat.services.supabase_client import get_service
@@ -721,14 +961,51 @@ class AuthState(rx.State):
             except Exception as e:
                 print(f"Error saving reminder: {e}")
         
+        # Sync to Google Calendar if authenticated
+        if self.is_authenticated:
+            try:
+                from educhat.services.google_calendar_service import get_calendar_service
+                
+                calendar_service = get_calendar_service(user_id=self.user_id)
+                if calendar_service.authenticate():
+                    # Parse date and create event
+                    date_obj = datetime.fromisoformat(self.reminder_date)
+                    # Set reminder for 9 AM on the date
+                    event_time = date_obj.replace(hour=9, minute=0, second=0)
+                    
+                    event = calendar_service.create_event(
+                        title=f"🔔 {self.reminder_title.strip()}",
+                        start_time=event_time,
+                        end_time=event_time + timedelta(hours=1),
+                        description="Herinnering aangemaakt via EduChat",
+                        reminders={
+                            'useDefault': False,
+                            'overrides': [
+                                {'method': 'popup', 'minutes': 24 * 60},  # 1 day before
+                                {'method': 'popup', 'minutes': 60},       # 1 hour before
+                            ],
+                        }
+                    )
+                    
+                    if event:
+                        new_reminder["calendar_event_id"] = event['id']
+                        print(f"Reminder synced to Google Calendar: {event.get('htmlLink')}")
+            except Exception as e:
+                print(f"Error syncing reminder to Google Calendar: {e}")
+        
         self.reminders = [new_reminder] + list(self.reminders)
         self.show_reminder_modal = False
         self.reminder_title = ""
         self.reminder_date = ""
+        
+        # Show success toast
+        self.toast_message = "Herinnering aangemaakt en gesynchroniseerd"
+        self.toast_type = "success"
+        self.show_toast = True
         yield
     
     async def create_reminder_from_event(self, event_id: str):
-        """Create reminder from event."""
+        """Create reminder from event and sync to Google Calendar."""
         event = None
         for e in self.upcoming_events:
             if e["id"] == event_id:
@@ -746,6 +1023,7 @@ class AuthState(rx.State):
             "created_at": datetime.now().isoformat()
         }
         
+        # Save to database if authenticated
         if self.is_authenticated and self.user_id:
             try:
                 from educhat.services.supabase_client import get_service
@@ -761,10 +1039,41 @@ class AuthState(rx.State):
             except Exception as e:
                 print(f"Error saving reminder: {e}")
         
+        # Sync to Google Calendar if authenticated
+        if self.is_authenticated:
+            try:
+                from educhat.services.google_calendar_service import get_calendar_service
+                
+                calendar_service = get_calendar_service(user_id=self.user_id)
+                if calendar_service.authenticate():
+                    date_str = event.get("date", "")
+                    date_obj = datetime.fromisoformat(date_str.split("T")[0]) if date_str else datetime.now()
+                    event_time = date_obj.replace(hour=9, minute=0, second=0)
+                    
+                    calendar_event = calendar_service.create_event(
+                        title=f"🔔 {new_reminder['title']}",
+                        start_time=event_time,
+                        end_time=event_time + timedelta(hours=1),
+                        description=f"Herinnering voor evenement: {event['title']}\n\n{event.get('description', '')}",
+                        location=event.get('location', ''),
+                        reminders={
+                            'useDefault': False,
+                            'overrides': [
+                                {'method': 'popup', 'minutes': 24 * 60},
+                                {'method': 'popup', 'minutes': 60},
+                            ],
+                        }
+                    )
+                    
+                    if calendar_event:
+                        new_reminder["calendar_event_id"] = calendar_event['id']
+            except Exception as e:
+                print(f"Error syncing reminder to Google Calendar: {e}")
+        
         self.reminders = [new_reminder] + list(self.reminders)
         
         # Show success toast
-        self.toast_message = "Herinnering aangemaakt"
+        self.toast_message = "Herinnering aangemaakt en gesynchroniseerd"
         self.toast_type = "success"
         self.show_toast = True
         yield
@@ -779,7 +1088,14 @@ class AuthState(rx.State):
         self.reminders = updated
     
     async def delete_reminder(self, reminder_id: str):
-        """Delete a reminder."""
+        """Delete a reminder from database and Google Calendar."""
+        # Find the reminder to get calendar_event_id
+        reminder_to_delete = None
+        for r in self.reminders:
+            if r["id"] == reminder_id:
+                reminder_to_delete = r
+                break
+        
         # Delete from database if authenticated
         if self.is_authenticated and self.user_id:
             try:
@@ -788,6 +1104,18 @@ class AuthState(rx.State):
                 db.client.table('reminders').delete().eq('id', reminder_id).execute()
             except Exception as e:
                 print(f"Error deleting reminder from database: {e}")
+        
+        # Delete from Google Calendar if it was synced
+        if reminder_to_delete and reminder_to_delete.get("calendar_event_id"):
+            try:
+                from educhat.services.google_calendar_service import get_calendar_service
+                
+                calendar_service = get_calendar_service(user_id=self.user_id)
+                if calendar_service.authenticate():
+                    calendar_service.delete_event(reminder_to_delete["calendar_event_id"])
+                    print(f"Deleted reminder from Google Calendar: {reminder_to_delete['calendar_event_id']}")
+            except Exception as e:
+                print(f"Error deleting reminder from Google Calendar: {e}")
         
         # Remove from local state
         self.reminders = [r for r in self.reminders if r["id"] != reminder_id]
@@ -815,4 +1143,138 @@ class AuthState(rx.State):
             ]
         except Exception as e:
             print(f"Error loading reminders: {e}")
+    
+    # ==========================================================================
+    # Calendar Management
+    # ==========================================================================
+    
+    def toggle_calendar_view(self):
+        """Toggle calendar view visibility."""
+        # If opening calendar, remember if events panel was open and close it
+        if not self.show_calendar_view:
+            self.events_was_open_before_calendar = self.show_events_panel
+            self.show_events_panel = False
+        # If closing calendar, reopen events panel if it was open before
+        else:
+            if self.events_was_open_before_calendar:
+                self.show_events_panel = True
+                self.events_was_open_before_calendar = False
+        
+        self.show_calendar_view = not self.show_calendar_view
+    
+    def set_calendar_view(self, view: str):
+        """Set calendar view type (month/week/day)."""
+        self.calendar_view = view
+    
+    def previous_month(self):
+        """Navigate to previous month."""
+        if self.calendar_month == 1:
+            self.calendar_month = 12
+            self.calendar_year -= 1
+        else:
+            self.calendar_month -= 1
+    
+    def next_month(self):
+        """Navigate to next month."""
+        if self.calendar_month == 12:
+            self.calendar_month = 1
+            self.calendar_year += 1
+        else:
+            self.calendar_month += 1
+    
+    def go_to_today(self):
+        """Navigate to current month."""
+        now = datetime.now()
+        self.calendar_year = now.year
+        self.calendar_month = now.month
+        self.calendar_day = now.day
+        self._update_selected_day_events()
+    
+    def select_calendar_day(self, day: int):
+        """Select a day in the calendar."""
+        self.calendar_day = day
+        self._update_selected_day_events()
+    
+    def _update_selected_day_events(self):
+        """Update events for selected day."""
+        date_str = f"{self.calendar_year}-{self.calendar_month:02d}-{self.calendar_day:02d}"
+        self.selected_day_events = [
+            event for event in self.calendar_events
+            if event.get("date", "").startswith(date_str)
+        ]
+    
+    async def sync_calendar_events(self):
+        """Sync events from Google Calendar and scrape new events."""
+        if self.is_syncing_calendar:
+            return
+        
+        self.is_syncing_calendar = True
+        yield
+        
+        try:
+            from educhat.services.google_calendar_service import get_calendar_service
+            from educhat.services.event_scraper_service import scrape_and_sync_events
+            from educhat.services.ai_service import get_ai_service
+            
+            # Get services
+            calendar_service = get_calendar_service(user_id=self.user_id)
+            ai_service = get_ai_service()
+            
+            # Authenticate with Google Calendar
+            if not calendar_service.authenticate():
+                self.toast_message = "Google Calendar authenticatie mislukt"
+                self.toast_type = "error"
+                self.show_toast = True
+                return
+            
+            # Scrape and sync events
+            result = await scrape_and_sync_events(
+                ai_service=ai_service,
+                calendar_service=calendar_service,
+                user_institutions=None  # Could get from onboarding data
+            )
+            
+            # Load events from Google Calendar
+            events = calendar_service.get_upcoming_events(max_results=100)
+            
+            # Update state
+            self.calendar_events = events
+            self.upcoming_events = events[:10]  # Top 10 for events panel
+            self.last_calendar_sync = datetime.now().isoformat()
+            
+            # Update selected day events
+            self._update_selected_day_events()
+            
+            # Show success message
+            self.toast_message = f"{result['scraped']} evenementen gevonden, {result['synced']} gesynchroniseerd"
+            self.toast_type = "success"
+            self.show_toast = True
+            
+        except Exception as e:
+            print(f"Error syncing calendar: {e}")
+            self.toast_message = "Fout bij synchroniseren kalender"
+            self.toast_type = "error"
+            self.show_toast = True
+        finally:
+            self.is_syncing_calendar = False
+            yield
+    
+    async def load_calendar_events(self):
+        """Load events from Google Calendar without scraping."""
+        try:
+            from educhat.services.google_calendar_service import get_calendar_service
+            
+            calendar_service = get_calendar_service(user_id=self.user_id)
+            
+            if calendar_service.authenticate():
+                events = calendar_service.get_upcoming_events(max_results=100)
+                self.calendar_events = events
+                self.upcoming_events = events[:10]
+                self._update_selected_day_events()
+        except Exception as e:
+            print(f"Error loading calendar events: {e}")
+    
+    def show_event_details(self, event_id: str):
+        """Show event details (to be implemented)."""
+        pass
 

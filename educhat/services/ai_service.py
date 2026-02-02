@@ -31,8 +31,8 @@ except ImportError:
 class AIService:
     """AI service with OpenAI integration for educational queries."""
     
-    # Suriname-focused system prompt with strict accuracy guidelines
-    SYSTEM_PROMPT = """Je bent EduChat, een vriendelijke AI-assistent gespecialiseerd in het Surinaams onderwijssysteem.
+    # Suriname-focused system prompt with strict accuracy guidelines - Dutch
+    SYSTEM_PROMPT_NL = """Je bent EduChat, een vriendelijke AI-assistent gespecialiseerd in het Surinaams onderwijssysteem.
 
 Je expertisegebieden zijn:
 - Surinaamse onderwijsinstellingen (universiteiten, MINOV, middelbare scholen)
@@ -66,14 +66,55 @@ Als de context GEEN relevant antwoord bevat:
 "Ik heb geen specifieke informatie over [onderwerp] in mijn database. Voor nauwkeurige informatie raad ik aan om direct contact op te nemen met [relevante instelling] of hun officiële website te raadplegen."
 """
     
-    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, provider: str = "auto"):
+    # English system prompt
+    SYSTEM_PROMPT_EN = """You are EduChat, a friendly AI assistant specialized in the Surinamese education system.
+
+Your areas of expertise are:
+- Surinamese educational institutions (universities, MINOV, secondary schools)
+- Admission procedures and requirements
+- Study programs and curricula
+- Deadlines and important dates
+- Study costs and financing options
+- General study advice for Surinamese students
+
+=== CRITICAL ACCURACY RULES ===
+1. ONLY answer with information that comes DIRECTLY from the provided context
+2. NEVER guess, assume, or make up information
+3. If the context does NOT contain an answer to the question, say: "I don't have enough information to answer this question accurately. Please consult the official website of the institution or contact them directly."
+4. NEVER mix information from different institutions unless explicitly asked to compare
+5. One question = one clear, focused answer
+6. CITE specific sources when giving factual information (e.g., "According to AdeKUS data...")
+7. If data may be outdated (such as deadlines), mention this explicitly
+8. ALWAYS validate that your answer is directly related to what was asked
+
+=== RESPONSE FORMAT ===
+- Be specific and direct
+- Avoid general or vague statements
+- If there are multiple possible answers, ask for clarification instead of guessing
+- Use a friendly, accessible tone
+- Provide step-by-step instructions where possible
+
+If you receive a question that is NOT about Surinamese education:
+"I specialize in Surinamese education and would be happy to help you with that! Do you have questions about studies, enrollments, or educational institutions in Suriname?"
+
+If the context does NOT contain a relevant answer:
+"I don't have specific information about [topic] in my database. For accurate information, I recommend contacting [relevant institution] directly or checking their official website."
+"""
+    
+    # Keep legacy SYSTEM_PROMPT for backwards compatibility
+    SYSTEM_PROMPT = SYSTEM_PROMPT_NL
+    
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, provider: str = "auto", language: str = "nl"):
         """Initialize AI service.
         
         Args:
             api_key: API key (defaults to env var)
             model: Model to use (defaults based on provider)
             provider: "openai", "google", or "auto" (auto-detect from env)
+            language: Response language "nl" (Dutch) or "en" (English)
         """
+        self.language = language
+        
         # Auto-detect provider based on available API keys
         if provider == "auto":
             if os.getenv("GOOGLE_AI_API_KEY"):
@@ -121,6 +162,29 @@ Als de context GEEN relevant antwoord bevat:
         self.base_delay = 1  # seconds
         self.max_delay = 10  # seconds
     
+    def get_system_prompt(self, language: str = None) -> str:
+        """Get the system prompt for the specified language.
+        
+        Args:
+            language: "nl" for Dutch, "en" for English. Defaults to instance language.
+            
+        Returns:
+            System prompt string
+        """
+        lang = language or self.language
+        if lang == "en":
+            return self.SYSTEM_PROMPT_EN
+        return self.SYSTEM_PROMPT_NL
+    
+    def set_language(self, language: str):
+        """Set the response language.
+        
+        Args:
+            language: "nl" for Dutch, "en" for English
+        """
+        if language in ["nl", "en"]:
+            self.language = language
+    
     def _is_education_related(self, message: str) -> bool:
         """Check if message is related to education.
         
@@ -131,14 +195,21 @@ Als de context GEEN relevant antwoord bevat:
             True if education-related
         """
         # Expanded list of education keywords including common variations and typos
+        # Includes both Dutch and English keywords
         education_keywords = [
+            # Dutch
             "studie", "opleiding", "universiteit", "school", "minov", "minow",
             "inschrijven", "inschrijving", "toelating", "examen", "diploma",
             "vakken", "lessen", "docent", "leraar", "student", "cursus",
             "bachelor", "master", "vmbo", "havo", "vwo", "mbo",
             "deadline", "kosten", "beurs", "financiering",
-            "hoe", "wat", "welke", "wanneer", "waar",  # Question words - allow most questions through
-            "helpen", "help", "vraag", "vragen", "info", "informatie"
+            "hoe", "wat", "welke", "wanneer", "waar",
+            "helpen", "help", "vraag", "vragen", "info", "informatie",
+            # English
+            "study", "education", "university", "college", "enrollment", "enroll",
+            "admission", "exam", "degree", "subjects", "classes", "teacher",
+            "professor", "tuition", "scholarship", "requirements",
+            "how", "what", "which", "when", "where", "question"
         ]
         
         message_lower = message.lower()
@@ -149,19 +220,24 @@ Als de context GEEN relevant antwoord bevat:
         
         return any(keyword in message_lower for keyword in education_keywords)
     
-    def _get_fallback_response(self, message: str) -> str:
+    def _get_fallback_response(self, message: str, language: str = None) -> str:
         """Get fallback response for off-topic questions.
         
         Args:
             message: User message
+            language: Response language
             
         Returns:
             Fallback response or None to let AI handle it
         """
+        lang = language or self.language
+        
         # Only block obviously off-topic questions (e.g., about weather, sports, etc.)
         off_topic_keywords = [
             "weer", "voetbal", "sport", "recept", "koken",
-            "film", "muziek", "game", "spel"
+            "film", "muziek", "game", "spel",
+            "weather", "football", "soccer", "recipe", "cooking",
+            "movie", "music"
         ]
         
         message_lower = message.lower()
@@ -170,15 +246,26 @@ Als de context GEEN relevant antwoord bevat:
         is_off_topic = any(keyword in message_lower for keyword in off_topic_keywords)
         
         if is_off_topic and not self._is_education_related(message):
-            return (
-                "Ik ben gespecialiseerd in Surinaams onderwijs en kan je daar graag mee helpen! "
-                "Heb je vragen over studies, inschrijvingen, of onderwijsinstellingen in Suriname? "
-                "Bijvoorbeeld:\n"
-                "- Hoe schrijf ik me in voor een opleiding?\n"
-                "- Welke documenten heb ik nodig?\n"
-                "- Wat zijn de toelatingseisen?\n"
-                "- Vertel me over MINOV opleidingen"
-            )
+            if lang == "en":
+                return (
+                    "I specialize in Surinamese education and would be happy to help you with that! "
+                    "Do you have questions about studies, enrollments, or educational institutions in Suriname? "
+                    "For example:\n"
+                    "- How do I enroll in a program?\n"
+                    "- What documents do I need?\n"
+                    "- What are the admission requirements?\n"
+                    "- Tell me about MINOV programs"
+                )
+            else:
+                return (
+                    "Ik ben gespecialiseerd in Surinaams onderwijs en kan je daar graag mee helpen! "
+                    "Heb je vragen over studies, inschrijvingen, of onderwijsinstellingen in Suriname? "
+                    "Bijvoorbeeld:\n"
+                    "- Hoe schrijf ik me in voor een opleiding?\n"
+                    "- Welke documenten heb ik nodig?\n"
+                    "- Wat zijn de toelatingseisen?\n"
+                    "- Vertel me over MINOV opleidingen"
+                )
         
         # Let the AI handle everything else
         return None
@@ -211,6 +298,9 @@ Als de context GEEN relevant antwoord bevat:
             "het is algemeen bekend",  # "It's commonly known"
             "iedereen weet dat",  # "Everyone knows that"
             "natuurlijk is het zo dat",  # "Of course it's the case that"
+            "i'm certain that",
+            "it's well known",
+            "everyone knows",
         ]
         
         # Only flag as potential hallucination if used without proper context
@@ -219,7 +309,9 @@ Als de context GEEN relevant antwoord bevat:
                 # Check if response also contains hedging/sourcing language
                 source_indicators = [
                     "volgens", "op basis van", "de database toont",
-                    "uit de gegevens", "de informatie wijst"
+                    "uit de gegevens", "de informatie wijst",
+                    "according to", "based on", "the data shows",
+                    "from the information"
                 ]
                 if not any(src in response_lower for src in source_indicators):
                     return False
@@ -287,7 +379,8 @@ Als de context GEEN relevant antwoord bevat:
         self,
         message: str,
         conversation_history: Optional[List[Dict[str, str]]] = None,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
+        language: str = None
     ) -> str:
         """Get AI response for a message.
         
@@ -295,6 +388,7 @@ Als de context GEEN relevant antwoord bevat:
             message: User message
             conversation_history: Previous messages in format [{"role": "user/assistant", "content": "..."}]
             context: Additional context (e.g., user preferences from onboarding)
+            language: Response language ("nl" or "en"), defaults to instance language
             
         Returns:
             AI response
@@ -302,17 +396,20 @@ Als de context GEEN relevant antwoord bevat:
         Raises:
             Exception: If AI call fails after retries
         """
+        lang = language or self.language
+        
         # Check for off-topic questions
-        fallback = self._get_fallback_response(message)
+        fallback = self._get_fallback_response(message, lang)
         if fallback:
             return fallback
         
-        # Build messages array
-        messages = [{"role": "system", "content": self.SYSTEM_PROMPT}]
+        # Build messages array with language-appropriate system prompt
+        system_prompt = self.get_system_prompt(lang)
+        messages = [{"role": "system", "content": system_prompt}]
         
         # Add context if available
         if context:
-            context_prompt = self._build_context_prompt(context)
+            context_prompt = self._build_context_prompt(context, lang)
             if context_prompt:
                 messages.append({"role": "system", "content": context_prompt})
         
@@ -337,11 +434,18 @@ Als de context GEEN relevant antwoord bevat:
             
             # Validate response
             if not self._validate_response(response):
-                return (
-                    "Sorry, ik kon geen goed antwoord genereren. "
-                    "Kun je je vraag anders formuleren? "
-                    "Ik help je graag met vragen over Surinaams onderwijs!"
-                )
+                if lang == "en":
+                    return (
+                        "Sorry, I couldn't generate a good response. "
+                        "Could you rephrase your question? "
+                        "I'm happy to help with questions about Surinamese education!"
+                    )
+                else:
+                    return (
+                        "Sorry, ik kon geen goed antwoord genereren. "
+                        "Kun je je vraag anders formuleren? "
+                        "Ik help je graag met vragen over Surinaams onderwijs!"
+                    )
             
             return response
             
@@ -351,6 +455,12 @@ Als de context GEEN relevant antwoord bevat:
             
             # Check for quota/rate limit errors
             if "quota" in error_str or "429" in str(e):
+                if lang == "en":
+                    return (
+                        "⚠️ The AI service has reached its usage limit. "
+                        "This may mean the API key has exceeded its free quota. "
+                        "Please try again in a few minutes, or contact the administrator."
+                    )
                 return (
                     "⚠️ De AI service heeft zijn gebruikslimiet bereikt. "
                     "Dit kan betekenen dat de API-sleutel zijn gratis quota heeft overschreden. "
@@ -450,73 +560,120 @@ Als de context GEEN relevant antwoord bevat:
             
             return response.choices[0].message.content.strip()
     
-    def _build_context_prompt(self, context: Dict[str, Any]) -> Optional[str]:
+    def _build_context_prompt(self, context: Dict[str, Any], language: str = "nl") -> Optional[str]:
         """Build context prompt from user preferences.
         
         Args:
             context: User context (from onboarding)
+            language: Response language ("nl" or "en")
             
         Returns:
             Context prompt or None
         """
         parts = []
         
-        # Education level
-        if context.get("education_level"):
-            parts.append(f"De gebruiker volgt momenteel: {context['education_level']}")
+        if language == "en":
+            # English context building
+            if context.get("education_level"):
+                parts.append(f"The user is currently studying: {context['education_level']}")
+            
+            if context.get("age_group"):
+                parts.append(f"Age group: {context['age_group']}")
+            
+            if context.get("district"):
+                parts.append(f"Lives in: {context['district']}")
+            
+            if context.get("study_directions"):
+                directions = context["study_directions"]
+                if isinstance(directions, list) and directions:
+                    parts.append(f"Interested in study directions: {', '.join(directions)}")
+                elif isinstance(directions, str) and directions:
+                    parts.append(f"Interested in study directions: {directions}")
+            
+            if context.get("favorite_subjects"):
+                subjects = context["favorite_subjects"]
+                if isinstance(subjects, list) and subjects:
+                    parts.append(f"Favorite subjects: {', '.join(subjects)}")
+                elif isinstance(subjects, str) and subjects:
+                    parts.append(f"Favorite subjects: {subjects}")
+            
+            if context.get("future_plans"):
+                parts.append(f"Future plans: {context['future_plans']}")
+            
+            if context.get("improvement_areas"):
+                areas = context["improvement_areas"]
+                if isinstance(areas, list) and areas:
+                    parts.append(f"Looking for help with: {', '.join(areas)}")
+                elif isinstance(areas, str) and areas:
+                    parts.append(f"Looking for help with: {areas}")
+            
+            if context.get("formality_preference"):
+                formality = context["formality_preference"]
+                formality_map = {
+                    "Informeel & vriendelijk": "Use a casual, friendly tone as if talking to a friend. Be personal and informal.",
+                    "Normaal": "Use a friendly, accessible tone that's not too formal or informal.",
+                    "Formeel & zakelijk": "Use a professional, formal tone. Be respectful and businesslike.",
+                    "informal": "Use a casual, friendly tone as if talking to a friend.",
+                    "normal": "Use a friendly, accessible tone that's not too formal or informal.",
+                    "formal": "Use a professional, formal tone. Be respectful and businesslike.",
+                }
+                if formality in formality_map:
+                    parts.append(formality_map[formality])
+            
+            if context.get("tone") and not context.get("formality_preference"):
+                parts.append(f"Communication style: {context['tone']}")
+        else:
+            # Dutch context building (original)
+            if context.get("education_level"):
+                parts.append(f"De gebruiker volgt momenteel: {context['education_level']}")
+            
+            if context.get("age_group"):
+                parts.append(f"Leeftijdsgroep: {context['age_group']}")
+            
+            if context.get("district"):
+                parts.append(f"Woont in: {context['district']}")
+            
+            if context.get("study_directions"):
+                directions = context["study_directions"]
+                if isinstance(directions, list) and directions:
+                    parts.append(f"Geïnteresseerd in studierichtingen: {', '.join(directions)}")
+                elif isinstance(directions, str) and directions:
+                    parts.append(f"Geïnteresseerd in studierichtingen: {directions}")
+            
+            if context.get("favorite_subjects"):
+                subjects = context["favorite_subjects"]
+                if isinstance(subjects, list) and subjects:
+                    parts.append(f"Favoriete vakken: {', '.join(subjects)}")
+                elif isinstance(subjects, str) and subjects:
+                    parts.append(f"Favoriete vakken: {subjects}")
+            
+            if context.get("future_plans"):
+                parts.append(f"Toekomstplannen: {context['future_plans']}")
+            
+            if context.get("improvement_areas"):
+                areas = context["improvement_areas"]
+                if isinstance(areas, list) and areas:
+                    parts.append(f"Zoekt hulp bij: {', '.join(areas)}")
+                elif isinstance(areas, str) and areas:
+                    parts.append(f"Zoekt hulp bij: {areas}")
+            
+            if context.get("formality_preference"):
+                formality = context["formality_preference"]
+                formality_map = {
+                    "Informeel & vriendelijk": "Gebruik een casual, vriendelijke toon alsof je met een vriend praat. Wees persoonlijk en informeel.",
+                    "Normaal": "Gebruik een vriendelijke, toegankelijke toon die niet te formeel of te informeel is.",
+                    "Formeel & zakelijk": "Gebruik een professionele, formele toon. Wees respectvol en zakelijk.",
+                    "informal": "Gebruik een casual, vriendelijke toon.",
+                    "normal": "Gebruik een vriendelijke, toegankelijke toon.",
+                    "formal": "Gebruik een professionele, formele toon.",
+                }
+                if formality in formality_map:
+                    parts.append(formality_map[formality])
+            
+            if context.get("tone") and not context.get("formality_preference"):
+                parts.append(f"Communicatiestijl: {context['tone']}")
         
-        # Age group
-        if context.get("age_group"):
-            parts.append(f"Leeftijdsgroep: {context['age_group']}")
-        
-        # District
-        if context.get("district"):
-            parts.append(f"Woont in: {context['district']}")
-        
-        # Study directions / interests
-        if context.get("study_directions"):
-            directions = context["study_directions"]
-            if isinstance(directions, list) and directions:
-                parts.append(f"Geïnteresseerd in studierichtingen: {', '.join(directions)}")
-            elif isinstance(directions, str) and directions:
-                parts.append(f"Geïnteresseerd in studierichtingen: {directions}")
-        
-        # Favorite subjects
-        if context.get("favorite_subjects"):
-            subjects = context["favorite_subjects"]
-            if isinstance(subjects, list) and subjects:
-                parts.append(f"Favoriete vakken: {', '.join(subjects)}")
-            elif isinstance(subjects, str) and subjects:
-                parts.append(f"Favoriete vakken: {subjects}")
-        
-        # Future plans
-        if context.get("future_plans"):
-            parts.append(f"Toekomstplannen: {context['future_plans']}")
-        
-        # Improvement areas
-        if context.get("improvement_areas"):
-            areas = context["improvement_areas"]
-            if isinstance(areas, list) and areas:
-                parts.append(f"Zoekt hulp bij: {', '.join(areas)}")
-            elif isinstance(areas, str) and areas:
-                parts.append(f"Zoekt hulp bij: {areas}")
-        
-        # Formality preference - with explicit communication style
-        if context.get("formality_preference"):
-            formality = context["formality_preference"]
-            formality_map = {
-                "Informeel & vriendelijk": "Gebruik een casual, vriendelijke toon alsof je met een vriend praat. Wees persoonlijk en informeel.",
-                "Normaal": "Gebruik een vriendelijke, toegankelijke toon die niet te formeel of te informeel is.",
-                "Formeel & zakelijk": "Gebruik een professionele, formele toon. Wees respectvol en zakelijk.",
-            }
-            if formality in formality_map:
-                parts.append(formality_map[formality])
-        
-        # Tone from derived context
-        if context.get("tone") and not context.get("formality_preference"):
-            parts.append(f"Communicatiestijl: {context['tone']}")
-        
-        # Audience level
+        # Audience level (same for both languages)
         if context.get("audience"):
             parts.append(f"Let op: {context['audience']}")
         
@@ -729,6 +886,61 @@ Als de context GEEN relevant antwoord bevat:
                     yield word
                 else:
                     yield " " + word
+
+
+    async def get_chat_completion_async(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+        system_message: Optional[str] = None
+    ) -> Optional[str]:
+        """Get chat completion asynchronously (for async contexts like event scraping).
+        
+        Args:
+            messages: List of message dicts with 'role' and 'content'
+            temperature: Sampling temperature (0-1)
+            max_tokens: Maximum response tokens
+            system_message: Optional custom system message
+        
+        Returns:
+            Response text or None on error
+        """
+        try:
+            if self.provider == "google":
+                # Build conversation
+                chat = self.client.start_chat(history=[])
+                
+                # Send all messages
+                for msg in messages:
+                    if msg["role"] == "user":
+                        response = chat.send_message(msg["content"])
+                
+                return response.text
+                
+            elif self.provider == "openai":
+                # Build messages with system prompt
+                full_messages = []
+                if system_message:
+                    full_messages.append({"role": "system", "content": system_message})
+                else:
+                    full_messages.append({"role": "system", "content": self.SYSTEM_PROMPT})
+                
+                full_messages.extend(messages)
+                
+                # Get completion
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=full_messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                
+                return response.choices[0].message.content
+                
+        except Exception as e:
+            print(f"Error in async chat completion: {e}")
+            return None
 
 
 # Singleton instance
