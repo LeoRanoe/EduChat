@@ -269,6 +269,10 @@ class AppState(AuthState):
             # Get AI service
             ai_service = get_ai_service()
             
+            # ANALYZE QUERY FOR SCRAPING NEEDS
+            scraping_analysis = ai_service.analyze_query_for_scraping(user_input_text)
+            print(f"[SCRAPING] Query analysis: {scraping_analysis}")
+            
             # Build conversation history with context preservation
             # Include more context for complex follow-up questions
             conversation_history = []
@@ -305,6 +309,66 @@ class AppState(AuthState):
             enhanced_context = self.user_context.copy() if self.user_context else {}
             if conversation_topic:
                 enhanced_context["conversation_topic"] = conversation_topic
+            
+            # TRIGGER SCRAPING IF NEEDED
+            scraped_data = None
+            if scraping_analysis["should_scrape"]:
+                print(f"[SCRAPING] Triggering {scraping_analysis['scrape_type']} scraping...")
+                try:
+                    from educhat.services.event_scraper_service import get_event_scraper
+                    from educhat.services.supabase_client import get_service
+                    
+                    db = get_service()
+                    scraper = get_event_scraper()
+                    
+                    # Check cache first (24-hour cache)
+                    cached_events = await loop.run_in_executor(
+                        None,
+                        lambda: db.get_cached_scraped_events(hours=24)
+                    )
+                    
+                    if cached_events and len(cached_events) > 0:
+                        print(f"[SCRAPING] Using {len(cached_events)} cached events from database")
+                        scraped_data = cached_events
+                    else:
+                        # No cache or empty - scrape fresh data
+                        print("[SCRAPING] No cache found, scraping fresh data...")
+                        scraped_data = await loop.run_in_executor(
+                            None,
+                            lambda: scraper.scrape_all_sources()
+                        )
+                        
+                        # Save to cache for future requests
+                        if scraped_data and self.can_save_conversations():
+                            print(f"[SCRAPING] Saving {len(scraped_data)} events to cache...")
+                            await loop.run_in_executor(
+                                None,
+                                lambda: db.save_scraped_events(scraped_data, source="chat_triggered")
+                            )
+                    
+                    # Run scraper in executor to avoid blocking
+                    if scraping_analysis["scrape_type"] == "events" and scraped_data:
+                        # Format scraped events for context
+                        events_context = "\n\n=== RECENTE GEGEVENS VAN WEBSITES ===\n"
+                        events_context += f"Gevonden {len(scraped_data)} actuele evenementen:\n"
+                        for event in scraped_data[:10]:  # Limit to top 10 most relevant
+                            events_context += f"\n- {event.get('title', 'N/A')}"
+                            if event.get('date'):
+                                events_context += f" (Datum: {event['date']})"
+                            if event.get('institution'):
+                                events_context += f" - {event['institution']}"
+                            elif event.get('institutions'):
+                                # Handle nested institution data from database
+                                inst = event['institutions']
+                                events_context += f" - {inst.get('name', 'N/A')}"
+                            if event.get('description'):
+                                desc = str(event['description'])[:200]
+                                events_context += f"\n  {desc}..."
+                        enhanced_context["scraped_events"] = events_context
+                        print(f"[SCRAPING] Added {len(scraped_data)} events to context")
+                except Exception as e:
+                    print(f"[SCRAPING] Error during scraping: {e}")
+                    # Continue without scraped data - don't fail the whole request
             
             # Stream AI response with typing animation
             full_response = ""
@@ -620,28 +684,38 @@ class AppState(AuthState):
         self.user_context = context
     
     async def load_onboarding_preferences(self):
-        """Load onboarding preferences from the database and set AI context."""
-        if not self.is_authenticated or not self.user_id:
-            return
+        """Load onboarding preferences from the database and set AI context.
         
+        Always sets user_context with defaults if preferences don't exist.
+        This ensures the AI always has some user context to personalize responses.
+        """
         try:
-            # Get the onboarding state and load preferences
+            # Get the onboarding state
             onboarding_state = await self.get_state(OnboardingState)
             
-            # Load preferences from database
-            loaded = await onboarding_state.load_user_preferences(self.user_id)
+            # For authenticated users, try to load from database
+            if self.is_authenticated and self.user_id:
+                loaded = await onboarding_state.load_user_preferences(self.user_id)
+                if loaded:
+                    print(f"[ONBOARDING] Loaded preferences for user {self.user_id}")
+                else:
+                    print(f"[ONBOARDING] No preferences found for user {self.user_id}, using defaults")
             
-            if loaded:
-                # Get the context for AI personalization
-                self.user_context = onboarding_state.get_user_context()
-                self.onboarding_loaded = True
-                print(f"[ONBOARDING] Loaded preferences for user {self.user_id}")
-                print(f"[ONBOARDING] Context: {self.user_context}")
-            else:
-                print(f"[ONBOARDING] No preferences found for user {self.user_id}")
+            # ALWAYS get context (with defaults if needed)
+            self.user_context = onboarding_state.get_user_context()
+            self.onboarding_loaded = True
+            print(f"[ONBOARDING] Context set: {self.user_context}")
                 
         except Exception as e:
             print(f"[ONBOARDING] Error loading preferences: {e}")
+            # Even on error, provide default context
+            self.user_context = {
+                "education_level": "Algemeen",
+                "tone": "balanced, clear, helpful",
+                "audience": "adult learner, professional context",
+                "onboarding_completed": False,
+            }
+            self.onboarding_loaded = True
     
     def get_ai_context_string(self) -> str:
         """Build a context string for the AI based on user preferences.

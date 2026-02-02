@@ -687,6 +687,105 @@ class SupabaseService:
         self._ensure_connected()
         response = self.client.table('conversations').select('id', count='exact').eq('user_id', user_id).eq('archived', False).execute()
         return response.count if hasattr(response, 'count') else len(response.data)
+    
+    # === Scraped Data Cache Methods ===
+    
+    def save_scraped_events(self, events: List[Dict[str, Any]], source: str = "auto_scraper") -> List[Dict[str, Any]]:
+        """
+        Save scraped events to database for caching.
+        Deduplicates based on title and institution.
+        
+        Args:
+            events: List of event dictionaries
+            source: Source identifier for the scraping
+            
+        Returns:
+            List of created/updated event records
+        """
+        self._ensure_connected()
+        
+        created_events = []
+        for event in events:
+            try:
+                # Check if event already exists (by title and institution)
+                existing = None
+                if event.get('title') and event.get('institution_id'):
+                    response = self.client.table('events').select('id').eq(
+                        'title', event['title']
+                    ).eq(
+                        'institution_id', event['institution_id']
+                    ).execute()
+                    existing = response.data[0] if response.data else None
+                
+                event_data = {
+                    'title': event.get('title', 'Untitled Event'),
+                    'description': event.get('description'),
+                    'date': event.get('date'),
+                    'end_date': event.get('end_date'),
+                    'institution_id': event.get('institution_id'),
+                    'event_type': event.get('event_type', 'general'),
+                    'url': event.get('url'),
+                    'scraped_at': datetime.now().isoformat(),
+                    'scraper_source': source,
+                }
+                
+                if existing:
+                    # Update existing event
+                    response = self.client.table('events').update(event_data).eq('id', existing['id']).execute()
+                    created_events.append(response.data[0] if response.data else None)
+                else:
+                    # Create new event
+                    response = self.client.table('events').insert(event_data).execute()
+                    created_events.append(response.data[0] if response.data else None)
+                    
+            except Exception as e:
+                print(f"Error saving scraped event: {e}")
+                continue
+        
+        return [e for e in created_events if e is not None]
+    
+    def get_cached_scraped_events(self, hours: int = 24, institution_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get recently scraped events from cache.
+        
+        Args:
+            hours: Maximum age in hours (default 24)
+            institution_id: Filter by institution
+            
+        Returns:
+            List of cached events
+        """
+        self._ensure_connected()
+        
+        # Calculate timestamp for cache cutoff
+        from datetime import timedelta
+        cutoff = (datetime.now() - timedelta(hours=hours)).isoformat()
+        
+        query = self.client.table('events').select('*, institutions(*)').gte('scraped_at', cutoff).order('date', desc=False)
+        
+        if institution_id:
+            query = query.eq('institution_id', institution_id)
+        
+        response = query.execute()
+        return response.data
+    
+    def clear_old_scraped_events(self, days: int = 7) -> int:
+        """
+        Clear scraped events older than specified days.
+        
+        Args:
+            days: Maximum age in days
+            
+        Returns:
+            Number of deleted events
+        """
+        self._ensure_connected()
+        
+        from datetime import timedelta
+        cutoff = (datetime.now() - timedelta(days=days)).isoformat()
+        
+        response = self.client.table('events').delete().lt('scraped_at', cutoff).execute()
+        return len(response.data) if response.data else 0
 
 
 # Singleton instance

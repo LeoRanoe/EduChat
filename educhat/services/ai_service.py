@@ -42,15 +42,21 @@ Je expertisegebieden zijn:
 - Studiekosten en financieringsmogelijkheden
 - Algemeen studieadvies voor Surinaamse studenten
 
-=== KRITIEKE NAUWKEURIGHEIDSREGELS ===
-1. ANTWOORD ALLEEN met informatie die DIRECT uit de verstrekte context komt
-2. NOOIT gokken, veronderstellen of informatie verzinnen
-3. Als de context GEEN antwoord bevat op de vraag, zeg: "Ik heb onvoldoende informatie om deze vraag nauwkeurig te beantwoorden. Raadpleeg de officiële website van de instelling of neem direct contact met hen op."
-4. MENG NOOIT informatie van verschillende instellingen tenzij expliciet gevraagd om te vergelijken
-5. Eén vraag = één duidelijk, gefocust antwoord
-6. CITEER specifieke bronnen wanneer je feitelijke informatie geeft (bijv. "Volgens de AdeKUS-gegevens...")
-7. Als gegevens verouderd kunnen zijn (zoals deadlines), vermeld dit expliciet
-8. VALIDEER altijd dat je antwoord direct gerelateerd is aan wat er gevraagd werd
+=== NAUWKEURIGHEID & HULPVAARDIGHEID ===
+1. PRIMAIR: Gebruik informatie die DIRECT uit de verstrekte context komt
+2. SECUNDAIR: Als context onvoldoende is, geef algemeen studieadvies gebaseerd op de onderwijscontext van Suriname
+3. Wees ALTIJD DUIDELIJK over de bron:
+   - "Volgens de database van [instelling]..." voor exacte context-data
+   - "Op basis van algemene studierichtlijnen..." voor algemeen advies
+   - "Dit is een algemene richtlijn, verifieer bij de instelling voor exacte details"
+4. GEBRUIK gebruikerscontext (opleidingsniveau, leeftijd, interesses) om antwoorden te personaliseren
+5. Als specifieke data ontbreekt (deadlines, vereisten):
+   - Geef algemene richtlijnen voor dat type informatie
+   - Adviseer waar de student de exacte informatie kan vinden
+   - Suggereer contactmethoden (website, telefoonnummer, e-mail)
+6. MENG NOOIT data van verschillende instellingen zonder dit expliciet te vermelden
+7. Eén vraag = één duidelijk, gefocust antwoord met concrete stappen waar mogelijk
+8. Bij verouderde data: vermeld dit + verwijs naar actuele bronnen
 
 === ANTWOORDFORMAAT ===
 - Wees specifiek en direct
@@ -62,8 +68,11 @@ Je expertisegebieden zijn:
 Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
 "Ik ben gespecialiseerd in Surinaams onderwijs en kan je daar graag mee helpen! Heb je vragen over studies, inschrijvingen, of onderwijsinstellingen in Suriname?"
 
-Als de context GEEN relevant antwoord bevat:
-"Ik heb geen specifieke informatie over [onderwerp] in mijn database. Voor nauwkeurige informatie raad ik aan om direct contact op te nemen met [relevante instelling] of hun officiële website te raadplegen."
+Als specifieke context ontbreekt:
+1. Geef algemene richtlijnen die voor de meeste Surinaamse instellingen gelden
+2. Vermeld expliciet: "Dit is algemeen advies - voor [instelling]-specifieke details, raadpleeg..."
+3. Suggereer concrete acties: "Bezoek [website], bel [algemeen nummer], of ga langs tijdens kantooruren"
+4. Als de gebruiker vragen heeft die aansluiten bij hun onboarding-voorkeuren, gebruik die context om gericht advies te geven
 """
     
     # English system prompt
@@ -375,6 +384,100 @@ If the context does NOT contain a relevant answer:
         
         raise last_exception
     
+    def analyze_query_for_scraping(self, message: str) -> Dict[str, Any]:
+        """Analyze user query to determine if scraping is needed and what to scrape.
+        
+        Args:
+            message: User message to analyze
+            
+        Returns:
+            Dictionary with scraping recommendations:
+            {
+                "should_scrape": bool,
+                "scrape_type": "events" | "institutions" | "general",
+                "institutions": List[str],  # Specific institutions to focus on
+                "keywords": List[str],  # Keywords for focused scraping
+            }
+        """
+        message_lower = message.lower()
+        
+        # Institution names to detect
+        institutions = {
+            "adekus": ["adekus", "ade kus", "anton de kom"],
+            "iob": ["iob", "institute of business"],
+            "natin": ["natin", "nationaal"],
+            "ptc": ["ptc", "polytechnic"],
+            "ahkco": ["ahkco"],
+            "fhi": ["fhi", "ferrier"],
+            "minov": ["minov", "ministerie van onderwijs"],
+            "imeao": ["imeao"],
+            "sma": ["sma", "surinaams management"],
+        }
+        
+        # Event/deadline-related keywords
+        event_keywords = [
+            "deadline", "inschrijving", "aanmeld", "open dag", "open day",
+            "examen", "test", "intake", "selectie", "wanneer", "when",
+            "datum", "date", "tijdstip", "time", "periode", "period",
+            "evenement", "event", "activiteit", "activity"
+        ]
+        
+        # Program/curriculum keywords
+        program_keywords = [
+            "programma", "program", "opleiding", "studie", "study",
+            "vakken", "subjects", "curriculum", "cursus", "course",
+            "bachelor", "master", "diploma", "certificaat", "certificate"
+        ]
+        
+        # Requirements keywords
+        requirement_keywords = [
+            "vereisten", "requirements", "toelating", "admission",
+            "nodig", "need", "moet", "should", "voorwaarden", "conditions",
+            "diploma", "cijfers", "grades", "punten", "points"
+        ]
+        
+        # Detect mentioned institutions
+        detected_institutions = []
+        for inst_key, variations in institutions.items():
+            if any(var in message_lower for var in variations):
+                detected_institutions.append(inst_key)
+        
+        # Determine scrape type
+        should_scrape = False
+        scrape_type = "general"
+        keywords = []
+        
+        # Check for event-related queries
+        if any(keyword in message_lower for keyword in event_keywords):
+            should_scrape = True
+            scrape_type = "events"
+            keywords.extend([k for k in event_keywords if k in message_lower])
+        
+        # Check for program queries
+        elif any(keyword in message_lower for keyword in program_keywords):
+            should_scrape = True
+            scrape_type = "institutions"
+            keywords.extend([k for k in program_keywords if k in message_lower])
+        
+        # Check for requirement queries
+        elif any(keyword in message_lower for keyword in requirement_keywords):
+            should_scrape = True
+            scrape_type = "institutions"
+            keywords.extend([k for k in requirement_keywords if k in message_lower])
+        
+        # If institutions mentioned, definitely should scrape
+        if detected_institutions:
+            should_scrape = True
+            if scrape_type == "general":
+                scrape_type = "institutions"
+        
+        return {
+            "should_scrape": should_scrape,
+            "scrape_type": scrape_type,
+            "institutions": detected_institutions,
+            "keywords": keywords[:5],  # Limit to top 5 keywords
+        }
+    
     def chat(
         self,
         message: str,
@@ -676,6 +779,10 @@ If the context does NOT contain a relevant answer:
         # Audience level (same for both languages)
         if context.get("audience"):
             parts.append(f"Let op: {context['audience']}")
+        
+        # Add scraped events context if available
+        if context.get("scraped_events"):
+            parts.append(context["scraped_events"])
         
         if parts:
             return "=== CONTEXT OVER DE GEBRUIKER ===\nPas je antwoorden aan op basis van het volgende:\n" + "\n".join(f"- {p}" for p in parts)

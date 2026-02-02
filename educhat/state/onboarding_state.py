@@ -345,21 +345,21 @@ class OnboardingState(rx.State):
         
         Returns:
             Dictionary with user preferences for AI context.
+            Always returns a valid context dict, even if onboarding incomplete.
         """
-        if not self.quiz_completed:
-            return {}
-        
-        # Build a rich context for AI personalization
+        # Provide default context even if onboarding not completed
+        # This ensures the AI always has some user context to work with
         context = {
-            "education_level": self.education_level,
-            "study_directions": self.study_direction,
-            "age_group": self.age,
-            "district": self.district,
-            "favorite_subjects": self.favorite_subjects,
-            "future_plans": self.future_plans,
-            "improvement_areas": self.improvement_areas,
-            "formality_preference": self.formality,
-            "expectations": self.expectations,
+            "education_level": self.education_level or "Algemeen (nog niet gespecificeerd)",
+            "study_directions": self.study_direction or [],
+            "age_group": self.age or "Volwassene",
+            "district": self.district or "Suriname",
+            "favorite_subjects": self.favorite_subjects or [],
+            "future_plans": self.future_plans or "Verkennen van studiemogelijkheden",
+            "improvement_areas": self.improvement_areas or ["Algemene studieinformatie"],
+            "formality_preference": self.formality or "Normaal",
+            "expectations": self.expectations or "",
+            "onboarding_completed": self.quiz_completed,
         }
         
         # Add derived context for better AI responses
