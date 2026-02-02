@@ -115,6 +115,23 @@ def landing() -> rx.Component:
                         },
                         on_click=AuthState.toggle_auth_modal,
                     ),
+                    # Dark mode toggle
+                    rx.button(
+                        rx.icon("moon", size=18),
+                        background="transparent",
+                        color=T.text_primary,
+                        border="none",
+                        cursor="pointer",
+                        padding="10px 16px",
+                        border_radius="10px",
+                        transition="all 0.3s ease",
+                        title="Toggle dark mode",
+                        _hover={
+                            "background": f"rgba(16, 163, 127, 0.08)",
+                            "transform": "translateY(-2px)",
+                        },
+                        on_click=rx.toggle_color_mode,
+                    ),
                     rx.button(
                         rx.hstack(
                             rx.icon("sparkles", size=18),
