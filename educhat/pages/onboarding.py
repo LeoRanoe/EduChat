@@ -21,7 +21,7 @@ from educhat.components.shared.quiz_components import (
     dropdown_select,
 )
 from educhat.components.shared.buttons import primary_button, secondary_button
-from educhat.styles.theme import COLORS, FONTS
+from educhat.styles.theme import COLORS, FONTS, T
 
 
 def navigation_buttons(state: OnboardingState) -> rx.Component:
@@ -34,9 +34,9 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                 rx.button(
                     rx.icon("chevron-left", size=20),
                     on_click=state.previous_step,
-                    background="white",
-                    color=COLORS["text_secondary"],
-                    border=f"1.5px solid {COLORS['border']}",
+                    background=T.bg_card,
+                    color=T.text_secondary,
+                    border=f"1.5px solid {T.border}",
                     border_radius="12px",
                     padding="12px",
                     width="48px",
@@ -66,7 +66,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                         background=rx.cond(
                             state.current_step >= i,
                             COLORS["primary_green"],
-                            COLORS["gray_300"]
+                            T.border
                         ),
                         transition="all 0.3s ease",
                     )
@@ -87,7 +87,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                         "Skip",
                         on_click=state.skip_step,
                         background="transparent",
-                        color=COLORS["text_tertiary"],
+                        color=T.text_tertiary,
                         border="none",
                         padding="12px 20px",
                         height="48px",
@@ -96,7 +96,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                         cursor="pointer",
                         transition="all 0.2s ease",
                         _hover={
-                            "color": COLORS["text_secondary"],
+                            "color": T.text_secondary,
                         },
                     ),
                     rx.box(width="1px"),
@@ -170,8 +170,8 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
         left="0",
         right="0",
         z_index="100",
-        background="white",
-        border_top=f"1px solid {COLORS['border_light']}",
+        background=T.bg_card,
+        border_top=f"1px solid {T.border_light}",
         box_shadow="0 -4px 16px rgba(0,0,0,0.06)",
     )
 
@@ -183,7 +183,7 @@ def question_step_0(state: OnboardingState) -> rx.Component:
             "Welke opleiding volg je momenteel?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -191,7 +191,7 @@ def question_step_0(state: OnboardingState) -> rx.Component:
         rx.text(
             "Dit helpt ons om informatie op jouw niveau aan te passen.",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="1rem",
         ),
@@ -214,7 +214,7 @@ def question_step_1(state: OnboardingState) -> rx.Component:
             "Wat is jouw leeftijd?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -222,7 +222,7 @@ def question_step_1(state: OnboardingState) -> rx.Component:
         rx.text(
             "We passen onze communicatie aan op jouw leeftijdsgroep.",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="1rem",
         ),
@@ -245,7 +245,7 @@ def question_step_2(state: OnboardingState) -> rx.Component:
             "In welk district woon je?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -253,7 +253,7 @@ def question_step_2(state: OnboardingState) -> rx.Component:
         rx.text(
             "We kunnen je informatie geven over scholen in jouw regio.",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="1rem",
         ),
@@ -276,7 +276,7 @@ def question_step_3(state: OnboardingState) -> rx.Component:
             "Wat zijn je favoriete vakken?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -284,7 +284,7 @@ def question_step_3(state: OnboardingState) -> rx.Component:
         rx.text(
             "Selecteer de vakken waar je het meest van houdt (meerdere mogelijk).",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="0.625rem",
         ),
@@ -306,7 +306,7 @@ def question_step_4(state: OnboardingState) -> rx.Component:
             "Heb je plannen om verder te studeren?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -314,7 +314,7 @@ def question_step_4(state: OnboardingState) -> rx.Component:
         rx.text(
             "We kunnen je helpen met studiekeuzes en toekomstplanning.",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="0.625rem",
         ),
@@ -336,7 +336,7 @@ def question_step_5(state: OnboardingState) -> rx.Component:
             "Waarmee kan EduChat je helpen?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -344,7 +344,7 @@ def question_step_5(state: OnboardingState) -> rx.Component:
         rx.text(
             "Selecteer alles wat van toepassing is (meerdere mogelijk).",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="0.625rem",
         ),
@@ -366,7 +366,7 @@ def question_step_6(state: OnboardingState) -> rx.Component:
             "Hoe mag EduChat met je communiceren?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -374,7 +374,7 @@ def question_step_6(state: OnboardingState) -> rx.Component:
         rx.text(
             "Kies de communicatiestijl die het beste bij je past.",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="0.625rem",
         ),
@@ -396,7 +396,7 @@ def question_step_7(state: OnboardingState) -> rx.Component:
             "Welke studierichtingen interesseren je?",
             font_size=["1rem", "1.0625rem", "1.125rem"],
             font_weight="700",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             line_height="1.3",
             margin_bottom="0.375rem",
             as_="h2",
@@ -404,7 +404,7 @@ def question_step_7(state: OnboardingState) -> rx.Component:
         rx.text(
             "Selecteer de gebieden waar je meer over wilt weten (meerdere mogelijk).",
             font_size="0.875rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             line_height="1.4",
             margin_bottom="0.625rem",
         ),
@@ -469,11 +469,11 @@ def quiz_content(state: OnboardingState) -> rx.Component:
                         rx.text(
                             f"/ {state.total_steps}",
                             font_size="0.875rem",
-                            color=COLORS["text_tertiary"],
+                            color=T.text_tertiary,
                         ),
                         spacing="1",
                         padding="8px 16px",
-                        background="white",
+                        background=T.bg_card,
                         border_radius="24px",
                         border=f"2px solid {COLORS['primary_light']}",
                         box_shadow="0 2px 8px rgba(16,163,127,0.1)",
@@ -546,10 +546,10 @@ def quiz_content(state: OnboardingState) -> rx.Component:
                     
                     width="100%",
                     padding=["2rem", "2.5rem", "3rem"],
-                    background="white",
+                    background=T.bg_card,
                     border_radius="24px",
                     box_shadow="0 12px 48px rgba(0,0,0,0.08)",
-                    border=f"1px solid {COLORS['border_light']}",
+                    border=f"1px solid {T.border_light}",
                     position="relative",
                     overflow="hidden",
                 ),
@@ -859,6 +859,6 @@ def onboarding() -> rx.Component:
             height="100vh",
             overflow="hidden",
             position="relative",
-            background=COLORS["white"],
+            background=T.bg_primary,
         ),
     )

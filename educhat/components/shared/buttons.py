@@ -11,7 +11,7 @@ Professional button system with:
 
 import reflex as rx
 from typing import Optional, Callable, Literal
-from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS
+from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
 
 
 ButtonVariant = Literal["primary", "secondary", "ghost", "danger", "outline"]
@@ -197,9 +197,9 @@ def secondary_button(
             width="100%",
         ),
         on_click=rx.cond(is_disabled | is_loading, None, on_click),
-        background=COLORS["white"],
-        color=COLORS["text_primary"],
-        border=f"1px solid {COLORS['border']}",
+        background=T.bg_card,
+        color=T.text_primary,
+        border=f"1px solid {T.border}",
         border_radius=RADIUS["lg"],
         padding=config["padding"],
         cursor=rx.cond(is_disabled | is_loading, "not-allowed", "pointer"),
@@ -209,13 +209,13 @@ def secondary_button(
         opacity=rx.cond(is_disabled, "0.5", "1"),
         box_shadow=SHADOWS["xs"],
         _hover={
-            "background": COLORS["gray_50"],
-            "border_color": COLORS["gray_300"],
+            "background": T.bg_hover,
+            "border_color": T.border_dark,
             "box_shadow": SHADOWS["sm"],
             "transform": rx.cond(is_disabled | is_loading, "none", "translateY(-1px)"),
         },
         _active={
-            "background": COLORS["gray_100"],
+            "background": T.bg_active,
             "transform": "translateY(0)",
         },
         _focus_visible={
@@ -245,10 +245,10 @@ def ghost_button(
     """
     color_map = {
         "primary": COLORS["primary"],
-        "secondary": COLORS["text_secondary"],
-        "danger": COLORS["error"],
+        "secondary": T.text_secondary,
+        "danger": T.error,
     }
-    text_color = color_map.get(color, COLORS["text_secondary"])
+    text_color = color_map.get(color, T.text_secondary)
     
     return rx.button(
         rx.hstack(
@@ -272,11 +272,11 @@ def ghost_button(
         opacity=rx.cond(is_disabled, "0.5", "1"),
         min_height="36px",
         _hover={
-            "background": COLORS["gray_100"],
-            "color": COLORS["text_primary"] if color == "secondary" else text_color,
+            "background": T.bg_hover,
+            "color": T.text_primary if color == "secondary" else text_color,
         },
         _active={
-            "background": COLORS["gray_200"],
+            "background": T.bg_active,
         },
         transition=TRANSITIONS["fast"],
     )
@@ -328,7 +328,7 @@ def danger_button(
         opacity=rx.cond(is_disabled, "0.5", "1"),
         box_shadow="0 2px 8px rgba(220, 38, 38, 0.25)",
         _hover={
-            "background": COLORS["error_dark"],
+            "background": T.error,
             "box_shadow": "0 4px 14px rgba(220, 38, 38, 0.35)",
             "transform": rx.cond(is_disabled | is_loading, "none", "translateY(-1px)"),
         },
@@ -373,7 +373,7 @@ def icon_button(
     button = rx.button(
         rx.icon(icon, size=config["icon_size"]),
         on_click=on_click,
-        background=rx.cond(is_active, COLORS["primary_muted"], "transparent") if variant == "ghost" else COLORS["gray_100"],
+        background=rx.cond(is_active, COLORS["primary_muted"], "transparent") if variant == "ghost" else T.bg_hover,
         color=rx.cond(is_active, COLORS["primary"], icon_color),
         border="none",
         border_radius=RADIUS["md"],
@@ -387,12 +387,12 @@ def icon_button(
         align_items="center",
         justify_content="center",
         _hover={
-            "background": COLORS["gray_100"],
-            "color": COLORS["text_primary"],
+            "background": T.bg_hover,
+            "color": T.text_primary,
             "transform": "scale(1.05)",
         },
         _active={
-            "background": COLORS["gray_200"],
+            "background": T.bg_active,
             "transform": "scale(0.95)",
         },
         _focus_visible={
@@ -446,14 +446,14 @@ def circular_button(
             "hover_shadow": SHADOWS["primary_md"],
         },
         "secondary": {
-            "background": COLORS["white"],
+            "background": T.bg_card,
             "color": COLORS["primary"],
             "box_shadow": SHADOWS["sm"],
             "hover_shadow": SHADOWS["md"],
         },
         "ghost": {
             "background": "transparent",
-            "color": COLORS["text_secondary"],
+            "color": T.text_secondary,
             "box_shadow": "none",
             "hover_shadow": SHADOWS["sm"],
         },
@@ -470,7 +470,7 @@ def circular_button(
         id=id,
         background=styles["background"],
         color=styles["color"],
-        border="1px solid transparent" if variant != "secondary" else f"1px solid {COLORS['border']}",
+        border="1px solid transparent" if variant != "secondary" else f"1px solid {T.border}",
         border_radius=RADIUS["full"],
         width=config["size"],
         height=config["size"],
@@ -512,7 +512,7 @@ def link_button(
         icon: Optional icon
         color: Text color - "primary", "secondary"
     """
-    text_color = COLORS["primary"] if color == "primary" else COLORS["text_secondary"]
+    text_color = COLORS["primary"] if color == "primary" else T.text_secondary
     
     return rx.box(
         rx.hstack(
@@ -536,7 +536,7 @@ def link_button(
         on_click=on_click,
         cursor="pointer",
         _hover={
-            "color": COLORS["primary_hover"] if color == "primary" else COLORS["text_primary"],
+            "color": COLORS["primary_hover"] if color == "primary" else T.text_primary,
             "text_decoration_color": text_color,
         },
         transition=TRANSITIONS["fast"],

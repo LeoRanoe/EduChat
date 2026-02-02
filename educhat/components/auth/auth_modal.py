@@ -6,7 +6,7 @@ loading states, and accessibility features.
 
 import reflex as rx
 from educhat.state.auth_state import AuthState
-from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS
+from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
 
 
 # ============================================================================
@@ -28,8 +28,8 @@ INPUT_STYLES = {
         "font_size": "15px",
         "line_height": "1.5",
         "height": "48px",
-        "color": COLORS["text_primary"],
-        "background": "white",
+        "color": T.text_primary,
+        "background": T.bg_input,
         "outline": "none",
         "transition": TRANSITIONS["fast"],
     },
@@ -56,7 +56,7 @@ def auth_modal() -> rx.Component:
                 left="0",
                 width="100vw",
                 height="100vh",
-                background="rgba(0, 0, 0, 0.5)",
+                background=T.overlay,
                 backdrop_filter="blur(8px)",
                 z_index="999",
                 on_click=AuthState.close_auth_modal,
@@ -70,7 +70,7 @@ def auth_modal() -> rx.Component:
                     rx.icon(
                         tag="x",
                         size=18,
-                        color=COLORS["text_secondary"],
+                        color=T.text_secondary,
                     ),
                     position="absolute",
                     top="16px",
@@ -78,13 +78,13 @@ def auth_modal() -> rx.Component:
                     padding="10px",
                     cursor="pointer",
                     border_radius=RADIUS["full"],
-                    background="white",
+                    background=T.bg_card,
                     box_shadow=SHADOWS["sm"],
                     z_index="10",
                     on_click=AuthState.close_auth_modal,
                     transition=TRANSITIONS["fast"],
                     _hover={
-                        "background": COLORS["light_gray"],
+                        "background": T.bg_hover,
                         "transform": "scale(1.05)",
                     },
                 ),
@@ -109,12 +109,12 @@ def auth_modal() -> rx.Component:
                 width=MODAL_CONFIG["width"],
                 max_width="900px",
                 max_height=MODAL_CONFIG["max_height"],
-                background="white",
+                background=T.modal_bg,
                 border_radius=RADIUS["2xl"],
                 box_shadow=SHADOWS["2xl"],
                 overflow="hidden",
                 z_index="1000",
-                class_name="animate-scaleIn",
+                class_name="animate-scaleIn auth-modal-box",
             ),
         ),
     )
@@ -134,20 +134,20 @@ def _left_panel() -> rx.Component:
                 rx.icon(
                     tag="shield-check",
                     size=48,
-                    color="white",
+                    color=T.text_on_primary,
                 ),
                 padding="16px",
-                background="rgba(255, 255, 255, 0.15)",
+                background=T.primary_light,
                 border_radius=RADIUS["2xl"],
                 margin_bottom="24px",
-                box_shadow="0 0 40px rgba(255, 255, 255, 0.2)",
+                box_shadow=T.shadow_primary,
             ),
             
             # Title
             rx.heading(
                 "Welkom bij EduChat",
                 size="7",
-                color="white",
+                color=T.text_on_primary,
                 margin_bottom="12px",
                 font_weight="700",
                 letter_spacing="-0.02em",
@@ -156,7 +156,7 @@ def _left_panel() -> rx.Component:
             # Subtitle
             rx.text(
                 "Jouw AI-assistent voor Surinaams onderwijs",
-                color="rgba(255,255,255,0.9)",
+                color=T.text_on_primary,
                 font_size="15px",
                 margin_bottom="32px",
                 line_height="1.6",
@@ -186,14 +186,14 @@ def _left_panel() -> rx.Component:
         position="relative",
         overflow="hidden",
         # Decorative circles
-        _before={
+            _before={
             "content": "''",
             "position": "absolute",
             "top": "-50px",
             "right": "-50px",
             "width": "150px",
             "height": "150px",
-            "background": "rgba(255,255,255,0.1)",
+            "background": T.primary_muted,
             "border_radius": "50%",
         },
         _after={
@@ -203,7 +203,7 @@ def _left_panel() -> rx.Component:
             "left": "-30px",
             "width": "100px",
             "height": "100px",
-            "background": "rgba(255,255,255,0.08)",
+            "background": T.primary_muted,
             "border_radius": "50%",
         },
     )
@@ -223,13 +223,13 @@ def _benefit_item(text: str) -> rx.Component:
             display="flex",
             align_items="center",
             justify_content="center",
-            background="rgba(255,255,255,0.95)",
+            background=T.text_on_primary,
             border_radius=RADIUS["full"],
             flex_shrink="0",
         ),
         rx.text(
             text,
-            color="rgba(255,255,255,0.95)",
+            color=T.text_on_primary,
             font_size="14px",
             margin_left="12px",
             font_weight="500",
@@ -273,7 +273,7 @@ def _right_panel() -> rx.Component:
                     "Log in op je account",
                     "Maak een account aan"
                 ),
-                color=COLORS["text_secondary"],
+                color=T.text_secondary,
                 font_size="14px",
             ),
             margin_bottom="24px",
@@ -287,19 +287,19 @@ def _right_panel() -> rx.Component:
             AuthState.auth_success != "",
             rx.box(
                 rx.box(
-                    rx.icon(tag="check-circle", size=16, color=COLORS["success"]),
+                    rx.icon(tag="check-circle", size=16, color=T.success),
                     width="24px",
                     height="24px",
                     display="flex",
                     align_items="center",
                     justify_content="center",
-                    background=COLORS["success_light"],
+                    background=T.success_light,
                     border_radius=RADIUS["full"],
                     flex_shrink="0",
                 ),
                 rx.text(
                     AuthState.auth_success,
-                    color=COLORS["success_dark"],
+                    color=COLORS["primary_green"],
                     font_size="13px",
                     margin_left="10px",
                     font_weight="500",
@@ -307,8 +307,8 @@ def _right_panel() -> rx.Component:
                 display="flex",
                 align_items="center",
                 padding="14px 16px",
-                background=COLORS["success_light"],
-                border=f"1px solid {COLORS['success']}30",
+                background=T.success_light,
+                border=f"1px solid {COLORS['primary_green']}30",
                 border_radius=RADIUS["lg"],
                 margin_bottom="16px",
                 class_name="animate-fadeInUp",
@@ -321,19 +321,19 @@ def _right_panel() -> rx.Component:
             rx.box(
                 rx.box(
                     rx.box(
-                        rx.icon(tag="alert-circle", size=16, color=COLORS["error"]),
+                        rx.icon(tag="alert-circle", size=16, color=T.error),
                         width="24px",
                         height="24px",
                         display="flex",
                         align_items="center",
                         justify_content="center",
-                        background=COLORS["error_light"],
+                        background=T.error_light,
                         border_radius=RADIUS["full"],
                         flex_shrink="0",
                     ),
                     rx.text(
                         AuthState.auth_error,
-                        color=COLORS["error_dark"],
+                        color=T.error,
                         font_size="13px",
                         margin_left="10px",
                         font_weight="500",
@@ -378,8 +378,8 @@ def _right_panel() -> rx.Component:
                 ),
                 
                 padding="14px 16px",
-                background=COLORS["error_light"],
-                border=f"1px solid {COLORS['error']}30",
+                background=T.error_light,
+                border=f"1px solid {T.error}30",
                 border_radius=RADIUS["lg"],
                 margin_bottom="16px",
                 display="flex",
@@ -400,11 +400,11 @@ def _right_panel() -> rx.Component:
             rx.box(
                 flex="1",
                 height="1px",
-                background=COLORS["border_light"],
+                background=T.border_light,
             ),
             rx.text(
                 "of",
-                color=COLORS["text_tertiary"],
+                color=T.text_tertiary,
                 font_size="12px",
                 padding="0 16px",
                 font_weight="500",
@@ -412,7 +412,7 @@ def _right_panel() -> rx.Component:
             rx.box(
                 flex="1",
                 height="1px",
-                background=COLORS["border_light"],
+                background=T.border_light,
             ),
             display="flex",
             align_items="center",
@@ -436,7 +436,7 @@ def _right_panel() -> rx.Component:
             on_click=AuthState.continue_as_guest,
             transition=TRANSITIONS["fast"],
             _hover={
-                "background": COLORS["light_green"],
+                "background": COLORS["primary_light"],
                 "border_color": COLORS["dark_green"],
             },
         ),
@@ -444,7 +444,7 @@ def _right_panel() -> rx.Component:
         # Guest info
         rx.text(
             "Gastmodus: beperkte functies",
-            color=COLORS["text_tertiary"],
+            color=T.text_tertiary,
             font_size="11px",
             text_align="center",
             margin_top="8px",
@@ -455,6 +455,8 @@ def _right_panel() -> rx.Component:
         display="flex",
         flex_direction="column",
         overflow_y="auto",
+        background="#111217",
+        class_name="auth-form-panel",
     )
 
 
@@ -476,7 +478,7 @@ def _tab_selector() -> rx.Component:
                     color=rx.cond(
                         AuthState.auth_mode == "login",
                         "white",
-                        COLORS["text_secondary"]
+                        T.text_secondary
                     ),
                 ),
                 padding="10px 0",
@@ -507,7 +509,7 @@ def _tab_selector() -> rx.Component:
                     color=rx.cond(
                         AuthState.auth_mode == "signup",
                         "white",
-                        COLORS["text_secondary"]
+                        T.text_secondary
                     ),
                 ),
                 padding="10px 0",
@@ -532,7 +534,7 @@ def _tab_selector() -> rx.Component:
             display="flex",
             gap="4px",
         ),
-        background=COLORS["light_gray"],
+        background=T.bg_tertiary,
         padding="4px",
         border_radius=RADIUS["xl"],
         margin_bottom="20px",
@@ -553,14 +555,14 @@ def _login_form() -> rx.Component:
                 "E-mailadres",
                 font_size="13px",
                 font_weight="500",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="6px",
             ),
             rx.box(
                 rx.icon(
                     tag="mail",
                     size=18,
-                    color=COLORS["text_tertiary"],
+                    color=T.text_tertiary,
                     position="absolute",
                     left="14px",
                     top="50%",
@@ -576,32 +578,32 @@ def _login_form() -> rx.Component:
                     padding="14px 14px 14px 42px",
                     border=rx.cond(
                         AuthState.email_error != "",
-                        f"1.5px solid {COLORS['error']}",
-                        f"1.5px solid {COLORS['border']}"
+                        f"1.5px solid {T.error}",
+                        f"1.5px solid {T.border}"
                     ),
                     border_radius=RADIUS["lg"],
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color=COLORS["text_primary"],
-                    background="white",
+                    color=T.text_primary,
+                    background=T.bg_input,
                     outline="none",
                     transition=TRANSITIONS["fast"],
                     _focus={
                         "border_color": COLORS["primary_green"],
                         "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.12)",
                     },
-                    _placeholder={"color": COLORS["text_tertiary"]},
+                    _placeholder={"color": T.text_tertiary},
                 ),
                 position="relative",
             ),
             rx.cond(
                 AuthState.email_error != "",
                 rx.hstack(
-                    rx.icon("alert-circle", size=12, color=COLORS["error"]),
+                    rx.icon("alert-circle", size=12, color=T.error),
                     rx.text(
                         AuthState.email_error,
-                        color=COLORS["error"],
+                        color=T.error,
                         font_size="12px",
                     ),
                     spacing="1",
@@ -617,14 +619,14 @@ def _login_form() -> rx.Component:
                 "Wachtwoord",
                 font_size="13px",
                 font_weight="500",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="6px",
             ),
             rx.box(
                 rx.icon(
                     tag="lock",
                     size=18,
-                    color=COLORS["text_tertiary"],
+                    color=T.text_tertiary,
                     position="absolute",
                     left="14px",
                     top="50%",
@@ -640,28 +642,28 @@ def _login_form() -> rx.Component:
                     padding="14px 42px 14px 42px",
                     border=rx.cond(
                         AuthState.password_error != "",
-                        f"1.5px solid {COLORS['error']}",
-                        f"1.5px solid {COLORS['border']}"
+                        f"1.5px solid {T.error}",
+                        f"1.5px solid {T.border}"
                     ),
                     border_radius=RADIUS["lg"],
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color=COLORS["text_primary"],
-                    background="white",
+                    color=T.text_primary,
+                    background=T.bg_input,
                     outline="none",
                     transition=TRANSITIONS["fast"],
                     _focus={
                         "border_color": COLORS["primary_green"],
                         "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.12)",
                     },
-                    _placeholder={"color": COLORS["text_tertiary"]},
+                    _placeholder={"color": T.text_tertiary},
                 ),
                 rx.box(
                     rx.icon(
                         tag=rx.cond(AuthState.show_login_password, "eye-off", "eye"),
                         size=18,
-                        color=COLORS["text_tertiary"],
+                        color=T.text_tertiary,
                     ),
                     position="absolute",
                     right="14px",
@@ -674,7 +676,7 @@ def _login_form() -> rx.Component:
                     transition=TRANSITIONS["fast"],
                     _hover={
                         "color": COLORS["primary_green"],
-                        "background": COLORS["light_green"],
+                        "background": COLORS["primary_light"],
                     },
                     z_index="1",
                 ),
@@ -683,10 +685,10 @@ def _login_form() -> rx.Component:
             rx.cond(
                 AuthState.password_error != "",
                 rx.hstack(
-                    rx.icon("alert-circle", size=12, color=COLORS["error"]),
+                    rx.icon("alert-circle", size=12, color=T.error),
                     rx.text(
                         AuthState.password_error,
-                        color=COLORS["error"],
+                        color=T.error,
                         font_size="12px",
                     ),
                     spacing="1",
@@ -706,7 +708,7 @@ def _login_form() -> rx.Component:
                 rx.text(
                     "Onthoud mij",
                     font_size="13px",
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     margin_left="8px",
                 ),
                 display="flex",
@@ -788,14 +790,14 @@ def _signup_form() -> rx.Component:
                 "Naam",
                 font_size="13px",
                 font_weight="500",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="6px",
             ),
             rx.box(
                 rx.icon(
                     tag="user",
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     position="absolute",
                     left="12px",
                     top="50%",
@@ -809,18 +811,18 @@ def _signup_form() -> rx.Component:
                     padding="14px 14px 14px 40px",
                     border=rx.cond(
                         AuthState.name_error != "",
-                        "1.5px solid #dc2626",
-                        f"1.5px solid {COLORS['border']}"
+                        f"1.5px solid {T.error}",
+                        f"1.5px solid {T.border}"
                     ),
                     border_radius="8px",
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color="#000000",
-                    background="white",
+                    color=T.text_primary,
+                    background=T.bg_input,
                     outline="none",
                     _focus={"border_color": COLORS["primary_green"], "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.1)"},
-                    _placeholder={"color": COLORS["text_secondary"]},
+                    _placeholder={"color": T.text_secondary},
                 ),
                 position="relative",
             ),
@@ -828,7 +830,7 @@ def _signup_form() -> rx.Component:
                 AuthState.name_error != "",
                 rx.text(
                     AuthState.name_error,
-                    color="#dc2626",
+                    color=T.error,
                     font_size="12px",
                     margin_top="4px",
                 ),
@@ -842,14 +844,14 @@ def _signup_form() -> rx.Component:
                 "E-mailadres",
                 font_size="13px",
                 font_weight="500",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="6px",
             ),
             rx.box(
                 rx.icon(
                     tag="mail",
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     position="absolute",
                     left="12px",
                     top="50%",
@@ -864,18 +866,18 @@ def _signup_form() -> rx.Component:
                     padding="14px 14px 14px 40px",
                     border=rx.cond(
                         AuthState.email_error != "",
-                        "1.5px solid #dc2626",
-                        f"1.5px solid {COLORS['border']}"
+                        f"1.5px solid {T.error}",
+                        f"1.5px solid {T.border}"
                     ),
                     border_radius="8px",
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color="#000000",
-                    background="white",
+                    color=T.text_primary,
+                    background=T.bg_input,
                     outline="none",
                     _focus={"border_color": COLORS["primary_green"], "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.1)"},
-                    _placeholder={"color": COLORS["text_secondary"]},
+                    _placeholder={"color": T.text_secondary},
                 ),
                 position="relative",
             ),
@@ -883,7 +885,7 @@ def _signup_form() -> rx.Component:
                 AuthState.email_error != "",
                 rx.text(
                     AuthState.email_error,
-                    color="#dc2626",
+                    color=T.error,
                     font_size="12px",
                     margin_top="4px",
                 ),
@@ -897,14 +899,14 @@ def _signup_form() -> rx.Component:
                 "Wachtwoord",
                 font_size="13px",
                 font_weight="500",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="6px",
             ),
             rx.box(
                 rx.icon(
                     tag="lock",
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     position="absolute",
                     left="12px",
                     top="50%",
@@ -919,23 +921,23 @@ def _signup_form() -> rx.Component:
                     padding="14px 40px 14px 40px",
                     border=rx.cond(
                         AuthState.password_error != "",
-                        "1.5px solid #dc2626",
-                        f"1.5px solid {COLORS['border']}"
+                        f"1.5px solid {T.error}",
+                        f"1.5px solid {T.border}"
                     ),
                     border_radius="8px",
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color="#000000",
-                    background="white",
+                    color=T.text_primary,
+                    background=T.bg_input,
                     outline="none",
                     _focus={"border_color": COLORS["primary_green"], "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.1)"},
-                    _placeholder={"color": COLORS["text_secondary"]},
+                    _placeholder={"color": T.text_secondary},
                 ),
                 rx.icon(
                     tag=rx.cond(AuthState.show_signup_password, "eye-off", "eye"),
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     position="absolute",
                     right="12px",
                     top="50%",
@@ -950,7 +952,7 @@ def _signup_form() -> rx.Component:
                 AuthState.password_error != "",
                 rx.text(
                     AuthState.password_error,
-                    color="#dc2626",
+                    color=T.error,
                     font_size="12px",
                     margin_top="4px",
                 ),
@@ -964,14 +966,14 @@ def _signup_form() -> rx.Component:
                 "Bevestig wachtwoord",
                 font_size="13px",
                 font_weight="500",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="6px",
             ),
             rx.box(
                 rx.icon(
                     tag="lock",
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     position="absolute",
                     left="12px",
                     top="50%",
@@ -986,23 +988,23 @@ def _signup_form() -> rx.Component:
                     padding="14px 40px 14px 40px",
                     border=rx.cond(
                         AuthState.confirm_password_error != "",
-                        "1.5px solid #dc2626",
-                        f"1.5px solid {COLORS['border']}"
+                        f"1.5px solid {T.error}",
+                        f"1.5px solid {T.border}"
                     ),
                     border_radius="8px",
                     font_size="15px",
                     line_height="1.5",
                     height="48px",
-                    color="#000000",
-                    background="white",
+                    color=T.text_primary,
+                    background=T.bg_input,
                     outline="none",
                     _focus={"border_color": COLORS["primary_green"], "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.1)"},
-                    _placeholder={"color": COLORS["text_secondary"]},
+                    _placeholder={"color": T.text_secondary},
                 ),
                 rx.icon(
                     tag=rx.cond(AuthState.show_confirm_password, "eye-off", "eye"),
                     size=18,
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     position="absolute",
                     right="12px",
                     top="50%",
@@ -1017,7 +1019,7 @@ def _signup_form() -> rx.Component:
                 AuthState.confirm_password_error != "",
                 rx.text(
                     AuthState.confirm_password_error,
-                    color="#dc2626",
+                    color=T.error,
                     font_size="12px",
                     margin_top="4px",
                 ),

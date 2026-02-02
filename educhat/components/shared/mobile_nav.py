@@ -1,7 +1,7 @@
 """Mobile navigation components for EduChat."""
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS
+from educhat.styles.theme import COLORS, RADIUS, T
 
 
 def hamburger_button(
@@ -22,14 +22,14 @@ def hamburger_button(
                 rx.box(
                     width="20px",
                     height="2px",
-                    background=COLORS["dark_gray"],
+                    background=T.text_secondary,
                     transform="rotate(45deg) translateY(0px)",
                     transition="all 0.3s ease",
                 ),
                 rx.box(
                     width="20px",
                     height="2px",
-                    background=COLORS["dark_gray"],
+                    background=T.text_secondary,
                     transform="rotate(-45deg) translateY(0px)",
                     margin_top="-2px",
                     transition="all 0.3s ease",
@@ -44,21 +44,21 @@ def hamburger_button(
                 rx.box(
                     width="20px",
                     height="2px",
-                    background=COLORS["dark_gray"],
+                    background=T.text_secondary,
                     margin_bottom="4px",
                     transition="all 0.3s ease",
                 ),
                 rx.box(
                     width="20px",
                     height="2px",
-                    background=COLORS["dark_gray"],
+                    background=T.text_secondary,
                     margin_bottom="4px",
                     transition="all 0.3s ease",
                 ),
                 rx.box(
                     width="20px",
                     height="2px",
-                    background=COLORS["dark_gray"],
+                    background=T.text_secondary,
                     transition="all 0.3s ease",
                 ),
                 display="flex",
@@ -76,7 +76,7 @@ def hamburger_button(
         align_items="center",
         justify_content="center",
         _hover={
-            "background": COLORS["light_gray"],
+            "background": T.bg_hover,
         },
         border_radius=RADIUS["sm"],
         width="40px",
@@ -104,14 +104,14 @@ def mobile_header(
                 "EduChat",
                 font_size="1.25rem",
                 font_weight="600",
-                color=COLORS["dark_gray"],
+                color=T.text_primary,
             ),
             spacing="3",
             align="center",
         ),
         padding="1rem",
-        border_bottom=f"1px solid {COLORS['border_gray']}",
-        background="white",
+        border_bottom=f"1px solid {T.border}",
+        background=T.bg_card,
         width="100%",
         position="sticky",
         top="0",
@@ -135,7 +135,7 @@ def sidebar_overlay(
         left="0",
         width="100vw",
         height="100vh",
-        background="rgba(0, 0, 0, 0.5)",
+        background=T.overlay,
         z_index="999",
         display=rx.cond(is_open, "block", "none"),
         on_click=on_click,

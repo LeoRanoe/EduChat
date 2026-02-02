@@ -9,7 +9,7 @@ Professional chat input with:
 """
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS
+from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
 
 
 def chat_input(
@@ -70,7 +70,7 @@ def chat_input(
                                 "font_size": "0.9375rem",
                                 "font_family": "inherit",
                                 "line_height": "1.6",
-                                "color": COLORS["text_primary"],
+                                "color": T.text_primary,
                                 "overflow_y": "auto",
                             },
                             class_name="chat-textarea",
@@ -87,7 +87,7 @@ def chat_input(
                                     display="flex",
                                     align_items="center",
                                     justify_content="center",
-                                    background=COLORS["text_tertiary"],
+                                    background=T.text_tertiary,
                                     border_radius=RADIUS["full"],
                                     animation="spin 1s linear infinite",
                                 ),
@@ -122,8 +122,8 @@ def chat_input(
                         align="end",
                         width="100%",
                     ),
-                    background=COLORS["white"],
-                    border=f"2px solid {COLORS['border_gray']}",
+                    background=T.bg_input,
+                    border=f"2px solid {T.border}",
                     border_radius="24px",
                     padding=["0.75rem 0.875rem 0.75rem 1rem", "0.75rem 1rem 0.75rem 1.125rem", "0.875rem 1rem 0.875rem 1.25rem"],
                     box_shadow=SHADOWS["sm"],
@@ -142,7 +142,7 @@ def chat_input(
                     rx.text(
                         "Enter om te versturen",
                         font_size="0.6875rem",
-                        color=COLORS["text_tertiary"],
+                        color=T.text_tertiary,
                         display=["none", "none", "block"],
                     ),
                     rx.spacer(),
@@ -152,8 +152,8 @@ def chat_input(
                         font_size="0.6875rem",
                         color=rx.cond(
                             value.length() > (max_chars * 0.9),
-                            COLORS["error"],
-                            COLORS["text_tertiary"]
+                            T.error,
+                            T.text_tertiary
                         ),
                         font_weight=rx.cond(
                             value.length() > (max_chars * 0.9),
@@ -181,8 +181,8 @@ def chat_input(
         # Container styling
         width="100%",
         padding=["0.75rem 1rem", "1rem 1.5rem", "1.25rem 2rem"],
-        background=f"linear-gradient(to top, {COLORS['white']} 0%, {COLORS['background']} 100%)",
-        border_top=f"1px solid {COLORS['border_light']}",
+        background=f"linear-gradient(to top, {T.bg_card} 0%, {T.bg_primary} 100%)",
+        border_top=f"1px solid {T.border_light}",
         flex_shrink="0",
     )
 

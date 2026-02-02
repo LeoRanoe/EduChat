@@ -4,10 +4,11 @@ import reflex as rx
 from educhat.pages import index
 from educhat.pages.onboarding import onboarding
 from educhat.pages.landing import landing
-from educhat.styles.theme import COLORS
 
 
 # Create the app instance with theme configuration
+# Using Reflex's built-in color mode system with next-themes
+# The "inherit" appearance respects system preference and persists user toggle
 app = rx.App(
     stylesheets=[
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
@@ -15,11 +16,16 @@ app = rx.App(
     ],
     style={
         "font_family": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        "background": COLORS["light_gray"],
+        "background": "var(--bg-primary)",
+        "color": "var(--text-primary)",
+        "min_height": "100vh",
+        "transition": "background-color 0.3s ease, color 0.3s ease",
     },
     theme=rx.theme(
-        appearance="light",
+        appearance="inherit",  # Respects system preference + persists user toggle
         accent_color="green",
+        has_background=True,
+        radius="medium",
     ),
 )
 

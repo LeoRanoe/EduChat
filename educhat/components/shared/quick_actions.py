@@ -1,7 +1,7 @@
 """Quick action buttons for common education queries."""
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS
+from educhat.styles.theme import COLORS, RADIUS, T
 
 
 def quick_action_button(
@@ -53,7 +53,7 @@ def quick_action_button(
                 text,
                 font_size=["0.8125rem", "0.8125rem", "0.875rem"],
                 font_weight="600",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 line_height="1.4",
                 text_align="left",
                 white_space="normal",
@@ -77,8 +77,8 @@ def quick_action_button(
             width="100%",
         ),
         on_click=on_click,
-        background="white",
-        border=f"2px solid {COLORS['border']}",
+        background=T.bg_card,
+        border=f"2px solid {T.border}",
         border_radius=RADIUS["xl"],
         padding=["0.5rem 0.75rem", "0.5rem 0.75rem", "0.625rem 0.875rem"],
         cursor="pointer",
@@ -87,7 +87,7 @@ def quick_action_button(
         overflow="hidden",
         _hover={
             "border_color": COLORS["primary_green"],
-            "background": f"linear-gradient(135deg, rgba(16, 163, 127, 0.03) 0%, white 100%)",
+            "background": T.bg_hover,
             "transform": "translateY(-3px) scale(1.01)",
             "box_shadow": "0 12px 32px rgba(16, 163, 127, 0.15), 0 6px 12px rgba(0,0,0,0.1)",
             ".action-indicator": {"opacity": "1"},
@@ -140,7 +140,7 @@ def quick_actions_grid(on_action_click) -> rx.Component:
             "Populaire vragen:",
             font_size=["0.8125rem", "0.875rem", "0.9375rem"],
             font_weight="600",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             margin_bottom="0.375rem",
             text_align="left",
             width="100%",
@@ -193,14 +193,14 @@ def conversation_template_button(
                     title,
                     font_size=["0.875rem", "0.875rem", "0.9375rem"],
                     font_weight="600",
-                    color=COLORS["text_primary"],
+                    color=T.text_primary,
                     white_space="normal",
                     word_wrap="break-word",
                 ),
                 rx.text(
                     description,
                     font_size=["0.75rem", "0.75rem", "0.8125rem"],
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     line_height="1.5",
                     white_space="normal",
                     word_wrap="break-word",
@@ -213,7 +213,7 @@ def conversation_template_button(
             rx.icon(
                 "chevron-right",
                 size=18,
-                color=COLORS["text_tertiary"],
+                color=T.text_tertiary,
                 flex_shrink="0",
                 class_name="template-arrow",
                 transition="transform 0.2s ease",
@@ -223,15 +223,15 @@ def conversation_template_button(
             width="100%",
         ),
         on_click=on_click,
-        background=f"linear-gradient(135deg, {COLORS['white']} 0%, {COLORS['light_gray']}30 100%)",
-        border=f"1.5px solid {COLORS['border_gray']}",
+        background=T.bg_card,
+        border=f"1.5px solid {T.border}",
         border_radius=RADIUS["lg"],
         padding=["1rem", "1rem", "1.125rem"],
         cursor="pointer",
         box_shadow="0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)",
         _hover={
             "border_color": COLORS["primary_green"],
-            "background": f"linear-gradient(135deg, {COLORS['light_green']}20 0%, {COLORS['white']} 100%)",
+            "background": T.bg_hover,
             "transform": "translateY(-2px)",
             "box_shadow": "0 8px 24px rgba(16, 163, 127, 0.12), 0 4px 8px rgba(0,0,0,0.06)",
             ".template-arrow": {"transform": "translateX(4px)"},

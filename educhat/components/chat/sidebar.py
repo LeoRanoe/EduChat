@@ -11,7 +11,7 @@ Professional sidebar with:
 
 import reflex as rx
 from typing import List, Dict
-from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS
+from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
 from educhat.components.shared import logo, secondary_button, search_input, avatar
 from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
@@ -55,13 +55,13 @@ def render_conversation_item(conv, current_id):
                     color=rx.cond(
                         is_active,
                         "white",
-                        COLORS["text_tertiary"]
+                        T.text_tertiary
                     ),
                 ),
                 background=rx.cond(
                     is_active,
                     f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                    COLORS["light_gray"]
+                    T.bg_tertiary
                 ),
                 padding="0.375rem",
                 border_radius=RADIUS["md"],
@@ -75,7 +75,7 @@ def render_conversation_item(conv, current_id):
                 color=rx.cond(
                     is_active,
                     COLORS["primary_green"],
-                    COLORS["text_primary"]
+                    T.text_primary
                 ),
                 font_weight=rx.cond(
                     is_active,
@@ -91,7 +91,7 @@ def render_conversation_item(conv, current_id):
             ),
             # Delete button (visible on hover)
             rx.box(
-                rx.icon("trash-2", size=12, color=COLORS["text_tertiary"]),
+                rx.icon("trash-2", size=12, color=T.text_tertiary),
                 on_click=lambda: AppState.delete_conversation(conv_id),
                 cursor="pointer",
                 padding="0.375rem",
@@ -101,7 +101,7 @@ def render_conversation_item(conv, current_id):
                 transition=TRANSITIONS["fast"],
                 _hover={
                     "background": f"rgba(239, 68, 68, 0.1)",
-                    "color": COLORS["error"],
+                    "color": T.error,
                 },
             ),
             spacing="2",
@@ -128,7 +128,7 @@ def render_conversation_item(conv, current_id):
             "background": rx.cond(
                 is_active,
                 f"rgba(16, 163, 127, 0.12)",
-                COLORS["hover_bg"]
+                T.bg_hover
             ),
             ".conv-delete-btn": {"opacity": "1"},
         },
@@ -143,14 +143,14 @@ def sidebar_action_button(
     icon: str,
     label: str,
     on_click=None,
-    icon_color: str = COLORS["text_secondary"],
-    hover_bg: str = COLORS["light_gray"],
+    icon_color: str = None,
+    hover_bg: str = None,
 ) -> rx.Component:
     """Sidebar action button with icon and label."""
     return rx.box(
         rx.hstack(
-            rx.icon(icon, size=16, color=icon_color),
-            rx.text(label, font_size="0.8125rem", color=COLORS["text_secondary"]),
+            rx.icon(icon, size=16, color=icon_color if icon_color else T.text_secondary),
+            rx.text(label, font_size="0.8125rem", color=T.text_secondary),
             spacing="2",
             align="center",
         ),
@@ -161,7 +161,7 @@ def sidebar_action_button(
         flex="1",
         min_height="40px",
         transition=TRANSITIONS["fast"],
-        _hover={"background": hover_bg},
+        _hover={"background": hover_bg if hover_bg else T.bg_hover},
     )
 
 
@@ -260,18 +260,18 @@ def sidebar(
                         rx.hstack(
                             # Mobile close
                             rx.box(
-                                rx.icon("x", size=20, color=COLORS["text_secondary"]),
+                                rx.icon("x", size=20, color=T.text_secondary),
                                 on_click=AppState.close_sidebar,
                                 cursor="pointer",
                                 padding="0.5rem",
                                 border_radius=RADIUS["lg"],
                                 display=["flex", "flex", "none"],
                                 transition=TRANSITIONS["fast"],
-                                _hover={"background": COLORS["light_gray"]},
+                                _hover={"background": T.bg_hover},
                             ),
                             # Desktop collapse toggle
                             rx.box(
-                                rx.icon("panel-left-close", size=18, color=COLORS["text_secondary"]),
+                                rx.icon("panel-left-close", size=18, color=T.text_secondary),
                                 on_click=on_toggle_collapse,
                                 cursor="pointer",
                                 padding="0.5rem",
@@ -279,7 +279,7 @@ def sidebar(
                                 display=["none", "none", "flex"],
                                 transition=TRANSITIONS["fast"],
                                 _hover={
-                                    "background": COLORS["light_green"],
+                                    "background": COLORS["primary_light"],
                                     "color": COLORS["primary_green"],
                                 },
                             ),
@@ -289,7 +289,7 @@ def sidebar(
                     ),
                 ),
                 padding="1rem 0.75rem",
-                border_bottom=f"1px solid {COLORS['border_light']}",
+                border_bottom=f"1px solid {T.border_light}",
                 width="100%",
             ),
             
@@ -346,7 +346,7 @@ def sidebar(
                         width="100%",
                         transition=TRANSITIONS["fast"],
                         _hover={
-                            "background": COLORS["light_green"],
+                            "background": COLORS["primary_light"],
                             "border_style": "solid",
                         },
                     ),
@@ -366,7 +366,7 @@ def sidebar(
                         rx.text(
                             "Gesprekken",
                             font_size="0.6875rem",
-                            color=COLORS["text_tertiary"],
+                            color=T.text_tertiary,
                             text_transform="uppercase",
                             font_weight="600",
                             letter_spacing="0.5px",
@@ -415,7 +415,7 @@ def sidebar(
                                         background=rx.cond(
                                             conv["id"] == current_conversation_id,
                                             COLORS["primary_green"],
-                                            COLORS["gray_300"]
+                                            T.border
                                         ),
                                         border_radius="4px",
                                         transition="all 0.3s ease",
@@ -454,21 +454,21 @@ def sidebar(
                         rx.box(
                             rx.vstack(
                                 rx.box(
-                                    rx.icon("message-square-plus", size=28, color=COLORS["text_tertiary"]),
+                                    rx.icon("message-square-plus", size=28, color=T.text_tertiary),
                                     padding="1rem",
-                                    background=COLORS["light_gray"],
+                                    background=T.bg_tertiary,
                                     border_radius=RADIUS["full"],
                                 ),
                                 rx.text(
                                     "Nog geen gesprekken",
                                     font_size="0.875rem",
-                                    color=COLORS["text_secondary"],
+                                    color=T.text_secondary,
                                     font_weight="500",
                                 ),
                                 rx.text(
                                     "Start je eerste gesprek hierboven",
                                     font_size="0.75rem",
-                                    color=COLORS["text_tertiary"],
+                                    color=T.text_tertiary,
                                     text_align="center",
                                 ),
                                 spacing="2",
@@ -517,44 +517,43 @@ def sidebar(
                         content="Voorkeuren",
                     ),
                     padding="0.75rem 0.5rem",
-                    border_top=f"1px solid {COLORS['border_light']}",
-                    border_bottom=f"1px solid {COLORS['border_light']}",
+                border_top=f"1px solid {T.border_light}",
+                border_bottom=f"1px solid {T.border_light}",
+                width="100%",
+            ),
+            rx.box(
+                rx.link(
+                    rx.box(
+                        rx.hstack(
+                            rx.icon("graduation-cap", size=18, color="white"),
+                            rx.text(
+                                "Start Onboarding",
+                                font_size="0.875rem",
+                                font_weight="600",
+                                color="white",
+                            ),
+                            spacing="2",
+                            align="center",
+                            justify="center",
+                        ),
+                        width="100%",
+                        padding="0.75rem 1rem",
+                        border_radius=RADIUS["lg"],
+                        background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                        box_shadow=SHADOWS["primary_sm"],
+                        transition=TRANSITIONS["fast"],
+                        _hover={
+                            "transform": "translateY(-2px)",
+                            "box_shadow": SHADOWS["primary_md"],
+                        },
+                    ),
+                    href="/onboarding",
+                    text_decoration="none",
                     width="100%",
                 ),
-                rx.box(
-                    rx.link(
-                        rx.box(
-                            rx.hstack(
-                                rx.icon("graduation-cap", size=18, color="white"),
-                                rx.text(
-                                    "Start Onboarding",
-                                    font_size="0.875rem",
-                                    font_weight="600",
-                                    color="white",
-                                ),
-                                spacing="2",
-                                align="center",
-                                justify="center",
-                            ),
-                            width="100%",
-                            padding="0.75rem 1rem",
-                            border_radius=RADIUS["lg"],
-                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                            box_shadow=SHADOWS["primary_sm"],
-                            transition=TRANSITIONS["fast"],
-                            _hover={
-                                "transform": "translateY(-2px)",
-                                "box_shadow": SHADOWS["primary_md"],
-                            },
-                        ),
-                        href="/onboarding",
-                        text_decoration="none",
-                        width="100%",
-                    ),
-                    padding="0.875rem",
-                    border_top=f"1px solid {COLORS['border_light']}",
-                    border_bottom=f"1px solid {COLORS['border_light']}",
-                    width="100%",
+                padding="0.875rem",
+                border_top=f"1px solid {T.border_light}",
+                border_bottom=f"1px solid {T.border_light}",
                 ),
             ),
             
@@ -574,7 +573,7 @@ def sidebar(
                         # Logout button - modern
                         rx.tooltip(
                             rx.box(
-                                rx.icon("log-out", size=18, color=COLORS["text_secondary"]),
+                                rx.icon("log-out", size=18, color=T.text_secondary),
                                 on_click=AppState.logout,
                                 cursor="pointer",
                                 width="44px",
@@ -583,8 +582,8 @@ def sidebar(
                                 align_items="center",
                                 justify_content="center",
                                 border_radius="12px",
-                                border=f"1.5px solid {COLORS['border']}",
-                                background="white",
+                                border=f"1.5px solid {T.border}",
+                                background=T.bg_card,
                                 transition=TRANSITIONS["fast"],
                                 _hover={
                                     "background": "rgba(239, 68, 68, 0.08)",
@@ -608,7 +607,7 @@ def sidebar(
                                     user_name,
                                     font_size="0.875rem",
                                     font_weight="600",
-                                    color=COLORS["text_primary"],
+                                    color=T.text_primary,
                                     overflow="hidden",
                                     text_overflow="ellipsis",
                                     white_space="nowrap",
@@ -619,7 +618,7 @@ def sidebar(
                                     rx.text(
                                         user_email,
                                         font_size="0.75rem",
-                                        color=COLORS["text_tertiary"],
+                                        color=T.text_tertiary,
                                         overflow="hidden",
                                         text_overflow="ellipsis",
                                         white_space="nowrap",
@@ -634,7 +633,7 @@ def sidebar(
                                             letter_spacing="0.5px",
                                         ),
                                         padding="3px 8px",
-                                        background=COLORS["light_green"],
+                                        background=COLORS["primary_light"],
                                         border_radius=RADIUS["sm"],
                                     ),
                                 ),
@@ -673,29 +672,45 @@ def sidebar(
                                 icon_color="#3B82F6",
                                 hover_bg="rgba(59, 130, 246, 0.1)",
                             ),
-                            rx.box(
+                            # Accessible dark mode toggle in sidebar using Reflex color mode
+                            rx.el.button(
                                 rx.hstack(
-                                    rx.cond(
-                                        AuthState.dark_mode,
-                                        rx.icon("sun", size=16, color="#F59E0B"),
-                                        rx.icon("moon", size=16, color="#6B7280"),
+                                    rx.color_mode_cond(
+                                        light=rx.icon("moon", size=16, color="#6B7280"),
+                                        dark=rx.icon("sun", size=16, color="#F59E0B"),
                                     ),
                                     rx.text(
-                                        rx.cond(AuthState.dark_mode, "Light", "Dark"),
+                                        rx.color_mode_cond(light="Donker", dark="Licht"),
                                         font_size="0.8125rem",
-                                        color=COLORS["text_secondary"],
+                                        color="var(--text-secondary)",
                                     ),
                                     spacing="2",
                                     align="center",
                                 ),
-                                on_click=AuthState.toggle_dark_mode,
+                                on_click=rx.toggle_color_mode,
+                                role="switch",
+                                aria_checked=rx.color_mode_cond(light="false", dark="true"),
+                                aria_label=rx.color_mode_cond(
+                                    light="Schakel naar donkere modus",
+                                    dark="Schakel naar lichte modus",
+                                ),
+                                title=rx.color_mode_cond(
+                                    light="Schakel naar donkere modus - vermindert vermoeidheid van de ogen",
+                                    dark="Schakel naar lichte modus - vermindert vermoeidheid van de ogen",
+                                ),
                                 cursor="pointer",
                                 padding="0.625rem 0.75rem",
                                 border_radius=RADIUS["lg"],
                                 flex="1",
                                 min_height="40px",
+                                background="transparent",
+                                border="none",
                                 transition=TRANSITIONS["fast"],
-                                _hover={"background": COLORS["light_gray"]},
+                                _hover={"background": "var(--bg-hover)"},
+                                _focus_visible={
+                                    "outline": "2px solid var(--color-primary)",
+                                    "outline_offset": "2px",
+                                },
                             ),
                             spacing="2",
                             width="100%",
@@ -703,11 +718,11 @@ def sidebar(
                         # Logout button
                         rx.box(
                             rx.hstack(
-                                rx.icon("log-out", size=16, color=COLORS["error"]),
+                                rx.icon("log-out", size=16, color=T.error),
                                 rx.text(
                                     "Uitloggen",
                                     font_size="0.8125rem",
-                                    color=COLORS["error"],
+                                    color=T.error,
                                     font_weight="500",
                                 ),
                                 spacing="2",
@@ -724,7 +739,7 @@ def sidebar(
                             transition=TRANSITIONS["fast"],
                             _hover={
                                 "background": f"rgba(239, 68, 68, 0.08)",
-                                "border_color": COLORS["error"],
+                                "border_color": T.error,
                             },
                         ),
                         spacing="3",
@@ -732,9 +747,9 @@ def sidebar(
                     ),
                 ),
                 padding="1rem",
-                border_top=f"1px solid {COLORS['border_light']}",
+                border_top=f"1px solid {T.border_light}",
                 width="100%",
-                background=COLORS["white"],
+                background=T.sidebar_bg,
             ),
             
             spacing="0",
@@ -754,8 +769,8 @@ def sidebar(
             ["300px", "300px", SIDEBAR_CONFIG["width_collapsed"]],
             ["300px", "300px", SIDEBAR_CONFIG["width_expanded"]]
         ),
-        background=COLORS["white"],
-        border_right=f"1px solid {COLORS['border_light']}",
+        background=T.sidebar_bg,
+        border_right=f"1px solid {T.border_light}",
         height="100vh",
         position="fixed",
         top="0",

@@ -1,7 +1,7 @@
 """Reminders modal component for EduChat."""
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS
+from educhat.styles.theme import COLORS, RADIUS, T
 from educhat.state.auth_state import AuthState
 
 
@@ -25,13 +25,13 @@ def reminder_item(reminder: dict) -> rx.Component:
                     reminder["title"],
                     font_size="0.9375rem",
                     font_weight="600",
-                    color=COLORS["text_primary"],
+                    color=T.text_primary,
                     line_height="1.4",
                 ),
                 rx.text(
                     f"📅 {reminder['date']}",
                     font_size="0.8125rem",
-                    color=COLORS["text_tertiary"],
+                    color=T.text_tertiary,
                     line_height="1.4",
                 ),
                 spacing="1",
@@ -39,14 +39,14 @@ def reminder_item(reminder: dict) -> rx.Component:
                 flex="1",
             ),
             rx.box(
-                rx.icon("trash-2", size=16, color=COLORS["text_tertiary"]),
+                rx.icon("trash-2", size=16, color=T.text_tertiary),
                 on_click=lambda: AuthState.delete_reminder(reminder["id"]),
                 cursor="pointer",
                 padding="0.625rem",
                 border_radius=RADIUS["sm"],
                 _hover={
-                    "background": f"{COLORS['error']}10",
-                    "color": COLORS["error"],
+                    "background": T.error_light,
+                    "color": T.error,
                 },
                 transition="all 0.2s ease",
             ),
@@ -56,8 +56,8 @@ def reminder_item(reminder: dict) -> rx.Component:
         ),
         padding="1rem",
         min_height="60px",
-        background=COLORS["white"],
-        border=f"1px solid {COLORS['border_light']}",
+        background=T.bg_card,
+        border=f"1px solid {T.border_light}",
         border_radius=RADIUS["lg"],
         _hover={
             "border_color": COLORS["primary_green"],
@@ -94,19 +94,19 @@ def reminders_modal() -> rx.Component:
                                 "Mijn Herinneringen",
                                 font_size="1.125rem",
                                 font_weight="700",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                             ),
                             spacing="2",
                             align="center",
                         ),
                         rx.box(
-                            rx.icon("x", size=18, color=COLORS["text_secondary"]),
+                            rx.icon("x", size=18, color=T.text_secondary),
                             on_click=AuthState.toggle_reminder_modal,
                             cursor="pointer",
                             padding="0.5rem",
                             border_radius=RADIUS["sm"],
                             _hover={
-                                "background": COLORS["light_gray"],
+                                "background": T.bg_hover,
                             },
                             transition="all 0.2s ease",
                         ),
@@ -124,7 +124,7 @@ def reminders_modal() -> rx.Component:
                                 width="100%",
                                 padding="0.875rem 1rem",
                                 min_height="48px",
-                                border=f"1px solid {COLORS['border_gray']}",
+                                border=f"1px solid {T.border}",
                                 border_radius=RADIUS["md"],
                                 font_size="0.9375rem",
                                 line_height="1.5",
@@ -140,7 +140,7 @@ def reminders_modal() -> rx.Component:
                                 width="100%",
                                 padding="0.875rem 1rem",
                                 min_height="48px",
-                                border=f"1px solid {COLORS['border_gray']}",
+                                border=f"1px solid {T.border}",
                                 border_radius=RADIUS["md"],
                                 font_size="0.9375rem",
                                 line_height="1.5",
@@ -175,7 +175,7 @@ def reminders_modal() -> rx.Component:
                             width="100%",
                         ),
                         padding="1rem",
-                        background=COLORS["light_gray"],
+                        background=T.bg_tertiary,
                         border_radius=RADIUS["lg"],
                         width="100%",
                     ),
@@ -194,16 +194,16 @@ def reminders_modal() -> rx.Component:
                             ),
                             rx.box(
                                 rx.vstack(
-                                    rx.icon("bell-off", size=40, color=COLORS["text_tertiary"]),
+                                    rx.icon("bell-off", size=40, color=T.text_tertiary),
                                     rx.text(
                                         "Geen herinneringen",
                                         font_size="0.875rem",
-                                        color=COLORS["text_secondary"],
+                                        color=T.text_secondary,
                                     ),
                                     rx.text(
                                         "Voeg een herinnering toe voor toetsen, deadlines, etc.",
                                         font_size="0.75rem",
-                                        color=COLORS["text_tertiary"],
+                                        color=T.text_tertiary,
                                         text_align="center",
                                     ),
                                     spacing="2",
@@ -227,7 +227,7 @@ def reminders_modal() -> rx.Component:
                 width=["90%", "400px", "450px"],
                 max_width="90vw",
                 max_height="85vh",
-                background=COLORS["white"],
+                background=T.modal_bg,
                 border_radius=RADIUS["xl"],
                 padding="1.5rem",
                 box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",

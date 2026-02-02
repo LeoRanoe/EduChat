@@ -1,6 +1,6 @@
 """Quiz question components for onboarding."""
 import reflex as rx
-from educhat.styles.theme import COLORS, FONTS, SPACING, RADIUS
+from educhat.styles.theme import COLORS, FONTS, SPACING, RADIUS, T
 from typing import List, Callable
 
 
@@ -20,12 +20,12 @@ def multi_select_button(
     return rx.button(
         label,
         on_click=on_click,
-        background=rx.cond(is_selected, COLORS["primary_green"], "white"),
-        color=rx.cond(is_selected, "white", COLORS["text_primary"]),
+        background=rx.cond(is_selected, COLORS["primary_green"], T.bg_card),
+        color=rx.cond(is_selected, "white", T.text_primary),
         border=rx.cond(
             is_selected,
             f"2px solid {COLORS['primary_green']}",
-            f"1px solid {COLORS['border']}"
+            f"1px solid {T.border}"
         ),
         border_radius="10px",
         padding="10px 18px",
@@ -97,7 +97,7 @@ def checkbox_item(
         rx.text(
             label,
             font_size="0.9375rem",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             cursor="pointer",
             on_click=on_change,
             line_height="1.4",
@@ -111,7 +111,7 @@ def checkbox_item(
         transition="background 0.15s ease",
         min_height="44px",
         _hover={
-            "background": COLORS["gray_100"],
+            "background": T.bg_hover,
         },
     )
 
@@ -178,7 +178,7 @@ def radio_button(
             border=rx.cond(
                 selected_value == value,
                 f"2px solid {COLORS['primary_green']}",
-                f"2px solid {COLORS['gray_300']}"
+                f"2px solid {T.border}"
             ),
             display="flex",
             align_items="center",
@@ -191,7 +191,7 @@ def radio_button(
         rx.text(
             label,
             font_size="0.9375rem",
-            color=COLORS["text_primary"],
+            color=T.text_primary,
             cursor="pointer",
             on_click=lambda: on_change(value),
             line_height="1.4",
@@ -205,7 +205,7 @@ def radio_button(
         transition="background 0.15s ease",
         min_height="44px",
         _hover={
-            "background": COLORS["gray_100"],
+            "background": T.bg_hover,
         },
     )
 
@@ -264,10 +264,11 @@ def text_area_input(
             min_height="120px",
             padding="14px 16px",
             font_size="0.9375rem",
-            border=f"1px solid {COLORS['border']}",
+            border=f"1px solid {T.border}",
             border_radius="12px",
             resize="vertical",
-            background="white",
+            background=T.bg_input,
+            color=T.text_primary,
             transition="border-color 0.2s ease, box-shadow 0.2s ease",
             _focus={
                 "border_color": COLORS["primary_green"],
@@ -275,7 +276,7 @@ def text_area_input(
                 "box_shadow": f"0 0 0 3px {COLORS['primary_light']}",
             },
             _placeholder={
-                "color": COLORS["text_muted"],
+                "color": T.text_tertiary,
             },
         ),
         rx.text(
@@ -285,7 +286,7 @@ def text_area_input(
                 f"0 / {max_chars}"
             ),
             font_size="0.75rem",
-            color=COLORS["text_secondary"],
+            color=T.text_secondary,
             align_self="end",
         ),
         spacing="2",

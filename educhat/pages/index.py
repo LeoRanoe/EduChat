@@ -7,7 +7,7 @@ from educhat.components.chat import sidebar, chat_container
 from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, settings_modal
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
-from educhat.styles.theme import COLORS
+from educhat.styles.theme import COLORS, T
 
 
 def index() -> rx.Component:
@@ -23,7 +23,7 @@ def index() -> rx.Component:
             authenticated_chat(),
             # Redirect unauthenticated users to landing page
             rx.box(
-                rx.text("Redirecting...", color=COLORS["text_secondary"]),
+                rx.text("Redirecting...", color=T.text_secondary),
                 on_mount=AppState.redirect_to_landing,
                 display="flex",
                 justify_content="center",
@@ -116,7 +116,7 @@ def authenticated_chat() -> rx.Component:
             
             width="100%",
             height="100vh",
-            background=rx.cond(AuthState.dark_mode, "#111827", COLORS["light_gray"]),
+            background="var(--bg-primary)",  # Use CSS variable for theme-aware background
             display="flex",
             flex_direction="column",
         ),
@@ -127,12 +127,11 @@ def authenticated_chat() -> rx.Component:
         width="100vw",
         height="100vh",
         overflow="hidden",
-        background=rx.cond(AuthState.dark_mode, "#111827", COLORS["light_gray"]),
+        background="var(--bg-primary)",  # Use CSS variable
         margin="0",
         padding="0",
         position="relative",
-        # Apply dark mode class
-        class_name=rx.cond(AuthState.dark_mode, "dark-mode", ""),
+        # Initialize chat on mount
         on_mount=AppState.initialize_chat,
     )
 
@@ -180,7 +179,7 @@ def guest_banner() -> rx.Component:
                             ),
                             " om je gesprekken op te slaan en toegang te krijgen tot meer functies.",
                             font_size="14px",
-                            color=COLORS["text_primary"],
+                            color=T.text_primary,
                             line_height="1.6",
                             font_weight="500",
                         ),
@@ -208,8 +207,8 @@ def guest_banner() -> rx.Component:
                     transition="all 0.2s ease",
                     padding="6px",
                     border_radius="6px",
-                    background="white",
-                    color=COLORS["text_primary"],
+                    background=T.bg_card,
+                    color=T.text_primary,
                     box_shadow="0 2px 4px rgba(0,0,0,0.1)",
                     _hover={
                         "background": "#FEE2E2",

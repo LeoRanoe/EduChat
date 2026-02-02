@@ -1,7 +1,7 @@
 """Events panel component for EduChat."""
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS
+from educhat.styles.theme import COLORS, RADIUS, T
 from educhat.state.auth_state import AuthState
 
 
@@ -28,7 +28,7 @@ def event_item(event: dict) -> rx.Component:
                     event["title"],
                     font_size="0.9375rem",
                     font_weight="600",
-                    color=COLORS["text_primary"],
+                    color=T.text_primary,
                     line_height="1.4",
                 ),
                 rx.cond(
@@ -49,7 +49,7 @@ def event_item(event: dict) -> rx.Component:
                         "📅 TBD",
                     ),
                     font_size="0.8125rem",
-                    color=COLORS["text_tertiary"],
+                    color=T.text_tertiary,
                     line_height="1.3",
                 ),
                 spacing="1",
@@ -57,14 +57,14 @@ def event_item(event: dict) -> rx.Component:
                 flex="1",
             ),
             rx.box(
-                rx.icon("bell-plus", size=16, color=COLORS["text_tertiary"]),
+                rx.icon("bell-plus", size=16, color=T.text_tertiary),
                 on_click=lambda: AuthState.create_reminder_from_event(event["id"]),
                 cursor="pointer",
                 padding="0.625rem",
                 border_radius=RADIUS["sm"],
                 title="Maak herinnering",
                 _hover={
-                    "background": f"{COLORS['primary_green']}10",
+                    "background": T.bg_hover,
                     "color": COLORS["primary_green"],
                 },
                 transition="all 0.2s ease",
@@ -75,8 +75,8 @@ def event_item(event: dict) -> rx.Component:
         ),
         padding="1rem",
         min_height="72px",
-        background=COLORS["white"],
-        border=f"1px solid {COLORS['border_light']}",
+        background=T.bg_card,
+        border=f"1px solid {T.border_light}",
         border_radius=RADIUS["lg"],
         _hover={
             "border_color": "#3B82F6",
@@ -113,19 +113,19 @@ def events_panel() -> rx.Component:
                                 "Belangrijke Datums",
                                 font_size="1.125rem",
                                 font_weight="700",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                             ),
                             spacing="2",
                             align="center",
                         ),
                         rx.box(
-                            rx.icon("x", size=18, color=COLORS["text_secondary"]),
+                            rx.icon("x", size=18, color=T.text_secondary),
                             on_click=AuthState.toggle_events_panel,
                             cursor="pointer",
                             padding="0.5rem",
                             border_radius=RADIUS["sm"],
                             _hover={
-                                "background": COLORS["light_gray"],
+                                "background": T.bg_hover,
                             },
                             transition="all 0.2s ease",
                         ),
@@ -138,7 +138,7 @@ def events_panel() -> rx.Component:
                         rx.text(
                             "Klik op het 🔔 icoon om een herinnering aan te maken",
                             font_size="0.75rem",
-                            color=COLORS["text_secondary"],
+                            color=T.text_secondary,
                             font_style="italic",
                         ),
                         padding="0.5rem 0",
@@ -172,14 +172,14 @@ def events_panel() -> rx.Component:
                                     rx.text(
                                         "Geen evenementen gevonden",
                                         font_size="1rem",
-                                        color=COLORS["text_primary"],
+                                        color=T.text_primary,
                                         font_weight="600",
                                         margin_bottom="0.5rem",
                                     ),
                                     rx.text(
                                         "Er zijn momenteel geen komende evenementen beschikbaar.",
                                         font_size="0.875rem",
-                                        color=COLORS["text_secondary"],
+                                        color=T.text_secondary,
                                         text_align="center",
                                         line_height="1.6",
                                         max_width="300px",
@@ -212,29 +212,29 @@ def events_panel() -> rx.Component:
                                 "📚 Belangrijke Periodes",
                                 font_size="0.8rem",
                                 font_weight="600",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                             ),
                             rx.text(
                                 "• Inschrijvingen: April - Juli",
                                 font_size="0.75rem",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                             ),
                             rx.text(
                                 "• Schooljaar: September - Juli",
                                 font_size="0.75rem",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                             ),
                             rx.text(
                                 "• Examens: Mei - Juni",
                                 font_size="0.75rem",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                             ),
                             spacing="1",
                             align_items="start",
                             width="100%",
                         ),
                         padding="1rem",
-                        background=f"{COLORS['light_green']}20",
+                        background=T.bg_tertiary,
                         border_radius=RADIUS["md"],
                         margin_top="1rem",
                     ),
@@ -246,7 +246,7 @@ def events_panel() -> rx.Component:
                 top="50%",
                 left="50%",
                 transform="translate(-50%, -50%)",
-                background=COLORS["white"],
+                background=T.modal_bg,
                 border_radius=RADIUS["xl"],
                 padding="1.5rem",
                 width=["90%", "420px", "480px"],

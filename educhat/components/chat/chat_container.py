@@ -2,7 +2,7 @@
 
 import reflex as rx
 from typing import List, Dict
-from educhat.styles.theme import COLORS
+from educhat.styles.theme import COLORS, T
 from educhat.components.shared import logo, quick_actions_grid, conversation_templates
 from educhat.components.chat.message_bubble import message_bubble
 from educhat.components.chat.chat_input import chat_input
@@ -70,7 +70,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                         "Welkom bij",
                         font_size=["1.5rem", "1.75rem", "2rem"],
                         font_weight="600",
-                        color=COLORS["text_secondary"],
+                        color=T.text_secondary,
                         text_align="center",
                         line_height="1.2",
                         margin_bottom="16px",
@@ -81,7 +81,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                         rx.box(
                             logo(size="lg"),
                             padding="1.5rem",
-                            background=f"linear-gradient(135deg, {COLORS['white']} 0%, {COLORS['light_green']}40 100%)",
+                            background=f"linear-gradient(135deg, {T.bg_card} 0%, {COLORS['primary_light']}40 100%)",
                             border_radius="28px",
                             box_shadow=f"0 12px 40px rgba(16, 163, 127, 0.15), 0 4px 12px rgba(0,0,0,0.06)",
                             border=f"2px solid rgba(16, 163, 127, 0.1)",
@@ -101,7 +101,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                     rx.text(
                         "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
                         font_size=["1rem", "1.0625rem", "1.125rem"],
-                        color=COLORS["text_primary"],
+                        color=T.text_primary,
                         text_align="center",
                         line_height="1.7",
                         font_weight="500",
@@ -110,17 +110,17 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                     rx.text(
                         "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
                         font_size=["0.9375rem", "1rem", "1.0625rem"],
-                        color=COLORS["text_secondary"],
+                        color=T.text_secondary,
                         text_align="center",
                         line_height="1.6",
                     ),
                     max_width="720px",
                     width="100%",
                     padding="24px 32px",
-                    background="white",
+                    background=T.bg_card,
                     border_radius="20px",
                     box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
-                    border=f"1px solid {COLORS['border']}",
+                    border=f"1px solid {T.border}",
                     margin_bottom="40px",
                     animation="fadeInUp 0.8s ease-out 0.4s backwards",
                 ),
@@ -130,7 +130,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                     rx.text(
                         "Populaire vragen:",
                         font_size=["0.9375rem", "1rem", "1.0625rem"],
-                        color=COLORS["text_primary"],
+                        color=T.text_primary,
                         font_weight="700",
                         text_align="center",
                         margin_bottom="24px",
@@ -154,7 +154,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                         rx.text(
                             "Of start met een stap-voor-stap gids:",
                             font_size=["0.9375rem", "1rem", "1.0625rem"],
-                            color=COLORS["text_primary"],
+                            color=T.text_primary,
                             font_weight="700",
                             text_align="center",
                             margin_bottom="20px",
@@ -266,7 +266,7 @@ def chat_container(
                 flex="1",
                 width="100%",
                 overflow_y="auto",
-                background=COLORS["background"],
+                background=T.bg_primary,
                 min_height="0",
             ),
             
@@ -283,7 +283,7 @@ def chat_container(
             width="100%",
         ),
         # Responsive layout
-        background=COLORS["background"],
+        background=T.bg_primary,
         height="100%",
         width="100%",
         flex="1",

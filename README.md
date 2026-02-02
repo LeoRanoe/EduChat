@@ -4,6 +4,11 @@
 
 ![EduChat Logo](assets/logo.png)
 
+## 🌟 Wat is nieuw?
+
+### 🌙 Dark Mode
+**Toggle in de header/instellingen.** Je keuze wordt opgeslagen en de site respecteert standaard je apparaatvoorkeur. Dark mode vermindert vermoeidheid van de ogen bij weinig licht.
+
 ## 🌟 Project Overzicht
 
 EduChat is een moderne, AI-aangedreven educatieve assistent speciaal ontworpen voor het Surinaamse onderwijssysteem. Via een natuurlijke conversatie kunnen studenten:

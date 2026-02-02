@@ -591,16 +591,12 @@ class AuthState(rx.State):
         self.guest_banner_dismissed = True
     
     # ==========================================================================
-    # Dark Mode
+    # Dark Mode - Uses Reflex's built-in color mode system
     # ==========================================================================
     
-    def toggle_dark_mode(self):
-        """Toggle dark mode."""
-        self.dark_mode = not self.dark_mode
-        # Store preference if authenticated
-        if self.is_authenticated and self.user_id:
-            # TODO: Save to database user preferences
-            pass
+    # Note: dark_mode state var is kept for backward compatibility but the actual
+    # theming is handled by Reflex's rx.toggle_color_mode which uses next-themes.
+    # To toggle dark mode, use rx.toggle_color_mode event directly in on_click handlers.
     
     def toggle_settings_modal(self):
         """Toggle settings modal."""

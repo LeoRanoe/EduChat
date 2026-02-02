@@ -1,24 +1,31 @@
 """Settings modal component for EduChat."""
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS
+from educhat.styles.theme import COLORS, RADIUS, T
 from educhat.state.auth_state import AuthState
 from educhat.state.onboarding_state import OnboardingState
 
 
 def settings_modal() -> rx.Component:
-    """Modal for user settings and preferences."""
+    """Modal for user settings and preferences.
+    
+    Accessibility features:
+    - Dark mode toggle uses role="switch" and aria-checked
+    - Keyboard navigable with proper focus states
+    - Clear labels and helper text for all controls
+    - Colors use CSS variables for proper theme support
+    """
     return rx.cond(
         AuthState.show_settings_modal,
         rx.box(
-            # Overlay
+            # Overlay - click to close
             rx.box(
                 position="fixed",
                 top="0",
                 left="0",
                 right="0",
                 bottom="0",
-                background="rgba(0, 0, 0, 0.5)",
+                background=T.overlay,
                 z_index="1000",
                 on_click=AuthState.toggle_settings_modal,
             ),
@@ -33,19 +40,26 @@ def settings_modal() -> rx.Component:
                                 "Instellingen",
                                 font_size="1.25rem",
                                 font_weight="700",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                             ),
                             spacing="2",
                             align="center",
                         ),
-                        rx.box(
-                            rx.icon("x", size=18, color=COLORS["text_secondary"]),
+                        rx.el.button(
+                            rx.icon("x", size=18, color=T.text_secondary),
                             on_click=AuthState.toggle_settings_modal,
                             cursor="pointer",
                             padding="0.625rem",
                             border_radius=RADIUS["sm"],
+                            background="transparent",
+                            border="none",
+                            aria_label="Sluiten",
                             _hover={
-                                "background": COLORS["light_gray"],
+                                "background": T.bg_hover,
+                            },
+                            _focus_visible={
+                                "outline": "2px solid var(--color-primary)",
+                                "outline_offset": "2px",
                             },
                             transition="all 0.2s ease",
                         ),
@@ -64,7 +78,7 @@ def settings_modal() -> rx.Component:
                                         "Personalisatie",
                                         font_size="0.875rem",
                                         font_weight="600",
-                                        color=COLORS["text_primary"],
+                                        color=T.text_primary,
                                         margin_bottom="0.5rem",
                                     ),
                                     # Edit preferences button
@@ -77,13 +91,13 @@ def settings_modal() -> rx.Component:
                                                         "Mijn voorkeuren aanpassen",
                                                         font_size="0.9375rem",
                                                         font_weight="500",
-                                                        color=COLORS["text_primary"],
+                                                        color=T.text_primary,
                                                         line_height="1.2",
                                                     ),
                                                     rx.text(
                                                         "Wijzig je opleiding, interesses en communicatiestijl",
                                                         font_size="0.75rem",
-                                                        color=COLORS["text_tertiary"],
+                                                        color=T.text_tertiary,
                                                         line_height="1.2",
                                                     ),
                                                     spacing="1",
@@ -93,13 +107,13 @@ def settings_modal() -> rx.Component:
                                                 align="center",
                                                 flex="1",
                                             ),
-                                            rx.icon("chevron-right", size=18, color=COLORS["text_secondary"]),
+                                            rx.icon("chevron-right", size=18, color=T.text_secondary),
                                             justify="between",
                                             align="center",
                                             width="100%",
                                             padding="1rem",
                                             border_radius=RADIUS["md"],
-                                            border=f"1px solid {COLORS['border_light']}",
+                                            border=f"1px solid {T.border_light}",
                                             _hover={
                                                 "background": f"rgba(16, 163, 127, 0.05)",
                                                 "border_color": COLORS["primary_green"],
@@ -119,8 +133,8 @@ def settings_modal() -> rx.Component:
                                                 rx.cond(
                                                     OnboardingState.education_level != "",
                                                     rx.hstack(
-                                                        rx.text("Opleiding:", font_size="0.75rem", color=COLORS["text_secondary"], font_weight="600"),
-                                                        rx.text(OnboardingState.education_level, font_size="0.75rem", color=COLORS["text_primary"]),
+                                                        rx.text("Opleiding:", font_size="0.75rem", color=T.text_secondary, font_weight="600"),
+                                                        rx.text(OnboardingState.education_level, font_size="0.75rem", color=T.text_primary),
                                                         spacing="2",
                                                     ),
                                                     rx.fragment(),
@@ -128,8 +142,8 @@ def settings_modal() -> rx.Component:
                                                 rx.cond(
                                                     OnboardingState.district != "",
                                                     rx.hstack(
-                                                        rx.text("District:", font_size="0.75rem", color=COLORS["text_secondary"], font_weight="600"),
-                                                        rx.text(OnboardingState.district, font_size="0.75rem", color=COLORS["text_primary"]),
+                                                        rx.text("District:", font_size="0.75rem", color=T.text_secondary, font_weight="600"),
+                                                        rx.text(OnboardingState.district, font_size="0.75rem", color=T.text_primary),
                                                         spacing="2",
                                                     ),
                                                     rx.fragment(),
@@ -137,8 +151,8 @@ def settings_modal() -> rx.Component:
                                                 rx.cond(
                                                     OnboardingState.formality != "",
                                                     rx.hstack(
-                                                        rx.text("Stijl:", font_size="0.75rem", color=COLORS["text_secondary"], font_weight="600"),
-                                                        rx.text(OnboardingState.formality, font_size="0.75rem", color=COLORS["text_primary"]),
+                                                        rx.text("Stijl:", font_size="0.75rem", color=T.text_secondary, font_weight="600"),
+                                                        rx.text(OnboardingState.formality, font_size="0.75rem", color=T.text_primary),
                                                         spacing="2",
                                                     ),
                                                     rx.fragment(),
@@ -149,20 +163,20 @@ def settings_modal() -> rx.Component:
                                             padding="0.75rem",
                                             margin_top="0.5rem",
                                             border_radius=RADIUS["sm"],
-                                            background=COLORS["light_gray"],
+                                            background=T.bg_tertiary,
                                             width="100%",
                                         ),
                                         rx.box(
                                             rx.text(
                                                 "Je hebt nog geen voorkeuren ingesteld. Klik hierboven om te beginnen.",
                                                 font_size="0.75rem",
-                                                color=COLORS["text_tertiary"],
+                                                color=T.text_tertiary,
                                                 font_style="italic",
                                             ),
                                             padding="0.75rem",
                                             margin_top="0.5rem",
                                             border_radius=RADIUS["sm"],
-                                            background=COLORS["light_gray"],
+                                            background=T.bg_tertiary,
                                             width="100%",
                                         ),
                                     ),
@@ -182,79 +196,93 @@ def settings_modal() -> rx.Component:
                                     "Weergave",
                                     font_size="0.875rem",
                                     font_weight="600",
-                                    color=COLORS["text_primary"],
+                                    color=T.text_primary,
                                     margin_bottom="0.5rem",
                                 ),
-                                # Dark mode toggle
-                                rx.hstack(
+                                # Dark mode toggle - Uses Reflex's built-in color mode system
+                                rx.el.button(
                                     rx.hstack(
-                                        rx.cond(
-                                            AuthState.dark_mode,
-                                            rx.icon("moon", size=18, color="#F59E0B"),
-                                            rx.icon("sun", size=18, color="#6B7280"),
-                                        ),
-                                        rx.vstack(
-                                            rx.text(
-                                                "Donkere modus",
-                                                font_size="0.9375rem",
-                                                font_weight="500",
-                                                color=COLORS["text_primary"],
-                                                line_height="1.2",
+                                        rx.hstack(
+                                            rx.color_mode_cond(
+                                                light=rx.icon("sun", size=18, color="#F59E0B"),
+                                                dark=rx.icon("moon", size=18, color="#F59E0B"),
                                             ),
-                                            rx.text(
-                                                "Pas het kleurenschema aan",
-                                                font_size="0.75rem",
-                                                color=COLORS["text_tertiary"],
-                                                line_height="1.2",
+                                            rx.vstack(
+                                                rx.text(
+                                                    "Donkere modus",
+                                                    font_size="0.9375rem",
+                                                    font_weight="500",
+                                                    color=T.text_primary,
+                                                    line_height="1.2",
+                                                ),
+                                                rx.text(
+                                                    "Vermindert vermoeidheid van de ogen bij weinig licht",
+                                                    font_size="0.75rem",
+                                                    color=T.text_tertiary,
+                                                    line_height="1.2",
+                                                ),
+                                                spacing="1",
+                                                align_items="start",
                                             ),
-                                            spacing="1",
-                                            align_items="start",
+                                            spacing="3",
+                                            align="center",
+                                            flex="1",
                                         ),
-                                        spacing="3",
-                                        align="center",
-                                        flex="1",
-                                    ),
-                                    rx.box(
+                                        # Accessible toggle switch - uses Reflex's color mode
                                         rx.box(
-                                            width="44px",
-                                            height="24px",
-                                            border_radius="12px",
-                                            background=rx.cond(
-                                                AuthState.dark_mode,
-                                                COLORS["primary_green"],
-                                                COLORS["border_gray"]
+                                            rx.box(
+                                                width="44px",
+                                                height="24px",
+                                                border_radius="12px",
+                                                background=rx.color_mode_cond(
+                                                    light=T.border,
+                                                    dark=COLORS["primary_green"],
+                                                ),
+                                                position="relative",
+                                                transition="all 0.3s ease",
+                                            ),
+                                            rx.box(
+                                                width="18px",
+                                                height="18px",
+                                                border_radius="50%",
+                                                background="white",
+                                                position="absolute",
+                                                top="3px",
+                                                left=rx.color_mode_cond(light="3px", dark="23px"),
+                                                transition="all 0.3s ease",
+                                                box_shadow="0 2px 4px rgba(0,0,0,0.2)",
                                             ),
                                             position="relative",
-                                            cursor="pointer",
-                                            on_click=AuthState.toggle_dark_mode,
-                                            transition="all 0.3s ease",
-                                            _hover={
-                                                "opacity": "0.8",
-                                            },
+                                            flex_shrink="0",
                                         ),
-                                        rx.box(
-                                            width="18px",
-                                            height="18px",
-                                            border_radius="50%",
-                                            background="white",
-                                            position="absolute",
-                                            top="3px",
-                                            left=rx.cond(AuthState.dark_mode, "23px", "3px"),
-                                            transition="all 0.3s ease",
-                                            box_shadow="0 2px 4px rgba(0,0,0,0.2)",
-                                        ),
-                                        position="relative",
+                                        justify="between",
+                                        align="center",
+                                        width="100%",
                                     ),
-                                    justify="between",
-                                    align="center",
+                                    # Accessibility attributes
+                                    role="switch",
+                                    aria_checked=rx.color_mode_cond(light="false", dark="true"),
+                                    aria_label="Schakel donkere modus in of uit",
+                                    title=rx.color_mode_cond(
+                                        light="Schakel naar donkere modus",
+                                        dark="Schakel naar lichte modus",
+                                    ),
+                                    # Styling
                                     width="100%",
                                     padding="1rem",
                                     border_radius=RADIUS["md"],
-                                    border=f"1px solid {COLORS['border_light']}",
-                                    _hover={
-                                        "background": COLORS["light_gray"],
-                                    },
+                                    border=f"1px solid {T.border_light}",
+                                    background="transparent",
+                                    cursor="pointer",
                                     transition="all 0.2s ease",
+                                    _hover={
+                                        "background": T.bg_hover,
+                                    },
+                                    _focus_visible={
+                                        "outline": "2px solid var(--color-primary)",
+                                        "outline_offset": "2px",
+                                    },
+                                    on_click=rx.toggle_color_mode,
                                 ),
                                 spacing="2",
                                 width="100%",
@@ -271,28 +299,28 @@ def settings_modal() -> rx.Component:
                                         "Account",
                                         font_size="0.875rem",
                                         font_weight="600",
-                                        color=COLORS["text_primary"],
+                                        color=T.text_primary,
                                         margin_bottom="0.5rem",
                                     ),
                                     # User info
                                     rx.box(
                                         rx.vstack(
                                             rx.hstack(
-                                                rx.icon("user", size=16, color=COLORS["text_secondary"]),
+                                                rx.icon("user", size=16, color=T.text_secondary),
                                                 rx.text(
                                                     AuthState.user_name,
                                                     font_size="0.9375rem",
-                                                    color=COLORS["text_primary"],
+                                                    color=T.text_primary,
                                                 ),
                                                 spacing="2",
                                                 align="center",
                                             ),
                                             rx.hstack(
-                                                rx.icon("mail", size=16, color=COLORS["text_secondary"]),
+                                                rx.icon("mail", size=16, color=T.text_secondary),
                                                 rx.text(
                                                     AuthState.user_email,
                                                     font_size="0.875rem",
-                                                    color=COLORS["text_secondary"],
+                                                    color=T.text_secondary,
                                                 ),
                                                 spacing="2",
                                                 align="center",
@@ -303,8 +331,8 @@ def settings_modal() -> rx.Component:
                                         ),
                                         padding="1rem",
                                         border_radius=RADIUS["md"],
-                                        border=f"1px solid {COLORS['border_light']}",
-                                        background=COLORS["light_gray"],
+                                        border=f"1px solid {T.border_light}",
+                                        background=T.bg_tertiary,
                                         width="100%",
                                     ),
                                     spacing="2",
@@ -323,19 +351,19 @@ def settings_modal() -> rx.Component:
                                     "Over EduChat",
                                     font_size="0.875rem",
                                     font_weight="600",
-                                    color=COLORS["text_primary"],
+                                    color=T.text_primary,
                                     margin_bottom="0.5rem",
                                 ),
                                 rx.box(
                                     rx.text(
                                         "EduChat is jouw persoonlijke AI-assistent voor onderwijs en studie in Suriname. Vraag naar opleidingen, inschrijvingen, deadlines en meer!",
                                         font_size="0.875rem",
-                                        color=COLORS["text_secondary"],
+                                        color=T.text_secondary,
                                         line_height="1.6",
                                     ),
                                     padding="1rem",
                                     border_radius=RADIUS["md"],
-                                    background=COLORS["light_gray"],
+                                    background=T.bg_tertiary,
                                     width="100%",
                                 ),
                                 spacing="2",
@@ -359,12 +387,13 @@ def settings_modal() -> rx.Component:
                 width=["90%", "400px", "480px"],
                 max_width="90vw",
                 max_height="85vh",
-                background=COLORS["white"],
+                background=T.modal_bg,
                 border_radius=RADIUS["xl"],
                 padding="1.5rem",
-                box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                box_shadow=T.shadow_xl,
                 z_index="1001",
                 overflow_y="auto",
+                class_name="modal-content",
             ),
         ),
     )

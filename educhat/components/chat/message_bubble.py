@@ -10,7 +10,7 @@ Professional, accessible message bubbles with:
 
 import reflex as rx
 from typing import Optional
-from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS
+from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
 
 
 # ============================================================================
@@ -26,8 +26,8 @@ MESSAGE_STYLES = {
         "shadow_hover": "0 4px 16px rgba(16, 163, 127, 0.3), 0 2px 6px rgba(0,0,0,0.1)",
     },
     "bot": {
-        "background": COLORS["white"],
-        "color": COLORS["text_primary"],
+        "background": T.message_bot_bg,
+        "color": T.text_primary,
         "border_radius": "20px 20px 20px 4px",
         "shadow": SHADOWS["sm"],
         "shadow_hover": SHADOWS["md"],
@@ -47,7 +47,7 @@ ACTION_BUTTON_STYLES = {
         "justify_content": "center",
     },
     "hover": {
-        "background": COLORS["light_gray"],
+        "background": T.bg_hover,
     },
 }
 
@@ -73,9 +73,9 @@ def message_action_button(
         variant: Color variant (default, success, danger)
     """
     variant_colors = {
-        "default": {"color": COLORS["text_tertiary"], "hover_bg": COLORS["light_gray"]},
-        "success": {"color": COLORS["success"], "hover_bg": f"rgba(34, 197, 94, 0.1)"},
-        "danger": {"color": COLORS["error"], "hover_bg": f"rgba(239, 68, 68, 0.1)"},
+        "default": {"color": T.text_tertiary, "hover_bg": T.bg_hover},
+        "success": {"color": T.success, "hover_bg": f"rgba(34, 197, 94, 0.1)"},
+        "danger": {"color": T.error, "hover_bg": f"rgba(239, 68, 68, 0.1)"},
     }
     
     colors = variant_colors.get(variant, variant_colors["default"])
@@ -85,7 +85,7 @@ def message_action_button(
             rx.icon(
                 icon,
                 size=14,
-                color=colors["color"] if is_active else COLORS["text_tertiary"],
+                color=colors["color"] if is_active else T.text_tertiary,
             ),
             width="28px",
             height="28px",
@@ -150,11 +150,11 @@ def user_message(content: str, timestamp: Optional[str] = None) -> rx.Component:
             rx.cond(
                 timestamp,
                 rx.hstack(
-                    rx.icon("check-check", size=12, color=COLORS["text_tertiary"]),
+                    rx.icon("check-check", size=12, color=T.text_tertiary),
                     rx.text(
                         timestamp,
                         font_size="0.6875rem",
-                        color=COLORS["text_tertiary"],
+                        color=T.text_tertiary,
                         font_weight="500",
                     ),
                     spacing="1",
@@ -258,7 +258,7 @@ def bot_message(
                         display="flex",
                         align_items="center",
                         justify_content="center",
-                        background=f"linear-gradient(135deg, {COLORS['light_green']} 0%, rgba(16, 163, 127, 0.15) 100%)",
+                        background=f"linear-gradient(135deg, {COLORS['primary_light']} 0%, rgba(16, 163, 127, 0.15) 100%)",
                         border_radius=RADIUS["full"],
                         border=f"1.5px solid rgba(16, 163, 127, 0.2)",
                         flex_shrink="0",
@@ -302,7 +302,7 @@ def bot_message(
                     width="100%",
                 ),
                 background=MESSAGE_STYLES["bot"]["background"],
-                border=f"1px solid {COLORS['border_light']}",
+                border=f"1px solid {T.message_bot_border}",
                 border_radius=MESSAGE_STYLES["bot"]["border_radius"],
                 padding=["1rem 1.125rem", "1.125rem 1.25rem", "1.25rem 1.375rem"],
                 max_width=["85%", "75%", "700px"],
@@ -311,7 +311,7 @@ def bot_message(
                 transition=f"all {TRANSITIONS['normal']}",
                 _hover={
                     "box_shadow": MESSAGE_STYLES["bot"]["shadow_hover"],
-                    "border_color": COLORS["border_gray"],
+                    "border_color": T.border,
                 },
                 class_name="message-bubble bot-message animate-fadeInUp",
             ),
@@ -337,7 +337,7 @@ def bot_message(
                     rx.text(
                         timestamp,
                         font_size="0.6875rem",
-                        color=COLORS["text_tertiary"],
+                        color=T.text_tertiary,
                         margin_left="auto",
                         font_weight="500",
                     ),

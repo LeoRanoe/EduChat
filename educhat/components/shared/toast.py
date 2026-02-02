@@ -9,33 +9,33 @@ Professional toast system with:
 """
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS
+from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
 
 
 # Toast configuration for each type
 TOAST_CONFIG = {
     "success": {
-        "background": COLORS["success_light"],
-        "border": COLORS["success"],
-        "text": COLORS["success_dark"],
+        "background": T.success_light,
+        "border": T.success,
+        "text": T.text_primary,
         "icon": "check-circle",
     },
     "error": {
-        "background": COLORS["error_light"],
-        "border": COLORS["error"],
-        "text": COLORS["error_dark"],
+        "background": T.error_light,
+        "border": T.error,
+        "text": T.text_primary,
         "icon": "x-circle",
     },
     "warning": {
-        "background": COLORS["warning_light"],
-        "border": COLORS["warning"],
-        "text": COLORS["warning_dark"],
+        "background": T.warning_light,
+        "border": T.warning,
+        "text": T.text_primary,
         "icon": "alert-triangle",
     },
     "info": {
-        "background": COLORS["info_light"],
-        "border": COLORS["info"],
-        "text": COLORS["info_dark"],
+        "background": T.info_light,
+        "border": T.info,
+        "text": T.text_primary,
         "icon": "info",
     },
 }
@@ -236,7 +236,7 @@ def skeleton_box(
         width=width,
         height=height,
         border_radius=border_radius,
-        background=f"linear-gradient(90deg, {COLORS['gray_100']} 0%, {COLORS['gray_50']} 50%, {COLORS['gray_100']} 100%)",
+        background=T.bg_tertiary,
         background_size="200% 100%",
         animation="shimmer 1.5s infinite",
         class_name="skeleton",
@@ -268,7 +268,7 @@ def skeleton_message(is_user: bool = False) -> rx.Component:
                 gap="0.5rem",
                 flex="1",
                 padding="1rem",
-                background=COLORS["white"],
+                background=T.bg_card,
                 border_radius=RADIUS["xl"],
                 max_width="70%",
             ),
@@ -331,9 +331,9 @@ def skeleton_card() -> rx.Component:
         flex_direction="column",
         gap="0.75rem",
         padding="1.5rem",
-        background=COLORS["white"],
+        background=T.bg_card,
         border_radius=RADIUS["xl"],
-        box_shadow=SHADOWS["sm"],
+        box_shadow=T.shadow_sm,
     )
 
 
@@ -360,7 +360,7 @@ def loading_spinner(
             rx.text(
                 text,
                 font_size="0.875rem",
-                color=COLORS["text_secondary"],
+                color=T.text_secondary,
                 margin_left="0.75rem",
             ),
             rx.fragment(),

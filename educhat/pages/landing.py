@@ -5,7 +5,12 @@ from educhat.state.auth_state import AuthState
 from educhat.state.app_state import AppState
 from educhat.components.auth import auth_modal
 from educhat.components.shared.institution_logos import compact_logos_row
-from educhat.styles.theme import COLORS
+from educhat.styles.theme import COLORS, T
+
+
+# Static color values for SVG elements (which can't use CSS variables)
+PRIMARY_HEX = "#10A37F"
+PRIMARY_HOVER_HEX = "#0D8F6F"
 
 
 def svg_icon(path: str, size: int = 24, color: str = None) -> rx.Component:
@@ -22,13 +27,16 @@ def check_circle_svg(size: int = 20, color: str = None) -> rx.Component:
     """Check circle SVG icon."""
     if color is None:
         color = COLORS["primary_green"]
-    return rx.html(
-        f'''<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" fill="{color}" opacity="0.1"/>
-            <path d="M9 12l2 2 4-4" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="12" r="10" stroke="{color}" stroke-width="2"/>
-        </svg>'''
-    )
+    # Use currentColor inside the SVG and set the wrapper's color style.
+    # This allows passing either a hex value (e.g. '#10A37F') or a CSS variable (e.g. 'var(--color-primary)').
+    svg = f'''<span style="display:inline-block; color:{color}; line-height:0;">
+        <svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.12"/>
+            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+    </span>'''
+    return rx.html(svg)
 
 
 def landing() -> rx.Component:
@@ -44,7 +52,7 @@ def landing() -> rx.Component:
                 # Logo section with animation
                 rx.box(
                     rx.box(
-                        rx.icon("graduation-cap", size=32, color=COLORS["primary_green"]),
+                        rx.icon("graduation-cap", size=32, color=T.primary),
                         width="48px",
                         height="48px",
                         display="flex",
@@ -62,14 +70,14 @@ def landing() -> rx.Component:
                         rx.heading(
                             "EduChat",
                             size="6",
-                            color=COLORS["primary_green"],
+                            color=T.primary,
                             font_weight="800",
                             margin_bottom="2px",
                         ),
                         rx.text(
                             "Surinaams Onderwijs AI",
                             font_size="11px",
-                            color=COLORS["text_secondary"],
+                            color=T.text_secondary,
                             font_weight="600",
                             letter_spacing="0.5px",
                         ),
@@ -92,7 +100,7 @@ def landing() -> rx.Component:
                             align="center",
                         ),
                         background="transparent",
-                        color=COLORS["text_primary"],
+                        color=T.text_primary,
                         border="none",
                         cursor="pointer",
                         font_weight="600",
@@ -140,14 +148,14 @@ def landing() -> rx.Component:
                 max_width="1400px",
                 margin="0 auto",
             ),
-            background="rgba(255, 255, 255, 0.95)",
+            background="var(--navbar-bg)",
             backdrop_filter="blur(12px)",
             padding="20px 32px",
-            border_bottom=f"1px solid rgba(16, 163, 127, 0.1)",
+            border_bottom="1px solid var(--navbar-border)",
             position="sticky",
             top="0",
             z_index="100",
-            box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
+            box_shadow="var(--shadow-sm)",
             animation="slideDown 0.5s ease-out",
         ),
         
@@ -186,8 +194,8 @@ def landing() -> rx.Component:
                 rx.box(
                     # Premium badge
                     rx.box(
-                        rx.icon("zap", size=16, color=COLORS["primary_green"]),
-                        rx.text("AI-Powered Studiegids", font_size="13px", font_weight="700", color=COLORS["primary_green"]),
+                        rx.icon("zap", size=16, color=T.primary),
+                        rx.text("AI-Powered Studiegids", font_size="13px", font_weight="700", color=T.primary),
                         display="flex",
                         align_items="center",
                         gap="8px",
@@ -211,7 +219,7 @@ def landing() -> rx.Component:
                             as_="span",
                         ),
                         size="9",
-                        color=COLORS["text_primary"],
+                        color=T.text_primary,
                         margin_bottom="20px",
                         animation="fadeInLeft 0.8s ease-out",
                         font_weight="800",
@@ -221,7 +229,7 @@ def landing() -> rx.Component:
                     rx.text(
                         "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
                         font_size="17px",
-                        color=COLORS["text_secondary"],
+                        color=T.text_secondary,
                         line_height="1.7",
                         margin_bottom="24px",
                         animation="fadeIn 0.8s ease-out 0.2s backwards",
@@ -231,7 +239,7 @@ def landing() -> rx.Component:
                     rx.text(
                         "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
                         font_size="17px",
-                        color=COLORS["text_secondary"],
+                        color=T.text_secondary,
                         line_height="1.7",
                         margin_bottom="36px",
                         animation="fadeIn 0.8s ease-out 0.3s backwards",
@@ -272,9 +280,9 @@ def landing() -> rx.Component:
                                 spacing="2",
                             ),
                             padding="18px 36px",
-                            background="white",
-                            color=COLORS["primary_green"],
-                            border=f"2px solid {COLORS['primary_green']}",
+                            background=T.bg_card,
+                            color=T.primary,
+                            border=f"2px solid {T.primary}",
                             border_radius="14px",
                             cursor="pointer",
                             font_weight="600",
@@ -298,11 +306,11 @@ def landing() -> rx.Component:
                     rx.box(
                         rx.box(
                             rx.box(
-                                check_circle_svg(18, COLORS["primary_green"]),
+                                check_circle_svg(18, T.primary),
                                 rx.text(
                                     "Gratis te gebruiken",
                                     font_size="15px",
-                                    color=COLORS["text_secondary"],
+                                    color=T.text_secondary,
                                     font_weight="600",
                                 ),
                                 display="flex",
@@ -310,11 +318,11 @@ def landing() -> rx.Component:
                                 gap="10px",
                             ),
                             rx.box(
-                                check_circle_svg(18, COLORS["primary_green"]),
+                                check_circle_svg(18, T.primary),
                                 rx.text(
                                     "24/7 beschikbaar",
                                     font_size="15px",
-                                    color=COLORS["text_secondary"],
+                                    color=T.text_secondary,
                                     font_weight="600",
                                 ),
                                 display="flex",
@@ -322,11 +330,11 @@ def landing() -> rx.Component:
                                 gap="10px",
                             ),
                             rx.box(
-                                check_circle_svg(18, COLORS["primary_green"]),
+                                check_circle_svg(18, T.primary),
                                 rx.text(
                                     "Focus op Suriname",
                                     font_size="15px",
-                                    color=COLORS["text_secondary"],
+                                    color=T.text_secondary,
                                     font_weight="600",
                                 ),
                                 display="flex",
@@ -338,10 +346,10 @@ def landing() -> rx.Component:
                             gap="28px",
                         ),
                         padding="24px 32px",
-                        background="white",
+                        background=T.bg_card,
                         border_radius="16px",
-                        box_shadow="0 8px 28px rgba(0, 0, 0, 0.08)",
-                        border=f"1px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_md,
+                        border=f"1px solid {T.border_light}",
                         margin_top="48px",
                         animation="fadeIn 0.8s ease-out 0.4s backwards",
                         width="fit-content",
@@ -391,7 +399,7 @@ def landing() -> rx.Component:
                                     rx.text(
                                         "Welke opleidingen biedt MINOV aan?",
                                         font_size="14px",
-                                        color=COLORS["text_primary"],
+                                        color=T.text_primary,
                                         font_weight="600",
                                     ),
                                     padding="14px 20px",
@@ -408,20 +416,20 @@ def landing() -> rx.Component:
                             rx.box(
                                 rx.box(
                                     rx.hstack(
-                                        rx.icon("sparkles", size=16, color=COLORS["primary_green"]),
+                                        rx.icon("sparkles", size=16, color=T.primary),
                                         rx.text(
                                             "MINOV biedt diverse technische opleidingen...",
                                             font_size="14px",
-                                            color=COLORS["text_secondary"],
+                                            color=T.text_secondary,
                                             font_weight="500",
                                         ),
                                         spacing="2",
                                         align="start",
                                     ),
                                     padding="14px 20px",
-                                    background="white",
+                                    background=T.bg_card,
                                     border_radius="16px 16px 16px 4px",
-                                    border=f"2px solid {COLORS['border']}",
+                                    border=f"2px solid {T.border}",
                                     box_shadow="0 4px 16px rgba(0, 0, 0, 0.08)",
                                     max_width="90%",
                                     animation="slideInLeft 0.6s ease-out 0.9s backwards",
@@ -436,27 +444,27 @@ def landing() -> rx.Component:
                         # Typing indicator
                         rx.box(
                             rx.box(
-                                rx.box(width="8px", height="8px", background=COLORS["primary_green"], border_radius="50%", animation="pulse 1.4s ease-in-out infinite"),
-                                rx.box(width="8px", height="8px", background=COLORS["primary_green"], border_radius="50%", animation="pulse 1.4s ease-in-out 0.2s infinite"),
-                                rx.box(width="8px", height="8px", background=COLORS["primary_green"], border_radius="50%", animation="pulse 1.4s ease-in-out 0.4s infinite"),
+                                rx.box(width="8px", height="8px", background=T.primary, border_radius="50%", animation="pulse 1.4s ease-in-out infinite"),
+                                rx.box(width="8px", height="8px", background=T.primary, border_radius="50%", animation="pulse 1.4s ease-in-out 0.2s infinite"),
+                                rx.box(width="8px", height="8px", background=T.primary, border_radius="50%", animation="pulse 1.4s ease-in-out 0.4s infinite"),
                                 display="flex",
                                 gap="6px",
                             ),
                             padding="12px 20px",
-                            background="white",
+                            background=T.bg_card,
                             border_radius="16px",
-                            border=f"1px solid {COLORS['border']}",
+                            border=f"1px solid {T.border}",
                             box_shadow="0 2px 12px rgba(0, 0, 0, 0.06)",
                             width="fit-content",
                             margin_top="12px",
                             animation="fadeIn 0.6s ease-out 1.1s backwards",
                         ),
                         
-                        background="white",
+                        background=T.bg_card,
                         padding="40px",
                         border_radius="24px",
-                        box_shadow="0 20px 60px rgba(0, 0, 0, 0.12)",
-                        border=f"2px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_xl,
+                        border=f"2px solid {T.border_light}",
                         overflow="hidden",
                         position="relative",
                     ),
@@ -477,7 +485,7 @@ def landing() -> rx.Component:
             ),
             
             padding="100px 32px 140px 32px",
-            background=f"linear-gradient(180deg, rgba(16, 163, 127, 0.02) 0%, white 100%)",
+            background=T.bg_primary,
             min_height="calc(100vh - 88px)",
             display="flex",
             align_items="center",
@@ -491,7 +499,7 @@ def landing() -> rx.Component:
                 rx.heading(
                     "Alles wat je Nodig Hebt voor je Studiekeuze",
                     size="8",
-                    color=COLORS["text_primary"],
+                    color=T.text_primary,
                     text_align="center",
                     margin_bottom="16px",
                     font_weight="700",
@@ -499,7 +507,7 @@ def landing() -> rx.Component:
                 rx.text(
                     "Complete ondersteuning voor het Surinaamse onderwijssysteem",
                     font_size="18px",
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     text_align="center",
                     margin_bottom="64px",
                     max_width="600px",
@@ -557,7 +565,7 @@ def landing() -> rx.Component:
             ),
             
             padding="120px 32px",
-            background="white",
+            background=T.bg_secondary,
         ),
         
         # How it works section - Enhanced
@@ -581,12 +589,12 @@ def landing() -> rx.Component:
             rx.box(
                 # Badge label
                 rx.box(
-                    rx.icon("zap", size=18, color=COLORS["primary_green"], margin_right="8px"),
+                    rx.icon("zap", size=18, color=T.primary, margin_right="8px"),
                     rx.text(
                         "Supersnel en Makkelijk",
                         font_size="14px",
                         font_weight="600",
-                        color=COLORS["primary_green"],
+                        color=T.primary,
                     ),
                     display="flex",
                     align_items="center",
@@ -602,7 +610,7 @@ def landing() -> rx.Component:
                 rx.heading(
                     "Zo Werkt EduChat",
                     size="8",
-                    color=COLORS["text_primary"],
+                    color=T.text_primary,
                     text_align="center",
                     margin_bottom="16px",
                     font_weight="700",
@@ -610,7 +618,7 @@ def landing() -> rx.Component:
                 rx.text(
                     "In drie eenvoudige stappen naar de juiste studiekeuze",
                     font_size="18px",
-                    color=COLORS["text_secondary"],
+                    color=T.text_secondary,
                     text_align="center",
                     margin_bottom="80px",
                     max_width="600px",
@@ -714,35 +722,35 @@ def landing() -> rx.Component:
                 # Trust indicators
                 rx.box(
                     rx.box(
-                        rx.icon("users", size=20, color=COLORS["primary_green"]),
-                        rx.text("100+ Tevreden Studenten", font_size="14px", font_weight="600", color=COLORS["text_primary"]),
+                        rx.icon("users", size=20, color=T.primary),
+                        rx.text("100+ Tevreden Studenten", font_size="14px", font_weight="600", color=T.text_primary),
                         display="flex",
                         align_items="center",
                         gap="8px",
                         padding="12px 20px",
-                        background="white",
+                        background=T.bg_card,
                         border_radius="50px",
-                        box_shadow="0 4px 12px rgba(0, 0, 0, 0.08)",
+                        box_shadow=T.shadow_sm,
                     ),
                     rx.box(
-                        rx.icon("clock", size=20, color=COLORS["primary_green"]),
-                        rx.text("< 5 seconden reactietijd", font_size="14px", font_weight="600", color=COLORS["text_primary"]),
+                        rx.icon("clock", size=20, color=T.primary),
+                        rx.text("< 5 seconden reactietijd", font_size="14px", font_weight="600", color=T.text_primary),
                         display="flex",
                         align_items="center",
                         gap="8px",
                         padding="12px 20px",
-                        background="white",
+                        background=T.bg_card,
                         border_radius="50px",
-                        box_shadow="0 4px 12px rgba(0, 0, 0, 0.08)",
+                        box_shadow=T.shadow_sm,
                     ),
                     rx.box(
-                        rx.icon("shield-check", size=20, color=COLORS["primary_green"]),
-                        rx.text("100% Betrouwbare Info", font_size="14px", font_weight="600", color=COLORS["text_primary"]),
+                        rx.icon("shield-check", size=20, color=T.primary),
+                        rx.text("100% Betrouwbare Info", font_size="14px", font_weight="600", color=T.text_primary),
                         display="flex",
                         align_items="center",
                         gap="8px",
                         padding="12px 20px",
-                        background="white",
+                        background=T.bg_card,
                         border_radius="50px",
                         box_shadow="0 4px 12px rgba(0, 0, 0, 0.08)",
                     ),
@@ -760,7 +768,7 @@ def landing() -> rx.Component:
             ),
             
             padding="120px 32px",
-            background=f"linear-gradient(180deg, white 0%, {COLORS['light_gray']} 100%)",
+            background=T.bg_tertiary,
             position="relative",
             overflow="hidden",
         ),
@@ -802,23 +810,23 @@ def landing() -> rx.Component:
                 # Section header
                 rx.vstack(
                     rx.box(
-                        rx.icon("building-2", size=16, color=COLORS["primary_green"]),
-                        rx.text("Vertrouwde Partners", font_size="14px", font_weight="600", color=COLORS["primary_green"]),
+                        rx.icon("building-2", size=16, color=T.primary),
+                        rx.text("Vertrouwde Partners", font_size="14px", font_weight="600", color=T.primary),
                         display="flex",
                         align_items="center",
                         gap="8px",
                         padding="8px 20px",
-                        background="white",
+                        background=T.bg_card,
                         border_radius="50px",
                         border=f"2px solid {COLORS['primary_green']}",
-                        box_shadow="0 4px 12px rgba(16, 163, 127, 0.15)",
+                        box_shadow=f"0 4px 12px {T.shadow_primary}",
                         margin_bottom="20px",
                         width="fit-content",
                     ),
                     rx.heading(
                         "Onderwijsinstellingen in Suriname",
                         size="9",
-                        color=COLORS["text_primary"],
+                        color=T.text_primary,
                         margin_bottom="16px",
                         font_weight="800",
                         text_align="center",
@@ -827,7 +835,7 @@ def landing() -> rx.Component:
                     rx.text(
                         "EduChat heeft toegang tot informatie van alle belangrijke onderwijsinstellingen",
                         font_size="18px",
-                        color=COLORS["text_secondary"],
+                        color=T.text_secondary,
                         text_align="center",
                         max_width="600px",
                         margin_bottom="48px",
@@ -843,10 +851,10 @@ def landing() -> rx.Component:
                     compact_logos_row(),
                     width="100%",
                     padding="50px 40px",
-                    background="white",
+                    background=T.bg_card,
                     border_radius="24px",
-                    box_shadow="0 12px 48px rgba(0, 0, 0, 0.08)",
-                    border=f"1px solid {COLORS['border_light']}",
+                    box_shadow=T.shadow_xl,
+                    border=f"1px solid {T.border_light}",
                 ),
                 
                 max_width="1400px",
@@ -856,7 +864,7 @@ def landing() -> rx.Component:
             ),
             
             padding="100px 32px",
-            background=f"linear-gradient(180deg, {COLORS['light_gray']} 0%, white 100%)",
+            background=T.bg_secondary,
             position="relative",
             overflow="hidden",
         ),
@@ -891,8 +899,8 @@ def landing() -> rx.Component:
                 # Section header with badge
                 rx.box(
                     rx.box(
-                        rx.icon("sparkles", size=16, color=COLORS["primary_green"]),
-                        rx.text("Waarom EduChat?", font_size="14px", font_weight="600", color=COLORS["primary_green"]),
+                        rx.icon("sparkles", size=16, color=T.primary),
+                        rx.text("Waarom EduChat?", font_size="14px", font_weight="600", color=T.primary),
                         display="flex",
                         align_items="center",
                         gap="8px",
@@ -907,7 +915,7 @@ def landing() -> rx.Component:
                     rx.heading(
                         "Waarom Studenten voor EduChat Kiezen",
                         size="9",
-                        color=COLORS["text_primary"],
+                        color=T.text_primary,
                         margin_bottom="16px",
                         font_weight="800",
                         text_align="center",
@@ -916,7 +924,7 @@ def landing() -> rx.Component:
                     rx.text(
                         "Speciaal ontwikkeld voor Surinaamse studenten met alle informatie die je nodig hebt",
                         font_size="18px",
-                        color=COLORS["text_secondary"],
+                        color=T.text_secondary,
                         text_align="center",
                         max_width="700px",
                         margin_x="auto",
@@ -949,22 +957,22 @@ def landing() -> rx.Component:
                             rx.heading(
                                 "Alle Instellingen",
                                 size="5",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                                 margin_bottom="12px",
                                 font_weight="700",
                             ),
                             rx.text(
                                 "Informatie over alle onderwijsinstellingen in Suriname, van universiteiten tot vakscholen",
                                 font_size="15px",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                                 line_height="1.7",
                             ),
                         ),
-                        background="white",
+                        background=T.bg_card,
                         padding="40px",
                         border_radius="20px",
-                        box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
-                        border=f"1px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_md,
+                        border=f"1px solid {T.border_light}",
                         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         cursor="pointer",
                         _hover={
@@ -993,22 +1001,22 @@ def landing() -> rx.Component:
                             rx.heading(
                                 "Duidelijke Uitleg",
                                 size="5",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                                 margin_bottom="12px",
                                 font_weight="700",
                             ),
                             rx.text(
                                 "Begrijpelijke informatie over toelatingseisen, procedures en wat je moet verwachten",
                                 font_size="15px",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                                 line_height="1.7",
                             ),
                         ),
-                        background="white",
+                        background=T.bg_card,
                         padding="40px",
                         border_radius="20px",
-                        box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
-                        border=f"1px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_md,
+                        border=f"1px solid {T.border_light}",
                         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         cursor="pointer",
                         _hover={
@@ -1037,22 +1045,22 @@ def landing() -> rx.Component:
                             rx.heading(
                                 "Actuele Deadlines",
                                 size="5",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                                 margin_bottom="12px",
                                 font_weight="700",
                             ),
                             rx.text(
                                 "Mis geen belangrijke data met onze actuele informatie over inschrijvingen en deadlines",
                                 font_size="15px",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                                 line_height="1.7",
                             ),
                         ),
-                        background="white",
+                        background=T.bg_card,
                         padding="40px",
                         border_radius="20px",
-                        box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
-                        border=f"1px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_md,
+                        border=f"1px solid {T.border_light}",
                         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         cursor="pointer",
                         _hover={
@@ -1081,22 +1089,22 @@ def landing() -> rx.Component:
                             rx.heading(
                                 "In Het Nederlands",
                                 size="5",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                                 margin_bottom="12px",
                                 font_weight="700",
                             ),
                             rx.text(
                                 "Antwoorden in helder Nederlands, makkelijk te begrijpen voor iedereen",
                                 font_size="15px",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                                 line_height="1.7",
                             ),
                         ),
-                        background="white",
+                        background=T.bg_card,
                         padding="40px",
                         border_radius="20px",
-                        box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
-                        border=f"1px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_md,
+                        border=f"1px solid {T.border_light}",
                         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         cursor="pointer",
                         _hover={
@@ -1125,22 +1133,22 @@ def landing() -> rx.Component:
                             rx.heading(
                                 "Persoonlijk Advies",
                                 size="5",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                                 margin_bottom="12px",
                                 font_weight="700",
                             ),
                             rx.text(
                                 "Studiekeuzeadvies op maat, afgestemd op jouw interesses en doelen",
                                 font_size="15px",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                                 line_height="1.7",
                             ),
                         ),
-                        background="white",
+                        background=T.bg_card,
                         padding="40px",
                         border_radius="20px",
-                        box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
-                        border=f"1px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_md,
+                        border=f"1px solid {T.border_light}",
                         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         cursor="pointer",
                         _hover={
@@ -1169,22 +1177,22 @@ def landing() -> rx.Component:
                             rx.heading(
                                 "100% Gratis",
                                 size="5",
-                                color=COLORS["text_primary"],
+                                color=T.text_primary,
                                 margin_bottom="12px",
                                 font_weight="700",
                             ),
                             rx.text(
                                 "Volledig gratis te gebruiken, geen verborgen kosten of verrassingen",
                                 font_size="15px",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                                 line_height="1.7",
                             ),
                         ),
-                        background="white",
+                        background=T.bg_card,
                         padding="40px",
                         border_radius="20px",
-                        box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
-                        border=f"1px solid rgba(16, 163, 127, 0.1)",
+                        box_shadow=T.shadow_md,
+                        border=f"1px solid {T.border_light}",
                         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                         cursor="pointer",
                         _hover={
@@ -1214,25 +1222,25 @@ def landing() -> rx.Component:
                             rx.heading(
                                 "Speciaal voor Surinaamse Studenten",
                                 size="6",
-                                color=COLORS["primary_green"],
+                                color=T.primary,
                                 font_weight="700",
                                 margin_bottom="8px",
                             ),
                             rx.text(
                                 "Jouw persoonlijke gids door het Surinaamse onderwijssysteem",
                                 font_size="16px",
-                                color=COLORS["text_secondary"],
+                                color=T.text_secondary,
                             ),
                         ),
                         display="flex",
                         align_items="center",
                         gap="24px",
                     ),
-                    background="white",
+                    background=T.bg_card,
                     padding="32px 48px",
                     border_radius="20px",
-                    box_shadow="0 8px 32px rgba(16, 163, 127, 0.12)",
-                    border=f"2px solid {COLORS['primary_green']}",
+                    box_shadow=T.shadow_xl,
+                    border=f"2px solid {T.primary}",
                     margin_top="64px",
                     width="fit-content",
                     margin_x="auto",
@@ -1245,7 +1253,7 @@ def landing() -> rx.Component:
             ),
             
             padding="120px 32px",
-            background=f"linear-gradient(180deg, {COLORS['light_gray']} 0%, white 100%)",
+            background=T.bg_tertiary,
             position="relative",
             overflow="hidden",
         ),
@@ -1346,8 +1354,8 @@ def landing() -> rx.Component:
                             align="center",
                         ),
                         padding="20px 56px",
-                        background="white",
-                        color=COLORS["primary_green"],
+                        background=T.bg_card,
+                        color=T.primary,
                         border="none",
                         border_radius="16px",
                         cursor="pointer",
@@ -1475,22 +1483,22 @@ def feature_card(
             rx.heading(
                 title,
                 size="5",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="12px",
                 font_weight="600",
             ),
             rx.text(
                 description,
-                color=COLORS["text_secondary"],
+                color=T.text_secondary,
                 font_size="15px",
                 line_height="1.7",
             ),
         ),
-        background="white",
+        background=T.bg_card,
         padding="32px",
         border_radius="14px",
-        border=f"1px solid {COLORS['border_light']}",
-        box_shadow="0 2px 8px rgba(0, 0, 0, 0.05)",
+        border=f"1px solid {T.border_light}",
+        box_shadow=T.shadow_sm,
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         _hover={
             "transform": "translateY(-8px)",
@@ -1588,7 +1596,7 @@ def enhanced_step_card(number: str, title: str, description: str, icon: str, col
             rx.heading(
                 title,
                 size="6",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="16px",
                 font_weight="700",
                 text_align="center",
@@ -1597,7 +1605,7 @@ def enhanced_step_card(number: str, title: str, description: str, icon: str, col
             # Description
             rx.text(
                 description,
-                color=COLORS["text_secondary"],
+                color=T.text_secondary,
                 font_size="15px",
                 text_align="center",
                 line_height="1.7",
@@ -1626,7 +1634,7 @@ def enhanced_step_card(number: str, title: str, description: str, icon: str, col
         ),
         
         # Card styling
-        background="white",
+        background=T.bg_card,
         padding="48px 32px",
         border_radius="24px",
         border="2px solid transparent",
@@ -1635,7 +1643,7 @@ def enhanced_step_card(number: str, title: str, description: str, icon: str, col
         position="relative",
         overflow="hidden",
         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        box_shadow="0 8px 24px rgba(0, 0, 0, 0.08)",
+        box_shadow=T.shadow_md,
         _hover={
             "transform": "translateY(-8px) scale(1.02)",
             "box_shadow": f"0 20px 48px rgba(0, 0, 0, 0.15), 0 0 0 2px {color}",
@@ -1684,13 +1692,13 @@ def step_item(number: str, title: str, description: str, icon: str) -> rx.Compon
             rx.heading(
                 title,
                 size="5",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 margin_bottom="12px",
                 font_weight="600",
             ),
             rx.text(
                 description,
-                color=COLORS["text_secondary"],
+                color=T.text_secondary,
                 font_size="15px",
                 text_align="center",
                 line_height="1.6",
@@ -1698,10 +1706,10 @@ def step_item(number: str, title: str, description: str, icon: str) -> rx.Compon
             text_align="center",
             position="relative",
         ),
-        background="white",
+        background=T.bg_card,
         padding="32px",
         border_radius="14px",
-        border=f"1px solid {COLORS['border_light']}",
+        border=f"1px solid {T.border_light}",
         max_width="300px",
         transition="all 0.3s ease",
         position="relative",
@@ -1709,7 +1717,7 @@ def step_item(number: str, title: str, description: str, icon: str) -> rx.Compon
         _hover={
             "box_shadow": "0 12px 32px rgba(0, 0, 0, 0.1)",
             "transform": "translateY(-4px)",
-            "border_color": COLORS["primary_green"],
+            "border_color": T.primary,
         },
     )
 
@@ -1723,7 +1731,7 @@ def benefit_item(icon_name: str, text: str) -> rx.Component:
                 rx.icon(
                     icon_name,
                     size=20,
-                    color=COLORS["primary_green"],
+                    color=T.primary,
                 ),
                 background=f"rgba(34, 139, 34, 0.1)",
                 width="40px",
@@ -1736,7 +1744,7 @@ def benefit_item(icon_name: str, text: str) -> rx.Component:
             rx.text(
                 text,
                 font_size="16px",
-                color=COLORS["text_primary"],
+                color=T.text_primary,
                 font_weight="500",
             ),
             spacing="3",
