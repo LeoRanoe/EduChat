@@ -86,6 +86,32 @@ IMPROVEMENT_GOALS = [
     "Beurzen & financiering vinden",
 ]
 
+# Learning styles for personalized help
+LEARNING_STYLES = [
+    "Visueel (voorbeelden, diagrammen, afbeeldingen)",
+    "Stap-voor-stap uitleg (gestructureerd)",
+    "Praktijkvoorbeelden (real-world toepassingen)",
+    "Theoretische uitleg (waarom dingen werken)",
+]
+
+# Subject difficulty levels
+SUBJECT_DIFFICULTY = [
+    "Heel moeilijk - Ik snap er weinig van",
+    "Moeilijk - Ik heb vaak hulp nodig",
+    "Gemiddeld - Sommige delen vind ik lastig",
+    "Makkelijk - Ik snap de meeste dingen wel",
+    "Heel makkelijk - Dit vak gaat me goed af",
+]
+
+# Homework help preferences
+HOMEWORK_HELP_PREFERENCES = [
+    "Hints en tips geven",
+    "Stap-voor-stap begeleiding",
+    "Concepten uitleggen",
+    "Voorbeelden laten zien",
+    "Helpen met controleren van antwoorden",
+]
+
 # Formality preferences
 FORMALITY_OPTIONS = [
     "Informeel & vriendelijk",
@@ -105,10 +131,10 @@ FUTURE_PLAN_OPTIONS = [
 class OnboardingState(rx.State):
     """State for managing the onboarding quiz flow."""
     
-    # Current step in the quiz (0-7)
+    # Current step in the quiz (0-10, extended for subject-specific questions)
     current_step: int = 0
     
-    # User answers
+    # User answers - Basic info
     education_level: str = ""  # Current education level
     study_direction: List[str] = []  # Interested study directions
     age: str = ""
@@ -119,11 +145,17 @@ class OnboardingState(rx.State):
     formality: str = "Normaal"
     expectations: str = ""
     
+    # New: Subject-specific learning preferences
+    learning_style: List[str] = []  # How the user prefers to learn
+    homework_help_preference: List[str] = []  # What kind of help they want
+    subject_difficulties: Dict[str, str] = {}  # Which subjects are difficult {subject: difficulty_level}
+    weak_subjects: List[str] = []  # Subjects they struggle with (for quick reference)
+    
     # Quiz completed flag
     quiz_completed: bool = False
     
-    # Total number of steps
-    total_steps: int = 8
+    # Total number of steps (increased from 8 to 11 to include new questions)
+    total_steps: int = 11
     
     # Database tracking
     onboarding_id: Optional[str] = None
@@ -193,6 +225,35 @@ class OnboardingState(rx.State):
         """Set user expectations."""
         self.expectations = value
     
+    def toggle_learning_style(self, value: str):
+        """Toggle learning style preference."""
+        if value in self.learning_style:
+            self.learning_style.remove(value)
+        else:
+            self.learning_style.append(value)
+    
+    def toggle_homework_help_preference(self, value: str):
+        """Toggle homework help preference."""
+        if value in self.homework_help_preference:
+            self.homework_help_preference.remove(value)
+        else:
+            self.homework_help_preference.append(value)
+    
+    def set_subject_difficulty(self, subject: str, difficulty: str):
+        """Set difficulty level for a specific subject."""
+        if not self.subject_difficulties:
+            self.subject_difficulties = {}
+        self.subject_difficulties[subject] = difficulty
+        
+        # Update weak_subjects list for quick access
+        # Consider "Heel moeilijk" and "Moeilijk" as weak subjects
+        if difficulty in ["Heel moeilijk - Ik snap er weinig van", "Moeilijk - Ik heb vaak hulp nodig"]:
+            if subject not in self.weak_subjects:
+                self.weak_subjects.append(subject)
+        else:
+            if subject in self.weak_subjects:
+                self.weak_subjects.remove(subject)
+    
     def reset_onboarding(self):
         """Reset onboarding state for new session or edit."""
         self.current_step = 0
@@ -205,6 +266,10 @@ class OnboardingState(rx.State):
         self.improvement_areas = []
         self.formality = "Normaal"
         self.expectations = ""
+        self.learning_style = []
+        self.homework_help_preference = []
+        self.subject_difficulties = {}
+        self.weak_subjects = []
         self.quiz_completed = False
         self.is_edit_mode = False
     
@@ -248,6 +313,11 @@ class OnboardingState(rx.State):
                 "improvement_areas": ",".join(self.improvement_areas) if self.improvement_areas else "",
                 "formality": self.formality,
                 "expectations": self.expectations,
+                # New subject-specific fields
+                "learning_style": ",".join(self.learning_style) if self.learning_style else "",
+                "homework_help_preference": ",".join(self.homework_help_preference) if self.homework_help_preference else "",
+                "subject_difficulties": str(self.subject_difficulties) if self.subject_difficulties else "",
+                "weak_subjects": ",".join(self.weak_subjects) if self.weak_subjects else "",
             }
             
             if self.is_edit_mode and self.onboarding_id:
@@ -320,6 +390,25 @@ class OnboardingState(rx.State):
                     self.improvement_areas = answers.get("improvement_areas", "").split(",") if answers.get("improvement_areas") else []
                     self.formality = answers.get("formality", "Normaal")
                     self.expectations = answers.get("expectations", "")
+                    
+                    # Load new subject-specific fields
+                    self.learning_style = answers.get("learning_style", "").split(",") if answers.get("learning_style") else []
+                    self.homework_help_preference = answers.get("homework_help_preference", "").split(",") if answers.get("homework_help_preference") else []
+                    
+                    # Parse subject_difficulties dict
+                    try:
+                        import ast
+                        difficulties_str = answers.get("subject_difficulties", "")
+                        if difficulties_str:
+                            self.subject_difficulties = ast.literal_eval(difficulties_str)
+                        else:
+                            self.subject_difficulties = {}
+                    except Exception as e:
+                        print(f"Error parsing subject_difficulties: {e}")
+                        self.subject_difficulties = {}
+                    
+                    self.weak_subjects = answers.get("weak_subjects", "").split(",") if answers.get("weak_subjects") else []
+                    
                     self.quiz_completed = onboarding.get("completed", False)
                     self.onboarding_id = onboarding.get("id")
                     self.user_id_linked = user_id
@@ -360,6 +449,11 @@ class OnboardingState(rx.State):
             "formality_preference": self.formality or "Normaal",
             "expectations": self.expectations or "",
             "onboarding_completed": self.quiz_completed,
+            # New subject-specific context
+            "learning_style": self.learning_style or [],
+            "homework_help_preference": self.homework_help_preference or [],
+            "weak_subjects": self.weak_subjects or [],
+            "subject_difficulties": self.subject_difficulties or {},
         }
         
         # Add derived context for better AI responses

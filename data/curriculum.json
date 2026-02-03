@@ -1,0 +1,1661 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "country": "Suriname",
+    "education_system": "Surinamese National Curriculum",
+    "last_updated": "2026-02-03",
+    "description": "Curriculum data for Surinamese education levels aligned with GLO, MULO, LBGO, HAVO, VWO standards"
+  },
+  "subjects": {
+    "wiskunde": {
+      "name_nl": "Wiskunde",
+      "name_en": "Mathematics",
+      "description_nl": "Wiskunde curriculum voor het Surinaamse onderwijs",
+      "description_en": "Mathematics curriculum for Surinamese education",
+      "education_levels": {
+        "GLO": {
+          "level_name": "Gewoon Lager Onderwijs",
+          "age_range": "12-15",
+          "topics": [
+            {
+              "id": "glo_math_1",
+              "name": "Rekenen en Getallen",
+              "subtopics": ["Breuken en decimalen", "Procenten", "Verhoudingen", "Negatieve getallen"],
+              "learning_objectives": [
+                "Werken met breuken, decimalen en procenten",
+                "Verhoudingen en schaalberekeningen toepassen",
+                "Bewerkingen met negatieve getallen uitvoeren"
+              ],
+              "common_difficulties": ["Breuken delen", "Procenten berekenen", "Negatieve getallen optellen/aftrekken"],
+              "teaching_approach": "Start met visuele voorbeelden en praktijksituaties. Gebruik stappenplannen voor complexe berekeningen."
+            },
+            {
+              "id": "glo_math_2",
+              "name": "Meetkunde",
+              "subtopics": ["Oppervlakte en omtrek", "Driehoeken en vierhoeken", "Symmetrie"],
+              "learning_objectives": [
+                "Oppervlakte en omtrek van figuren berekenen",
+                "Eigenschappen van driehoeken en vierhoeken herkennen",
+                "Symmetrie in figuren identificeren"
+              ],
+              "common_difficulties": ["Formules onthouden", "Oppervlakte vs omtrek verwarren"],
+              "teaching_approach": "Gebruik praktische voorwerpen en tekeningen. Laat leerlingen zelf figuren meten en tekenen."
+            },
+            {
+              "id": "glo_math_3",
+              "name": "Algebra Basis",
+              "subtopics": ["Eenvoudige vergelijkingen", "Variabelen en uitdrukkingen"],
+              "learning_objectives": [
+                "Eenvoudige vergelijkingen oplossen (bijv. 2x + 5 = 13)",
+                "Werken met variabelen en algebraïsche uitdrukkingen"
+              ],
+              "common_difficulties": ["Variabelen begrijpen", "Stappen van vergelijking oplossen"],
+              "teaching_approach": "Begin met concrete voorbeelden (bijv. 'x appels kosten...') voordat je abstracte variabelen gebruikt."
+            }
+          ]
+        },
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_math_1",
+              "name": "Algebra",
+              "subtopics": ["Vergelijkingen oplossen", "Stelsels vergelijkingen", "Kwadratische vergelijkingen", "Formules omzetten"],
+              "learning_objectives": [
+                "Lineaire vergelijkingen en ongelijkheden oplossen",
+                "Stelsels van twee vergelijkingen oplossen",
+                "Inleiding tot kwadratische vergelijkingen (ax² + bx + c = 0)",
+                "Formules omzetten en substitueren"
+              ],
+              "common_difficulties": ["Stelsels oplossen", "abc-formule toepassen", "Formules omzetten met meerdere variabelen"],
+              "teaching_approach": "Stappenplan: isoleren variabele → beide kanten gelijk behandelen → controleren. Gebruik visuele methoden voor stelsels (substitutie/eliminatie)."
+            },
+            {
+              "id": "mulo_math_2",
+              "name": "Meetkunde en Trigonometrie",
+              "subtopics": ["Stelling van Pythagoras", "Goniometrie basis (sin, cos, tan)", "Oppervlakte en volume"],
+              "learning_objectives": [
+                "Stelling van Pythagoras toepassen",
+                "Basisbegrippen goniometrie (sinus, cosinus, tangens)",
+                "Volume en oppervlakte van 3D-objecten berekenen"
+              ],
+              "common_difficulties": ["Pythagoras toepassen bij woordproblemen", "Sin/cos/tan onderscheiden", "3D-figuren visualiseren"],
+              "teaching_approach": "SOH-CAH-TOA ezelsbruggetje voor goniometrie. Gebruik 3D-modellen of tekeningen voor ruimtelijke voorstellingen."
+            },
+            {
+              "id": "mulo_math_3",
+              "name": "Functies en Grafieken",
+              "subtopics": ["Lineaire functies", "Grafieken tekenen en aflezen", "Hellingsformule"],
+              "learning_objectives": [
+                "Lineaire functies herkennen en tekenen (y = ax + b)",
+                "Hellingsgraad en snijpunt bepalen",
+                "Grafieken interpreteren en aflezen"
+              ],
+              "common_difficulties": ["Helling berekenen", "Snijpunten bepalen", "Grafieken interpreteren"],
+              "teaching_approach": "Begin met praktijkvoorbeelden (kosten vs aantal). Laat leerlingen zelf grafieken tekenen op ruitjespapier."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_math_1",
+              "name": "Geavanceerde Algebra",
+              "subtopics": ["Kwadratische vergelijkingen", "Exponentiële functies", "Logaritmen", "Machten en wortels"],
+              "learning_objectives": [
+                "Kwadratische vergelijkingen oplossen (ontbinden, abc-formule)",
+                "Exponentiële groei en verval modelleren",
+                "Logaritmen gebruiken voor vergelijkingen",
+                "Rekenregels voor machten en wortels toepassen"
+              ],
+              "common_difficulties": ["Logaritmen begrijpen", "Exponentiële vs lineaire groei", "abc-formule correct toepassen"],
+              "teaching_approach": "Koppel aan real-world scenarios (rente, bevolkingsgroei, radioactief verval). Gebruik stappenplannen voor complexe berekeningen."
+            },
+            {
+              "id": "havo_math_2",
+              "name": "Goniometrie en Meetkunde",
+              "subtopics": ["Goniometrische functies", "Sinusregel en cosinusregel", "Eenheidscirkel", "Hoeken in radialen"],
+              "learning_objectives": [
+                "Sinusregel en cosinusregel toepassen in driehoeken",
+                "Eenheidscirkel gebruiken voor goniometrische waarden",
+                "Hoeken omrekenen tussen graden en radialen",
+                "Grafiek van sin(x), cos(x), tan(x) herkennen"
+              ],
+              "common_difficulties": ["Sinus- vs cosinusregel kiezen", "Radialen begrijpen", "Negatieve hoeken"],
+              "teaching_approach": "Visualiseer met eenheidscirkel. Gebruik praktijkvoorbeelden (navigatie, bouwkunde) voor toepassing."
+            },
+            {
+              "id": "havo_math_3",
+              "name": "Differentiaalrekening Basis",
+              "subtopics": ["Afgeleide functies", "Raaklijn en helling", "Extremen bepalen"],
+              "learning_objectives": [
+                "Afgeleide van polynomen berekenen",
+                "Raaklijnvergelijking opstellen",
+                "Maximum en minimum van functies bepalen"
+              ],
+              "common_difficulties": ["Concept van afgeleide begrijpen", "Productregels toepassen", "Extremen vinden"],
+              "teaching_approach": "Begin met grafische interpretatie (helling op elk punt). Gebruik praktijkvoorbeelden (snelheid, optimalisatie)."
+            },
+            {
+              "id": "havo_math_4",
+              "name": "Kansrekening en Statistiek",
+              "subtopics": ["Kansberekening", "Combinatoriek", "Verwachtingswaarde", "Normale verdeling"],
+              "learning_objectives": [
+                "Kansen berekenen met formules en boomdiagrammen",
+                "Permutaties en combinaties toepassen",
+                "Verwachtingswaarde en standaardafwijking berekenen",
+                "Normale verdeling interpreteren"
+              ],
+              "common_difficulties": ["Permutatie vs combinatie", "Voorwaardelijke kans", "Z-score berekenen"],
+              "teaching_approach": "Gebruik visuele hulpmiddelen (boomdiagrammen, tabellen). Praktijkvoorbeelden van kansspelen, enquêtes, testen."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_math_1",
+              "name": "Analyse en Calculus",
+              "subtopics": ["Limieten", "Afgeleide functies (product-, quotiënt-, kettingregel)", "Integraalrekening", "Toepassingen calculus"],
+              "learning_objectives": [
+                "Limieten berekenen en interpreteren",
+                "Complexe afgeleiden berekenen met product-, quotiënt- en kettingregel",
+                "Integralen berekenen (bepaald en onbepaald)",
+                "Toepassingen: oppervlakte, volume, groeimodellen"
+              ],
+              "common_difficulties": ["Kettingregel toepassen", "Primitieve functies vinden", "Toepassingen herkennen"],
+              "teaching_approach": "Systematische aanpak: herken functievorm → kies regel → pas toe → vereenvoudig. Veel oefening met variaties."
+            },
+            {
+              "id": "vwo_math_2",
+              "name": "Geavanceerde Goniometrie",
+              "subtopics": ["Goniometrische vergelijkingen", "Goniometrische identiteiten", "Som- en verschilformules"],
+              "learning_objectives": [
+                "Goniometrische vergelijkingen oplossen",
+                "Identiteiten gebruiken om uitdrukkingen te vereenvoudigen",
+                "Som- en verschilformules toepassen",
+                "Inverse goniometrische functies gebruiken"
+              ],
+              "common_difficulties": ["Periodieke oplossingen vinden", "Identiteiten herkennen", "Inverse functies"],
+              "teaching_approach": "Memoriseer belangrijkste identiteiten. Gebruik eenheidscirkel voor verificatie. Oefen met verschillende vergelijkingsvormen."
+            },
+            {
+              "id": "vwo_math_3",
+              "name": "Complexe Getallen en Vectoren",
+              "subtopics": ["Complexe getallen", "Vectorrekening", "Lineaire transformaties"],
+              "learning_objectives": [
+                "Bewerkingen met complexe getallen (a + bi)",
+                "Vectoroptelling, scalaire vermenigvuldiging, inproduct",
+                "Vergelijkingen van lijnen en vlakken in ruimte"
+              ],
+              "common_difficulties": ["Complexe getallen visualiseren", "Inproduct vs uitproduct", "3D-ruimte voorstellen"],
+              "teaching_approach": "Gebruik grafische voorstellingen (Argand-diagram voor complexe getallen). 3D-modellen voor vectoren."
+            },
+            {
+              "id": "vwo_math_4",
+              "name": "Kansrekening en Statistiek (Geavanceerd)",
+              "subtopics": ["Binomiale verdeling", "Hypothesetoetsing", "Betrouwbaarheidsintervallen", "Correlatiecoëfficiënt"],
+              "learning_objectives": [
+                "Binomiale verdelingen toepassen",
+                "Hypothesen toetsen met statistische methoden",
+                "Betrouwbaarheidsintervallen berekenen en interpreteren",
+                "Correlatie en regressie analyseren"
+              ],
+              "common_difficulties": ["Hypothesen formuleren", "Significantieniveau interpreteren", "Correlatie vs causaliteit"],
+              "teaching_approach": "Gebruik real-world datasets. Grafische representaties voor verdeling. Nadruk op interpretatie naast berekening."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Maak een overzicht van alle formules en wanneer je ze gebruikt",
+        "Oefen met oude examens en bespreek je fouten",
+        "Maak stappenplannen voor veelvoorkomende vraagtypen",
+        "Gebruik een formularium tijdens het oefenen (zoals bij het echte examen)",
+        "Werk in groepjes en leg elkaar concepten uit"
+      ],
+      "anti_cheating_approach": "Geef stappenplannen en conceptuitleg. Nooit volledige antwoorden zonder leerproces. Vraag eerst wat de leerling al heeft geprobeerd."
+    },
+    "nederlands": {
+      "name_nl": "Nederlands",
+      "name_en": "Dutch Language",
+      "description_nl": "Nederlandse taal en literatuur voor Surinaams onderwijs",
+      "description_en": "Dutch language and literature for Surinamese education",
+      "education_levels": {
+        "GLO": {
+          "level_name": "Gewoon Lager Onderwijs",
+          "age_range": "12-15",
+          "topics": [
+            {
+              "id": "glo_dutch_1",
+              "name": "Spelling en Grammatica",
+              "subtopics": ["Werkwoorden vervoegen", "Lidwoorden (de/het)", "Meervouden", "d/t-regel", "Leestekens"],
+              "learning_objectives": [
+                "Werkwoorden correct vervoegen in alle tijden (o.t.t., o.v.t., v.t.t.)",
+                "Lidwoorden 'de' en 'het' correct gebruiken",
+                "Meervouden vormen volgens de regels",
+                "d/t aan het einde van werkwoorden correct toepassen"
+              ],
+              "common_difficulties": ["d/t-regel toepassen", "Onregelmatige werkwoorden", "dt vs tt", "de/het woorden onthouden"],
+              "teaching_approach": "STOFKRAMP-regel voor d/t. Ezelsbruggetjes voor onregelmatige werkwoorden. Veel oefenen met voorbeeldzinnen."
+            },
+            {
+              "id": "glo_dutch_2",
+              "name": "Begrijpend Lezen",
+              "subtopics": ["Hoofdgedachte bepalen", "Signaalwoorden", "Vragen beantwoorden bij tekst"],
+              "learning_objectives": [
+                "Hoofdgedachte van een tekst identificeren",
+                "Signaalwoorden herkennen (want, omdat, dus, toch)",
+                "Vragen over een tekst beantwoorden met tekstbewijzen"
+              ],
+              "common_difficulties": ["Hoofdgedachte vs details", "Impliciete informatie begrijpen", "Tekststructuur herkennen"],
+              "teaching_approach": "Leer onderstrepen van kernzinnen. Oefen met korte teksten en bouw op naar langere. Gebruik 5W+H vragen."
+            },
+            {
+              "id": "glo_dutch_3",
+              "name": "Schrijfvaardigheid",
+              "subtopics": ["Zakelijke brief", "Verslag schrijven", "Alinea-opbouw"],
+              "learning_objectives": [
+                "Een zakelijke brief opstellen met correcte lay-out",
+                "Een verslag schrijven van een activiteit of experiment",
+                "Teksten structureren in logische alinea's"
+              ],
+              "common_difficulties": ["Brief lay-out onthouden", "Formele taal gebruiken", "Logische opbouw"],
+              "teaching_approach": "Gebruik templates voor brieflay-out. Checklist voor verslagen. Oefen met peer review."
+            }
+          ]
+        },
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_dutch_1",
+              "name": "Grammatica en Zinsbouw",
+              "subtopics": ["Zinsdelen (onderwerp, werkwoordelijk deel, lijdend voorwerp)", "Bijzinnen", "Voegwoorden", "Aantonende en betrekkelijke voornaamwoorden"],
+              "learning_objectives": [
+                "Zinsdelen herkennen en benoemen",
+                "Hoofd- en bijzinnen onderscheiden",
+                "Voegwoorden en voornaamwoorden correct gebruiken"
+              ],
+              "common_difficulties": ["Lijdend vs meewerkend voorwerp", "Bijzinnen herkennen", "die/dat/waar gebruik"],
+              "teaching_approach": "Kleur-code systeem voor zinsdelen. Oefen met zinsontleding. Gebruik visuele schema's."
+            },
+            {
+              "id": "mulo_dutch_2",
+              "name": "Literatuur en Tekstanalyse",
+              "subtopics": ["Verhalende teksten analyseren", "Stijlfiguren herkennen", "Thema's identificeren"],
+              "learning_objectives": [
+                "Verhaalelementen benoemen (plot, personages, setting)",
+                "Basale stijlfiguren herkennen (metafoor, vergelijking, personificatie)",
+                "Thema's en boodschap van een verhaal bepalen"
+              ],
+              "common_difficulties": ["Symboliek begrijpen", "Perspectief herkennen", "Thema vs onderwerp"],
+              "teaching_approach": "Gebruik korte verhalen om technieken te oefenen. Groepsdiscussies over interpretaties. Visuele mind maps voor thema's."
+            },
+            {
+              "id": "mulo_dutch_3",
+              "name": "Schrijfvaardigheid Uitgebreid",
+              "subtopics": ["Betoog schrijven", "Argumenteren", "Formele en informele taal"],
+              "learning_objectives": [
+                "Een betoog schrijven met stellingen en argumenten",
+                "Onderscheid maken tussen formele en informele taal",
+                "Bronnen gebruiken en verwerken in tekst"
+              ],
+              "common_difficulties": ["Sterke argumenten formuleren", "Tegenargumenten weerleggen", "Register aanpassen"],
+              "teaching_approach": "STAAL-methode voor betogen (Stelling, Tegenargument, Argument, Afsluiting, Link). Debatteren voor argumentatieoefening."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_dutch_1",
+              "name": "Literatuurgeschiedenis",
+              "subtopics": ["Nederlandse literatuur van Middeleeuwen tot moderne tijd", "Literaire stromingen", "Belangrijke auteurs en werken"],
+              "learning_objectives": [
+                "Literaire periodes en stromingen herkennen en kenmerken benoemen",
+                "Belangrijke werken en auteurs koppelen aan periodes",
+                "Invloed van historische context op literatuur begrijpen"
+              ],
+              "common_difficulties": ["Stromingen onthouden", "Kenmerken onderscheiden", "Historische context koppelen"],
+              "teaching_approach": "Tijdlijn maken met belangrijkste werken. Lees fragmenten uit verschillende periodes. Koppel aan maatschappelijke ontwikkelingen."
+            },
+            {
+              "id": "havo_dutch_2",
+              "name": "Tekstanalyse en Interpretatie",
+              "subtopics": ["Literaire analyse", "Retorische middelen", "Stijl en tone", "Perspectief en verteller"],
+              "learning_objectives": [
+                "Literaire teksten analyseren op vorm en inhoud",
+                "Retorische middelen identificeren en hun effect beschrijven",
+                "Perspectief en vertelsituatie bepalen",
+                "Stijl en toon van een tekst karakteriseren"
+              ],
+              "common_difficulties": ["Effect van stijlmiddelen beschrijven", "Impliciete betekenis herkennen", "Objectief vs subjectief analyseren"],
+              "teaching_approach": "STIEFKIND-methode voor tekstanalyse. Oefen met examenteksten. Vergelijk verschillende interpretaties."
+            },
+            {
+              "id": "havo_dutch_3",
+              "name": "Academisch Schrijven",
+              "subtopics": ["Betoog en essays", "Bronvermelding", "Wetenschappelijke taal", "Kritische analyse"],
+              "learning_objectives": [
+                "Academische essays schrijven met heldere structuur",
+                "Bronnen correct verwerken en vermelden",
+                "Wetenschappelijke schrijfstijl hanteren",
+                "Kritisch analyseren en reflecteren"
+              ],
+              "common_difficulties": ["Wetenschappelijke tone", "Plagiaat vermijden", "Objectief schrijven", "Bronnen integreren"],
+              "teaching_approach": "Gebruik APA- of MLA-richtlijnen. Oefen met peer review. Analyseer voorbeeldessays voor structuur."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_dutch_1",
+              "name": "Literatuurkritiek en -theorie",
+              "subtopics": ["Literaire analyse-methoden", "Narratologie", "Semiotiek", "Postkoloniale literatuur"],
+              "learning_objectives": [
+                "Verschillende literatuurtheoretische benaderingen toepassen",
+                "Narratologische concepten gebruiken in analyse",
+                "Symboliek en tekens interpreteren",
+                "Postkoloniale perspectieven herkennen (relevant voor Suriname)"
+              ],
+              "common_difficulties": ["Abstracte theorieën toepassen", "Verschillende perspectieven combineren", "Nuances in interpretatie"],
+              "teaching_approach": "Start met concrete voorbeelden van elke theorie. Gebruik Surinaamse literatuur voor postkoloniale analyse. Debatteer over interpretaties."
+            },
+            {
+              "id": "vwo_dutch_2",
+              "name": "Retoriek en Argumentatieleer",
+              "subtopics": ["Klassieke retoriek (ethos, pathos, logos)", "Argumentatiestructuren", "Drogredeneren", "Taalmanipulatie"],
+              "learning_objectives": [
+                "Retorische middelen identificeren en toepassen",
+                "Argumentatiestructuren analyseren en opbouwen",
+                "Drogredenen herkennen en benoemen",
+                "Taalmanipulatie in media en politiek onderkennen"
+              ],
+              "common_difficulties": ["Subtiele manipulatie herkennen", "Complexe argumenten ontleden", "Eigen retoriek effectief inzetten"],
+              "teaching_approach": "Analyseer actuele speeches en artikelen. Debatteren en discussiëren. Oefen met het opbouwen van overtuigende argumenten."
+            },
+            {
+              "id": "vwo_dutch_3",
+              "name": "Creatief en Professioneel Schrijven",
+              "subtopics": ["Literair schrijven", "Columns en essays", "Wetenschappelijke papers", "Register en doelgroep"],
+              "learning_objectives": [
+                "Literaire stijlen en technieken toepassen in eigen werk",
+                "Columns en essays schrijven voor verschillende doelgroepen",
+                "Wetenschappelijke papers met correcte methodologie",
+                "Register aanpassen aan doel en publiek"
+              ],
+              "common_difficulties": ["Eigen stijl ontwikkelen", "Doelgroep bereiken", "Wetenschappelijke objectiviteit", "Creatief vs academisch balanceren"],
+              "teaching_approach": "Schrijfworkshops met feedback. Publiceer in schoolkrant of blog. Peer editing. Portfolio opbouwen."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Lees regelmatig verschillende tekstsoorten (krant, boeken, essays)",
+        "Maak samenvattingen van literaire werken en stromingen",
+        "Oefen met examenteksten en tijdsdruk",
+        "Gebruik een lijst van stijlfiguren en oefen ze te herkennen",
+        "Schrijf regelmatig korte essays om schrijfvaardigheid te onderhouden"
+      ],
+      "anti_cheating_approach": "Geef schrijftips en structuuradviezen. Help met begrip van concepten, niet met complete teksten schrijven. Vraag leerling eerst eigen poging te tonen."
+    },
+    "programmeren": {
+      "name_nl": "Programmeren / ICT",
+      "name_en": "Programming / ICT",
+      "description_nl": "Programmeren en informatietechnologie voor Surinaams onderwijs",
+      "description_en": "Programming and information technology for Surinamese education",
+      "education_levels": {
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_prog_1",
+              "name": "Basis Programmeerconcepten",
+              "subtopics": ["Variabelen en datatypes", "Input en output", "Voorwaardelijke statements (if/else)", "Loops (for, while)"],
+              "learning_objectives": [
+                "Variabelen declareren en gebruiken in verschillende datatypes",
+                "Input van gebruiker verwerken en output tonen",
+                "if/else statements schrijven voor beslissingen",
+                "Loops gebruiken voor herhaling"
+              ],
+              "common_difficulties": ["Syntax fouten", "if/else logica", "Oneindige loops", "Variabele scope"],
+              "teaching_approach": "Begin met visuele programmeeromgevingen (Scratch). Gebruik flowcharts. Stappenplan: probleem → pseudocode → echte code."
+            },
+            {
+              "id": "mulo_prog_2",
+              "name": "Functies en Procedures",
+              "subtopics": ["Functies definiëren", "Parameters en return values", "Code hergebruik"],
+              "learning_objectives": [
+                "Functies schrijven met parameters",
+                "Return values gebruiken",
+                "Code organiseren in herbruikbare functies"
+              ],
+              "common_difficulties": ["Parameters vs argumenten", "Return vs print", "Functie scope"],
+              "teaching_approach": "Start met simpele functies (calculator). Bouw complexiteit op. Gebruik debugging tools."
+            },
+            {
+              "id": "mulo_prog_3",
+              "name": "Basis Datastructuren",
+              "subtopics": ["Arrays/Lists", "Strings manipuleren", "Basis algoritmen (zoeken, sorteren)"],
+              "learning_objectives": [
+                "Arrays/lists gebruiken om data op te slaan",
+                "String methoden toepassen",
+                "Eenvoudige zoek- en sorteeralgoritmen implementeren"
+              ],
+              "common_difficulties": ["Array indexing", "Off-by-one errors", "Nested loops begrijpen"],
+              "teaching_approach": "Visualiseer arrays als dozen. Gebruik real-world voorbeelden (contactenlijst, scores). Stap-voor-stap door algoritmen."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_prog_1",
+              "name": "Object-Georiënteerd Programmeren",
+              "subtopics": ["Klassen en objecten", "Encapsulation", "Inheritance", "Polymorfisme"],
+              "learning_objectives": [
+                "Klassen ontwerpen met attributen en methoden",
+                "Encapsulation toepassen voor data hiding",
+                "Inheritance gebruiken voor code hergebruik",
+                "Polymorfisme begrijpen en toepassen"
+              ],
+              "common_difficulties": ["OOP concepten begrijpen", "Wanneer inheritance gebruiken", "this/self keyword"],
+              "teaching_approach": "Gebruik real-world analogieën (auto als klasse, specifieke auto's als objecten). UML diagrammen. Veel praktische projecten."
+            },
+            {
+              "id": "havo_prog_2",
+              "name": "Algoritmen en Datastructuren",
+              "subtopics": ["Complexiteitsanalyse (Big O)", "Recursie", "Stacks en Queues", "Trees en Graphs basis"],
+              "learning_objectives": [
+                "Tijdscomplexiteit van algoritmen analyseren",
+                "Recursieve functies schrijven",
+                "Stack en Queue datastructuren implementeren",
+                "Basis begrip van trees en graphs"
+              ],
+              "common_difficulties": ["Recursie begrijpen", "Big O notatie", "Stack overflow voorkomen"],
+              "teaching_approach": "Visualiseer recursie met call stack diagrams. Vergelijk algoritmen met praktische voorbeelden. Gebruik debugging voor recursie."
+            },
+            {
+              "id": "havo_prog_3",
+              "name": "Web Development Basis",
+              "subtopics": ["HTML/CSS", "JavaScript basis", "DOM manipulatie", "Responsive design"],
+              "learning_objectives": [
+                "Webpagina's maken met HTML en CSS",
+                "JavaScript gebruiken voor interactiviteit",
+                "DOM manipuleren met JavaScript",
+                "Responsive designs maken"
+              ],
+              "common_difficulties": ["CSS specificity", "Async JavaScript", "Cross-browser compatibiliteit"],
+              "teaching_approach": "Bouw echte projecten (portfolio website). Gebruik browser developer tools. Incrementele ontwikkeling."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_prog_1",
+              "name": "Geavanceerde Algoritmen",
+              "subtopics": ["Sorteeralgoritmen (merge sort, quick sort)", "Graph algoritmen (Dijkstra, BFS, DFS)", "Dynamic programming", "Greedy algorithms"],
+              "learning_objectives": [
+                "Verschillende sorteeralgoritmen implementeren en vergelijken",
+                "Graph traversal algoritmen toepassen",
+                "Dynamic programming gebruiken voor optimalisatie",
+                "Greedy approach herkennen en toepassen"
+              ],
+              "common_difficulties": ["Complexiteit analyseren", "Optimale algoritme kiezen", "Dynamic programming state definiëren"],
+              "teaching_approach": "Visualiseer algoritmen met animaties. Vergelijk performance met verschillende datasets. Oefen met competitive programming problemen."
+            },
+            {
+              "id": "vwo_prog_2",
+              "name": "Database en Backend Development",
+              "subtopics": ["SQL queries", "Database normalisatie", "RESTful APIs", "Authentication"],
+              "learning_objectives": [
+                "SQL queries schrijven voor CRUD operaties",
+                "Databases normaliseren",
+                "RESTful API's ontwerpen en implementeren",
+                "User authentication implementeren"
+              ],
+              "common_difficulties": ["JOIN queries", "Normalisatievormen", "API security", "Session management"],
+              "teaching_approach": "Bouw een volledig backend project. Gebruik ERD's voor database design. Security best practices vanaf het begin."
+            },
+            {
+              "id": "vwo_prog_3",
+              "name": "Software Engineering Principes",
+              "subtopics": ["Design patterns", "Version control (Git)", "Testing (unit, integration)", "Code review en best practices"],
+              "learning_objectives": [
+                "Veelvoorkomende design patterns herkennen en toepassen",
+                "Git gebruiken voor version control en samenwerking",
+                "Unit en integration tests schrijven",
+                "Code reviews uitvoeren volgens best practices"
+              ],
+              "common_difficulties": ["Git merge conflicts", "Welk pattern toepassen", "Testbare code schrijven"],
+              "teaching_approach": "Groepsprojecten met Git. Code review sessies. Refactoring oefeningen. Real-world case studies."
+            }
+          ]
+        }
+      },
+      "programming_languages": {
+        "beginners": ["Python", "Scratch", "JavaScript"],
+        "intermediate": ["Java", "C#", "Python"],
+        "advanced": ["C++", "Python", "JavaScript/TypeScript", "SQL"]
+      },
+      "exam_prep_strategies": [
+        "Oefen regelmatig met coding challenges (CodeWars, HackerRank)",
+        "Bouw persoonlijke projecten om concepten toe te passen",
+        "Lees en begrijp code van anderen (GitHub)",
+        "Debug systematisch: lees error messages, gebruik print statements, gebruik debugger",
+        "Maak een cheat sheet met syntax en veelvoorkomende patronen"
+      ],
+      "anti_cheating_approach": "Leg programmeercconcepten uit, geen complete code. Help met debugging tips en structuur. Vraag leerling eerst eigen code en errors te tonen. Guide naar oplossing met hints."
+    },
+    "engels": {
+      "name_nl": "Engels",
+      "name_en": "English Language",
+      "description_nl": "Engelse taal voor Surinaams onderwijs",
+      "description_en": "English language for Surinamese education",
+      "education_levels": {
+        "GLO": {
+          "level_name": "Gewoon Lager Onderwijs",
+          "age_range": "12-15",
+          "topics": [
+            {
+              "id": "glo_eng_1",
+              "name": "Grammar Basics",
+              "subtopics": ["Present/Past/Future tenses", "Articles (a/an/the)", "Plural forms", "Basic prepositions"],
+              "learning_objectives": [
+                "Use present simple, past simple, and future tense correctly",
+                "Apply articles (a/an/the) appropriately",
+                "Form regular and irregular plurals",
+                "Use common prepositions (in, on, at, etc.)"
+              ],
+              "common_difficulties": ["Present perfect vs past simple", "When to use 'the'", "Irregular plurals", "Prepositions of time/place"],
+              "teaching_approach": "Use visual timelines for tenses. Practice with real-life examples. Make lists of irregular forms for memorization."
+            },
+            {
+              "id": "glo_eng_2",
+              "name": "Reading Comprehension",
+              "subtopics": ["Understanding main ideas", "Vocabulary in context", "Simple inference"],
+              "learning_objectives": [
+                "Identify main ideas in short texts",
+                "Understand new vocabulary from context",
+                "Make simple inferences from text"
+              ],
+              "common_difficulties": ["Unknown vocabulary", "Complex sentence structures", "Cultural references"],
+              "teaching_approach": "Start with simple texts with visuals. Build vocabulary gradually. Use 5W+H questions (who, what, when, where, why, how)."
+            },
+            {
+              "id": "glo_eng_3",
+              "name": "Writing Skills",
+              "subtopics": ["Simple sentences", "Paragraph structure", "Informal letter/email"],
+              "learning_objectives": [
+                "Write grammatically correct simple sentences",
+                "Structure paragraphs with topic sentences",
+                "Write informal letters and emails"
+              ],
+              "common_difficulties": ["Sentence structure", "Word order", "Spelling", "Register (formal vs informal)"],
+              "teaching_approach": "Use sentence templates. Practice with guided writing. Peer review for feedback. Focus on clarity over complexity."
+            }
+          ]
+        },
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_eng_1",
+              "name": "Advanced Grammar",
+              "subtopics": ["Present perfect (continuous)", "Passive voice", "Conditional sentences (if-clauses)", "Reported speech"],
+              "learning_objectives": [
+                "Use present perfect and present perfect continuous correctly",
+                "Transform active sentences to passive voice",
+                "Form conditional sentences (zero, first, second conditional)",
+                "Report what someone said using reported speech"
+              ],
+              "common_difficulties": ["Present perfect usage", "Passive construction", "Conditional types", "Tense changes in reported speech"],
+              "teaching_approach": "Practice with transformation exercises. Use timelines for perfect tenses. Real-life scenarios for conditionals."
+            },
+            {
+              "id": "mulo_eng_2",
+              "name": "Reading and Literature",
+              "subtopics": ["Analyzing short stories", "Literary devices", "Critical reading"],
+              "learning_objectives": [
+                "Analyze plot, characters, and themes in short stories",
+                "Identify literary devices (metaphor, simile, imagery)",
+                "Read critically and form opinions"
+              ],
+              "common_difficulties": ["Figurative language", "Implicit meaning", "Cultural context"],
+              "teaching_approach": "Read diverse texts including Caribbean/Surinamese literature. Group discussions. Compare interpretations."
+            },
+            {
+              "id": "mulo_eng_3",
+              "name": "Writing Development",
+              "subtopics": ["Formal letters", "Opinion essays", "Reports"],
+              "learning_objectives": [
+                "Write formal letters with appropriate layout and tone",
+                "Write opinion essays with clear arguments",
+                "Write structured reports"
+              ],
+              "common_difficulties": ["Formal register", "Essay structure", "Supporting arguments", "Transitions"],
+              "teaching_approach": "Use templates and models. Practice outlining before writing. Focus on paragraph development. Peer editing."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_eng_1",
+              "name": "Advanced Language Skills",
+              "subtopics": ["Complex grammar structures", "Idiomatic expressions", "Academic vocabulary", "Register variation"],
+              "learning_objectives": [
+                "Use complex sentence structures correctly",
+                "Understand and use idiomatic expressions",
+                "Build academic vocabulary for various subjects",
+                "Adapt register to different contexts"
+              ],
+              "common_difficulties": ["Subjunctive mood", "Phrasal verbs", "Collocation", "Academic tone"],
+              "teaching_approach": "Read academic texts across subjects. Build vocabulary through reading. Practice formal vs informal writing."
+            },
+            {
+              "id": "havo_eng_2",
+              "name": "Literature and Analysis",
+              "subtopics": ["Novel analysis", "Poetry interpretation", "Drama elements", "Literary periods"],
+              "learning_objectives": [
+                "Analyze novels for theme, character development, symbolism",
+                "Interpret poetry (form, meaning, literary devices)",
+                "Understand dramatic elements and analyze plays",
+                "Recognize characteristics of literary periods"
+              ],
+              "common_difficulties": ["Poetry interpretation", "Symbolism", "Historical context", "Complex themes"],
+              "teaching_approach": "Read complete novels and plays. Discuss in groups. Write analytical essays. Connect to contemporary issues."
+            },
+            {
+              "id": "havo_eng_3",
+              "name": "Academic Writing",
+              "subtopics": ["Argumentative essays", "Research papers", "Citations (MLA/APA)", "Critical analysis"],
+              "learning_objectives": [
+                "Write well-structured argumentative essays",
+                "Conduct research and write research papers",
+                "Use proper citation formats",
+                "Write critical analyses of texts"
+              ],
+              "common_difficulties": ["Thesis statements", "Integrating sources", "Avoiding plagiarism", "Counterarguments"],
+              "teaching_approach": "Study model essays. Practice thesis development. Teach citation from the start. Multiple drafts with feedback."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_eng_1",
+              "name": "Mastery of Language",
+              "subtopics": ["Nuanced grammar", "Rhetoric", "Stylistics", "Language varieties (British/American)"],
+              "learning_objectives": [
+                "Master subtle grammatical distinctions",
+                "Understand and apply rhetorical techniques",
+                "Analyze style in writing",
+                "Recognize and use different English varieties"
+              ],
+              "common_difficulties": ["Subtle usage differences", "Rhetorical analysis", "Style adaptation", "Dialect recognition"],
+              "teaching_approach": "Compare texts from different varieties. Analyze persuasive speeches. Practice stylistic variation. Deep grammar exploration."
+            },
+            {
+              "id": "vwo_eng_2",
+              "name": "Literary Theory and Criticism",
+              "subtopics": ["Literary criticism approaches", "Postcolonial literature", "Modernism/Postmodernism", "Comparative literature"],
+              "learning_objectives": [
+                "Apply different critical approaches to texts",
+                "Analyze postcolonial texts (relevant for Suriname)",
+                "Understand modernist and postmodernist literature",
+                "Compare texts across cultures and periods"
+              ],
+              "common_difficulties": ["Abstract critical theories", "Multiple interpretations", "Theoretical terminology", "Cultural contexts"],
+              "teaching_approach": "Read diverse global literature including Caribbean authors. Apply theories to texts. Debates and presentations. Research projects."
+            },
+            {
+              "id": "vwo_eng_3",
+              "name": "Advanced Academic Writing",
+              "subtopics": ["Extended essays", "Literary analysis", "Research methodology", "Presentation skills"],
+              "learning_objectives": [
+                "Write extended academic essays (2000+ words)",
+                "Conduct in-depth literary analysis",
+                "Apply research methodology correctly",
+                "Present research findings effectively"
+              ],
+              "common_difficulties": ["Extended essay structure", "Advanced analysis", "Original argument development", "Academic voice"],
+              "teaching_approach": "Scaffolded long-form writing projects. Workshop approach with peer review. Presentations. Focus on argumentation."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Read extensively in English (books, articles, news)",
+        "Practice writing regularly with timed exercises",
+        "Build vocabulary through flashcards and reading",
+        "Listen to podcasts and watch videos in English",
+        "Speak English as much as possible (conversation practice)"
+      ],
+      "anti_cheating_approach": "Provide writing tips and grammar explanations. Help with structure and ideas, not complete texts. Ask student to show their draft first. Guide towards improvement."
+    },
+    "natuurkunde": {
+      "name_nl": "Natuurkunde",
+      "name_en": "Physics",
+      "description_nl": "Natuurkunde curriculum voor het Surinaamse onderwijs",
+      "description_en": "Physics curriculum for Surinamese education",
+      "education_levels": {
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_phys_1",
+              "name": "Kracht en Beweging",
+              "subtopics": ["Kracht", "Snelheid en versnelling", "Zwaartekracht", "Wrijving"],
+              "learning_objectives": [
+                "Het begrip kracht begrijpen en toepassen",
+                "Snelheid en versnelling berekenen",
+                "Wetten van Newton uitleggen",
+                "Invloed van wrijving en luchtweerstand herkennen"
+              ],
+              "common_difficulties": ["Verschil tussen snelheid en versnelling", "Krachten in verschillende richtingen", "Resulterende kracht berekenen"],
+              "teaching_approach": "Gebruik praktische demonstraties en experimenten. Laat leerlingen beweging meten en analyseren."
+            },
+            {
+              "id": "mulo_phys_2",
+              "name": "Energie",
+              "subtopics": ["Kinetische en potentiële energie", "Energieomzetting", "Behoud van energie", "Warmte en temperatuur"],
+              "learning_objectives": [
+                "Verschillende energievormen herkennen",
+                "Energieomzettingen beschrijven",
+                "Wet van behoud van energie toepassen",
+                "Verschil tussen warmte en temperatuur begrijpen"
+              ],
+              "common_difficulties": ["Energieberekeningen", "Energiebehoud toepassen", "Warmte vs temperatuur"],
+              "teaching_approach": "Gebruik Surinaamse voorbeelden zoals waterkracht, zonne-energie. Doe eenvoudige experimenten."
+            },
+            {
+              "id": "mulo_phys_3",
+              "name": "Elektriciteit Basis",
+              "subtopics": ["Stroomkring", "Spanning en stroom", "Weerstand", "Wet van Ohm"],
+              "learning_objectives": [
+                "Eenvoudige stroomkringen bouwen",
+                "Spanning, stroom en weerstand meten",
+                "Wet van Ohm toepassen (V = I × R)",
+                "Serie- en parallelschakelingen onderscheiden"
+              ],
+              "common_difficulties": ["Ohm's law toepassen", "Serie vs parallel", "Stroomrichting begrijpen"],
+              "teaching_approach": "Hands-on met batterijen en lampjes. Visuele diagrammen van stroomkringen. Veiligheid benadrukken."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_phys_1",
+              "name": "Mechanica",
+              "subtopics": ["Kinematica", "Dynamica", "Arbeid en vermogen", "Impulse en momentum"],
+              "learning_objectives": [
+                "Bewegingsvergelijkingen opstellen en oplossen",
+                "Wetten van Newton toepassen op complexe situaties",
+                "Arbeid, energie en vermogen berekenen",
+                "Behoud van impuls en botsingen analyseren"
+              ],
+              "common_difficulties": ["Vectoren en krachtendiagrammen", "Energieberekeningen bij wrijving", "Elastische vs inelastische botsingen"],
+              "teaching_approach": "Grafische analyse van beweging. Computeranimaties voor complexe bewegingen. Real-world toepassingen."
+            },
+            {
+              "id": "havo_phys_2",
+              "name": "Elektriciteit en Magnetisme",
+              "subtopics": ["Elektrische velden", "Magnetische velden", "Inductie", "Wisselstroom"],
+              "learning_objectives": [
+                "Elektrische en magnetische velden beschrijven",
+                "Inductie en transformatoren begrijpen",
+                "Wisselstroom vs gelijkstroom",
+                "Vermogen in elektrische circuits berekenen"
+              ],
+              "common_difficulties": ["Veldlijnen tekenen", "Inductie begrijpen", "AC vs DC circuits"],
+              "teaching_approach": "Demonstraties met magneten en spoelen. Stroomopwekking in Suriname (Afobaka dam) als voorbeeld."
+            },
+            {
+              "id": "havo_phys_3",
+              "name": "Trillingen en Golven",
+              "subtopics": ["Harmonische trillingen", "Geluid", "Licht", "Electromagnetic spectrum"],
+              "learning_objectives": [
+                "Trillingen en golven karakteriseren (amplitude, frequentie, golflengte)",
+                "Geluidseigenschappen begrijpen",
+                "Lichtbreking en reflectie verklaren",
+                "Elektromagnetisch spectrum kennen"
+              ],
+              "common_difficulties": ["Golf-formules toepassen", "Breking berekenen", "Interferentie begrijpen"],
+              "teaching_approach": "Experimenten met slingers, geluidsbronnen, lenzen. Visuele representaties van golven."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_phys_1",
+              "name": "Geavanceerde Mechanica",
+              "subtopics": ["Rotatie-dynamica", "Harmonische oscillatie", "Gravitatie", "Relativiteit basis"],
+              "learning_objectives": [
+                "Rotatiebewegingen analyseren (hoeksnelheid, traagheidsmoment)",
+                "Harmonische oscillatoren modelleren",
+                "Gravitatiewetten toepassen",
+                "Basisbegrippen relativiteitstheorie begrijpen"
+              ],
+              "common_difficulties": ["Rotatie-inertie", "Differentiaalvergelijkingen voor oscillatie", "Relativistische effecten"],
+              "teaching_approach": "Wiskundige afleiding gecombineerd met conceptueel begrip. Computermodellen voor complexe systemen."
+            },
+            {
+              "id": "vwo_phys_2",
+              "name": "Elektrodynamica",
+              "subtopics": ["Maxwell vergelijkingen (intro)", "Elektromagnetische inductie", "RLC circuits", "Electromagnetic waves"],
+              "learning_objectives": [
+                "Complexe circuits analyseren",
+                "Inductie en Lenz' wet toepassen",
+                "AC circuit analyse met impedantie",
+                "Elektromagnetische golven begrijpen"
+              ],
+              "common_difficulties": ["Complexe getallen in circuits", "Faseverschillen", "Maxwell's vergelijkingen"],
+              "teaching_approach": "Systematische aanpak met stapsgewijze complexiteit. Oscilloscoop gebruiken voor AC analyse."
+            },
+            {
+              "id": "vwo_phys_3",
+              "name": "Moderne Natuurkunde",
+              "subtopics": ["Kwantummechanica basis", "Atoomfysica", "Kernfysica", "Deeltjesfysica intro"],
+              "learning_objectives": [
+                "Golf-deeltje dualiteit begrijpen",
+                "Atoomstructuur en spectra",
+                "Kernreacties en radioactiviteit",
+                "Basisdeeltjes herkennen"
+              ],
+              "common_difficulties": ["Kwantumconcepten visualiseren", "Energieniveaus berekenen", "Vervalprocessen"],
+              "teaching_approach": "Begin met historische ontwikkeling. Gebruik simulaties voor niet-waarneembare fenomenen."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Maak formulekaarten met wanneer elke formule te gebruiken",
+        "Oefen met oude examens onder tijdsdruk",
+        "Teken altijd een diagram/schets bij vraagstukken",
+        "Check dimensies en eenheden in je antwoorden",
+        "Maak een samenvatting van alle natuurwetten en hun toepassingen"
+      ],
+      "anti_cheating_approach": "Leg fysische concepten uit met diagrammen. Werk vergelijkbare voorbeelden uit, niet het exacte probleem. Vraag leerling eerst hun aanpak te schetsen."
+    },
+    "scheikunde": {
+      "name_nl": "Scheikunde",
+      "name_en": "Chemistry",
+      "description_nl": "Scheikunde curriculum voor het Surinaamse onderwijs",
+      "description_en": "Chemistry curriculum for Surinamese education",
+      "education_levels": {
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_chem_1",
+              "name": "Atomen en Moleculen",
+              "subtopics": ["Atoomstructuur", "Periodiek systeem", "Ionen", "Moleculen en verbindingen"],
+              "learning_objectives": [
+                "Atoomstructuur beschrijven (protonen, neutronen, elektronen)",
+                "Periodiek systeem gebruiken",
+                "Ionen en ionbinding begrijpen",
+                "Molecuulformules schrijven"
+              ],
+              "common_difficulties": ["Elektronenconfiguratie", "Valentie-elektronen", "Chemische formules schrijven"],
+              "teaching_approach": "Gebruik modellen en visualisaties. Begin met eenvoudige elementen. Surinaamse mineralen als voorbeelden."
+            },
+            {
+              "id": "mulo_chem_2",
+              "name": "Chemische Reacties Basis",
+              "subtopics": ["Reactievergelijkingen", "Zuren en basen", "Oxidatie en reductie", "Reactiesnelheid"],
+              "learning_objectives": [
+                "Reactievergelijkingen kloppen",
+                "Zuren en basen herkennen",
+                "Simpele redoxreacties identificeren",
+                "Factoren die reactiesnelheid beïnvloeden"
+              ],
+              "common_difficulties": ["Vergelijkingen kloppen", "Oxidatiegetallen", "pH-schaal begrijpen"],
+              "teaching_approach": "Praktische experimenten met veilige stoffen. Demonstraties van reacties. Surinaamse toepassingen (bauxiet, goud)."
+            },
+            {
+              "id": "mulo_chem_3",
+              "name": "Stoffen en Materialen",
+              "subtopics": ["Zuivere stoffen vs mengsels", "Scheidingsmethoden", "Eigenschappen van stoffen", "Metalen en niet-metalen"],
+              "learning_objectives": [
+                "Zuivere stoffen en mengsels onderscheiden",
+                "Scheidingsmethoden toepassen",
+                "Stofeigenschappen relateren aan structuur",
+                "Metalen en niet-metalen vergelijken"
+              ],
+              "common_difficulties": ["Mengsels classificeren", "Juiste scheidingsmethode kiezen", "Eigenschappen verklaren"],
+              "teaching_approach": "Hands-on scheiding van mengsels. Surinaamse toepassingen zoals goudwinning, waterfiltratie."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_chem_1",
+              "name": "Chemische Binding",
+              "subtopics": ["Ionbinding", "Covalente binding", "Metaalbinding", "Molecuulstructuren"],
+              "learning_objectives": [
+                "Verschillende bindingstypen herkennen en verklaren",
+                "Lewis-structuren tekenen",
+                "VSEPR-theorie toepassen voor molecuulvorm",
+                "Polariteit van moleculen bepalen"
+              ],
+              "common_difficulties": ["Lewis structuren", "VSEPR voorspellingen", "Polariteit bepalen"],
+              "teaching_approach": "3D-modellen voor molecuulstructuren. Stappenplan voor Lewis structuren. Praktische voorbeelden."
+            },
+            {
+              "id": "havo_chem_2",
+              "name": "Chemische Reacties en Rekenen",
+              "subtopics": ["Molberekeningen", "Concentraties", "Reactievergelijkingen kloppen", "Opbrengstberekeningen"],
+              "learning_objectives": [
+                "Mol-massa berekeningen uitvoeren",
+                "Concentraties berekenen (mol/L)",
+                "Stoichiometrie toepassen",
+                "Theoretische en werkelijke opbrengst bepalen"
+              ],
+              "common_difficulties": ["Molconcept begrijpen", "Stoichiometrische berekeningen", "Limiting reactant"],
+              "teaching_approach": "Systematisch stappenplan voor berekeningen. Veel oefenen met variaties. Check dimensie-analyse."
+            },
+            {
+              "id": "havo_chem_3",
+              "name": "Zuren, Basen en Evenwicht",
+              "subtopics": ["pH en pOH", "Bufferoplossingen", "Chemisch evenwicht", "Evenwichtsconstante"],
+              "learning_objectives": [
+                "pH berekenen en meten",
+                "Bufferwerking uitleggen",
+                "Evenwichtsreacties begrijpen",
+                "Le Chatelier's principe toepassen"
+              ],
+              "common_difficulties": ["pH berekeningen", "Bufferberekeningen", "Evenwicht verschuiving voorspellen"],
+              "teaching_approach": "Titraties uitvoeren. pH-meter gebruiken. Evenwicht visualiseren met demo's."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_chem_1",
+              "name": "Thermochemie en Kinetiek",
+              "subtopics": ["Enthalpie", "Entropie", "Gibbs energie", "Reactiesnelheid en mechanismen"],
+              "learning_objectives": [
+                "Enthalpieberekeningen uitvoeren (Hess' wet)",
+                "Spontaniteit voorspellen met Gibbs energie",
+                "Reactiemechanismen voorstellen",
+                "Reactiesnelheid kwantitatief beschrijven"
+              ],
+              "common_difficulties": ["Hess' law toepassen", "Gibbs energie interpreteren", "Reactie-orde bepalen"],
+              "teaching_approach": "Systematische aanpak voor energieberekeningen. Grafische analyse van kinetiek. Catalyse demonstreren."
+            },
+            {
+              "id": "vwo_chem_2",
+              "name": "Evenwicht en Elektrochemie",
+              "subtopics": ["Evenwichtsconstanten", "Oplosbaarheid", "Galvanische cellen", "Elektrolyse"],
+              "learning_objectives": [
+                "Kc en Kp berekeningen",
+                "Oplosbaarheidsproduct toepassen",
+                "Galvanische cellen ontwerpen",
+                "Elektrolyse processen verklaren"
+              ],
+              "common_difficulties": ["ICE tabellen", "Nernst vergelijking", "Elektrodepotentialen"],
+              "teaching_approach": "Systematische ICE-methode. Voltmeters gebruiken. Surinaamse aluminiumindustrie als voorbeeld."
+            },
+            {
+              "id": "vwo_chem_3",
+              "name": "Organische Chemie",
+              "subtopics": ["Koolwaterstoffen", "Functionele groepen", "Reactiemechanismen", "Polymeren"],
+              "learning_objectives": [
+                "Organische verbindingen benoemen (IUPAC)",
+                "Functionele groepen herkennen",
+                "Organische reactiemechanismen",
+                "Polymeren en hun toepassingen"
+              ],
+              "common_difficulties": ["IUPAC nomenclatuur", "Mechanismen met pijlen", "Isomeren herkennen"],
+              "teaching_approach": "Bouw complexiteit op van alkanen naar complexe moleculen. Molecuulmodellen. Real-world producten analyseren."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Maak een formulekaart met alle belangrijke constanten en vergelijkingen",
+        "Oefen met berekeningen tot je ze automatisch kunt",
+        "Teken altijd structuurformules bij organische chemie",
+        "Maak een overzicht van alle reactietypes en hun kenmerken",
+        "Check je antwoorden op realistische waarden en eenheden"
+      ],
+      "anti_cheating_approach": "Leg chemische concepten uit met diagrammen en vergelijkingen. Werk vergelijkbare berekeningen uit. Vraag leerling eerst hun aanpak en welke formule ze denken te gebruiken."
+    },
+    "biologie": {
+      "name_nl": "Biologie",
+      "name_en": "Biology",
+      "description_nl": "Biologie curriculum voor het Surinaamse onderwijs",
+      "description_en": "Biology curriculum for Surinamese education",
+      "education_levels": {
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_bio_1",
+              "name": "Cellen en Organisatie",
+              "subtopics": ["Celstructuur", "Plantencellen vs dierencellen", "Weefseltypen", "Organen en orgaanstelsels"],
+              "learning_objectives": [
+                "Delen van een cel benoemen en hun functie",
+                "Verschil tussen planten- en dierencellen",
+                "Organisatieniveaus beschrijven (cel → weefsel → orgaan)",
+                "Belangrijkste orgaanstelsels herkennen"
+              ],
+              "common_difficulties": ["Organellen en hun functies onthouden", "Microscoopgebruik", "Organisatieniveaus"],
+              "teaching_approach": "Microscopie-practicum. Visuele schema's. Surinaamse flora en fauna als voorbeelden."
+            },
+            {
+              "id": "mulo_bio_2",
+              "name": "Fotosynthese en Ademhaling",
+              "subtopics": ["Fotosynthese", "Celademhaling", "Energiestromen in ecosystemen"],
+              "learning_objectives": [
+                "Fotosynthese-vergelijking kennen en uitleggen",
+                "Celademhaling beschrijven",
+                "Energiestroom in ecosystemen begrijpen",
+                "Rol van glucose in energiehuishouding"
+              ],
+              "common_difficulties": ["Vergelijkingen onthouden", "Verschil fotosynthese/ademhaling", "Energiestroom visualiseren"],
+              "teaching_approach": "Experimenten met planten en CO2. Surinaams regenwoud als voorbeeld voor koolstofcyclus."
+            },
+            {
+              "id": "mulo_bio_3",
+              "name": "Erfelijkheid Basis",
+              "subtopics": ["DNA en genen", "Chromosomen", "Eenvoudige overerving", "Variatie"],
+              "learning_objectives": [
+                "DNA-structuur basisbegrippen",
+                "Chromosomen en genen relateren",
+                "Eenvoudige kruisingsschema's maken",
+                "Erfelijke vs verworven eigenschappen"
+              ],
+              "common_difficulties": ["DNA vs chromosoom vs gen", "Kruisingsschema's maken", "Dominant vs recessief"],
+              "teaching_approach": "Visuele modellen van DNA. Eenvoudige Punnett squares. Surinaamse biodiversiteit als voorbeeld."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_bio_1",
+              "name": "Celbiologie",
+              "subtopics": ["Celmembraan en transport", "Mitose en meiose", "Eiwitsynthese", "Enzymen"],
+              "learning_objectives": [
+                "Membraantransport (diffusie, osmose, actief transport)",
+                "Mitose en meiose vergelijken",
+                "Transcriptie en translatie beschrijven",
+                "Enzymwerking en factoren die het beïnvloeden"
+              ],
+              "common_difficulties": ["Mitose vs meiose", "Transcriptie vs translatie", "Enzymkinetiek"],
+              "teaching_approach": "Diagrammen voor celprocessen. Animaties voor DNA → RNA → eiwit. Praktische enzymexperimenten."
+            },
+            {
+              "id": "havo_bio_2",
+              "name": "Genetica en Evolutie",
+              "subtopics": ["Mendeliaanse genetica", "DNA-technologie", "Evolutietheorie", "Natuurlijke selectie"],
+              "learning_objectives": [
+                "Kruisingsschema's met meerdere genen",
+                "DNA-technieken begrijpen (PCR, kloneren)",
+                "Evolutiemechanismen uitleggen",
+                "Bewijs voor evolutie herkennen"
+              ],
+              "common_difficulties": ["Dihybride kruisingen", "Genetische kansen berekenen", "Evolutie vs aanpassing"],
+              "teaching_approach": "Stapsgewijze aanpak kruisingen. Surinaams Darwin finken equivalent. DNA-techniek met actuele voorbeelden."
+            },
+            {
+              "id": "havo_bio_3",
+              "name": "Ecologie en Milieu",
+              "subtopics": ["Ecosystemen", "Voedselketens en -webben", "Koolstof- en stikstofcyclus", "Biodiversiteit"],
+              "learning_objectives": [
+                "Ecosysteemcomponenten identificeren",
+                "Energie- en stoffenstromen beschrijven",
+                "Biogeochemische cycli uitleggen",
+                "Bedreigingen voor biodiversiteit analyseren"
+              ],
+              "common_difficulties": ["Trofische niveaus", "Cycli visualiseren", "Ecosysteem balans"],
+              "teaching_approach": "Surinaams regenwoud en kustecosystemen als case studies. Veldwerk waar mogelijk. Milieuproblematiek lokaal."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_bio_1",
+              "name": "Moleculaire Biologie",
+              "subtopics": ["DNA-replicatie", "Genregulatie", "Mutaties", "Gentechnologie"],
+              "learning_objectives": [
+                "DNA-replicatie gedetailleerd beschrijven",
+                "Genexpressie en regulatie op verschillende niveaus",
+                "Mutatietypen en hun effecten",
+                "CRISPR en andere genetische technieken"
+              ],
+              "common_difficulties": ["Replicatie-enzymen", "Operonmodel", "Mutatie-effecten voorspellen"],
+              "teaching_approach": "Stapsgewijze procesdiagrammen. Actuele research papers. Ethische discussies over gentechnologie."
+            },
+            {
+              "id": "vwo_bio_2",
+              "name": "Fysiologie",
+              "subtopics": ["Zenuwstelsel", "Hormoonsysteem", "Immuunsysteem", "Homeostase"],
+              "learning_objectives": [
+                "Zenuwgeleiding en synaptische transmissie",
+                "Hormonale regulatie en feedback",
+                "Immuunrespons (aangeboren en verworven)",
+                "Homeostase-mechanismen"
+              ],
+              "common_difficulties": ["Actiepotentiaal", "Negatieve vs positieve feedback", "Immuunrespons stappen"],
+              "teaching_approach": "Gedetailleerde schema's voor processen. Klinische voorbeelden. Surinaamse gezondheidskwesties (malaria, etc.)."
+            },
+            {
+              "id": "vwo_bio_3",
+              "name": "Evolutie en Populatiegenetica",
+              "subtopics": ["Hardy-Weinberg evenwicht", "Speciatieprocessen", "Fylogenie", "Moleculaire evolutie"],
+              "learning_objectives": [
+                "Hardy-Weinberg berekeningen uitvoeren",
+                "Speciatiemechanismen verklaren",
+                "Fylogenetische bomen interpreteren",
+                "Moleculaire klok begrijpen"
+              ],
+              "common_difficulties": ["Hardy-Weinberg formule toepassen", "Kladogrammen lezen", "Genetische drift vs selectie"],
+              "teaching_approach": "Stapsgewijze H-W berekeningen. Surinaamse soortvorming voorbeelden. Vergelijkende genomics."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Maak schema's en diagrammen voor complexe processen",
+        "Leer biologische termen en hun exacte betekenis",
+        "Oefen met berekeningen (genetica, Hardy-Weinberg, ecologie)",
+        "Maak verbanden tussen verschillende onderwerpen",
+        "Gebruik Surinaamse voorbeelden om concepten te onthouden"
+      ],
+      "anti_cheating_approach": "Leg biologische processen uit met diagrammen. Werk vergelijkbare voorbeelden uit. Vraag leerling eerst wat ze al weten en waar ze vastlopen. Focus op begrijpen van processen."
+    },
+    "aardrijkskunde": {
+      "name_nl": "Aardrijkskunde",
+      "name_en": "Geography",
+      "description_nl": "Aardrijkskunde curriculum voor het Surinaamse onderwijs",
+      "description_en": "Geography curriculum for Surinamese education",
+      "education_levels": {
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_geo_1",
+              "name": "Kaartvaardigheden",
+              "subtopics": ["Kaartlezen", "Schaal", "Legenda", "Coördinaten"],
+              "learning_objectives": [
+                "Topografische kaarten lezen en interpreteren",
+                "Schaal gebruiken voor afstandsberekeningen",
+                "Legenda's begrijpen en toepassen",
+                "Coördinaten bepalen en gebruiken"
+              ],
+              "common_difficulties": ["Schaalberekeningen", "Hoogtel ijnen interpreteren", "Noord bepalen"],
+              "teaching_approach": "Praktisch werken met kaarten van Suriname. Excursies met GPS. Schaalberekeningen stap-voor-stap."
+            },
+            {
+              "id": "mulo_geo_2",
+              "name": "Fysische Geografie Suriname",
+              "subtopics": ["Landschap", "Klimaat", "Rivieren", "Bodem en vegetatie"],
+              "learning_objectives": [
+                "Surinaams landschap beschrijven (kust, savanne, regenwoud)",
+                "Tropisch klimaat uitleggen",
+                "Belangrijkste rivieren kennen",
+                "Bodemtypen en vegetatiezones"
+              ],
+              "common_difficulties": ["Klimaatgrafieken lezen", "Landschapsvorming verklaren", "Vegetatiezones"],
+              "teaching_approach": "Gebruik Surinaamse voorbeelden: Afobakastuwmeer, Brownsberg, Galibi. Excursies waar mogelijk."
+            },
+            {
+              "id": "mulo_geo_3",
+              "name": "Bevolking en Samenleving",
+              "subtopics": ["Bevolkingsverdeling", "Urbanisatie", "Districten", "Economische activiteiten"],
+              "learning_objectives": [
+                "Bevolkingsverdeling Suriname verklaren",
+                "Urbanisatie in Paramaribo begrijpen",
+                "Districten en hun kenmerken",
+                "Belangrijkste economische sectoren"
+              ],
+              "common_difficulties": ["Bevolkingsgrafieken", "Economische sectoren onderscheiden", "Migratie verklaren"],
+              "teaching_approach": "Actuele Surinaamse data en voorbeelden. Grafieken analyseren. Lokale economie onderzoeken."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_geo_1",
+              "name": "Fysische Systemen",
+              "subtopics": ["Platentektoniek", "Klimaatzones", "Watercyclus", "Bodemerosie"],
+              "learning_objectives": [
+                "Platentektoniek en gevolgen (vulkanen, aardbevingen)",
+                "Wereldwijde klimaatzones classificeren",
+                "Watercyclus en invloed op landschap",
+                "Erosie en verwering processen"
+              ],
+              "common_difficulties": ["Platen-grenzen types", "Klimaatclassificaties", "Erosieprocessen"],
+              "teaching_approach": "Diagrammen van Aardprocessen. Suriname's positie (geen vulkanen/aardbevingen). Klimaatverandering impact."
+            },
+            {
+              "id": "havo_geo_2",
+              "name": "Bevolking en Ontwikkeling",
+              "subtopics": ["Bevolkingsgroei", "Demografi sche transitie", "Migratie", "Ontwikkelingsverschillen"],
+              "learning_objectives": [
+                "Bevolkingspiramides interpreteren",
+                "Demografische transitiemodel toepassen",
+                "Push-pull factoren van migratie",
+                "Ontwikkelingsindicatoren vergelijken (HDI, BNP)"
+              ],
+              "common_difficulties": ["Bevolkingspiramides vergelijken", "DTM-fasen", "Ontwikkelingsindicatoren"],
+              "teaching_approach": "Suriname vs andere landen vergelijken. Actuele migratiestromen. Ontwikkelingsprojecten analyseren."
+            },
+            {
+              "id": "havo_geo_3",
+              "name": "Economische Geografie",
+              "subtopics": ["Landbouw", "Industrie", "Diensten sector", "Globalisering"],
+              "learning_objectives": [
+                "Landbouwsystemen classificeren",
+                "Industrielocatiefactoren analyseren",
+                "Tertiaire sector en belang",
+                "Globalisering effecten op Suriname"
+              ],
+              "common_difficulties": ["Locatiefactoren wegen", "Economische modellen toepassen", "Globalisering impact"],
+              "teaching_approach": "Surinaamse cases: goud, bauxiet, rijst, olie. Multinationals in Suriname. Economische kansen en uitdagingen."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_geo_1",
+              "name": "Aardwetenschappen",
+              "subtopics": ["Geologische tijdschaal", "Gesteentevorming", "Landschapsevolutie", "Natuurrampen"],
+              "learning_objectives": [
+                "Geologische tijdschaal en processen",
+                "Gesteentecyclus en mineralen",
+                "Lange-termijn landschapsveranderingen",
+                "Natuurrampen voorspellen en mitigeren"
+              ],
+              "common_difficulties": ["Geologische tijdschaal", "Gesteentetypen identificeren", "Landschapsontwikkeling"],
+              "teaching_approach": "Surinaams geologisch verleden (Guyana Schild). Praktisch gesteenteonderzoek. Klimaatverandering lange termijn."
+            },
+            {
+              "id": "vwo_geo_2",
+              "name": "Stedelijke Geografie",
+              "subtopics": ["Verstedelijking", "Stadsmodellen", "Ruimtelijke planning", "Duurzame steden"],
+              "learning_objectives": [
+                "Verstedelijkingsprocessen analyseren",
+                "Stadsmodellen toepassen (Burgess, Hoyt)",
+                "Ruimtelijke ordeningprincipes",
+                "Smart cities en duurzaamheid"
+              ],
+              "common_difficulties": ["Stadsmodellen toepassen op realiteit", "Planning conflicts", "Duurzaamheid meten"],
+              "teaching_approach": "Paramaribo als case study. Vergelijk met andere Caribische/Zuid-Amerikaanse steden. Planningsprojecten analyseren."
+            },
+            {
+              "id": "vwo_geo_3",
+              "name": "Milieu en Duurzaamheid",
+              "subtopics": ["Klimaatverandering", "Biodiversiteit verlies", "Duurzame ontwikkeling", "Energietransitie"],
+              "learning_objectives": [
+                "Klimaatverandering oorzaken en gevolgen",
+                "Biodiversiteitsbehoud strategieën",
+                "SDG's (Sustainable Development Goals) toepassen",
+                "Duurzame energiebronnen evalueren"
+              ],
+              "common_difficulties": ["Klimaatmodellen interpreteren", "Duurzaamheid kwantificeren", "Trade-offs in beleid"],
+              "teaching_approach": "Surinaams regenwoud en klimaat. Lokale energiebronnen (hydro, bio, solar). Milieubeleid kritisch analyseren."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Oefen met kaartlezen en schaalberekeningen",
+        "Maak schema's van modellen en theorieën",
+        "Leer topografie (landen, hoofdsteden, rivieren, bergen)",
+        "Analyseer actuele gebeurtenissen vanuit geografisch perspectief",
+        "Gebruik Surinaamse voorbeelden om wereldwijde concepten te begrijpen"
+      ],
+      "anti_cheating_approach": "Leg geografische concepten uit met kaarten en diagrammen. Werk vergelijkbare case studies uit. Vraag leerling eerst hun analyse en welke factoren zij denken dat relevant zijn."
+    },
+    "geschiedenis": {
+      "name_nl": "Geschiedenis",
+      "name_en": "History",
+      "description_nl": "Geschiedenis curriculum voor het Surinaamse onderwijs met focus op Surinaamse geschiedenis",
+      "description_en": "History curriculum for Surinamese education with focus on Surinamese history",
+      "education_levels": {
+        "MULO": {
+          "level_name": "Meer Uitgebreid Lager Onderwijs",
+          "age_range": "12-16",
+          "topics": [
+            {
+              "id": "mulo_hist_1",
+              "name": "Surinaamse Geschiedenis",
+              "subtopics": ["Pre-Columbiaanse periode", "Koloniale tijd", "Slavernij en contract arbeid", "Onafhankelijkheid"],
+              "learning_objectives": [
+                "Inheemse bevolking voor kolonisatie kennen",
+                "Nederlandse kolonisatie en plantage-economie begrijpen",
+                "Slavernij, afschaffing en gevolgen",
+                "Weg naar onafhankelijkheid (1975)"
+              ],
+              "common_difficulties": ["Tijdlijnen onthouden", "Oorzaak-gevolg relaties", "Perspectieven begrijpen"],
+              "teaching_approach": "Gebruik primaire bronnen. Surinaamse museums/monumenten bezoeken. Oral history interviews. Meerdere perspectieven."
+            },
+            {
+              "id": "mulo_hist_2",
+              "name": "Wereldgeschiedenis Overzicht",
+              "subtopics": ["Oude beschavingen", "Middeleeuwen", "Ontdekkingsreizen", "Industriële revolutie"],
+              "learning_objectives": [
+                "Belangrijke oude beschavingen (Egypte, Grieken, Romeinen)",
+                "Middeleeuwse samenleving in Europa",
+                "Europese expansie en gevolgen",
+                "Industriële revolutie en modernisering"
+              ],
+              "common_difficulties": ["Veel namen en data", "Geografische context", "Lange-termijn veranderingen"],
+              "teaching_approach": "Tijdlijnen maken. Kaarten gebruiken. Koppel aan Suriname (kolonialisme impact). Visuele materialen."
+            },
+            {
+              "id": "mulo_hist_3",
+              "name": "Bronnen en Methoden",
+              "subtopics": ["Primaire vs secundaire bronnen", "Bronnenkritiek", "Tijdrekening", "Historisch denken"],
+              "learning_objectives": [
+                "Primaire en secundaire bronnen onderscheiden",
+                "Betrouwbaarheid van bronnen beoordelen",
+                "Tijdrekening (voor/na Christus, eeuwen)",
+                "Historische vragen stellen en onderzoeken"
+              ],
+              "common_difficulties": ["Bronnenkritiek toepassen", "Bias herkennen", "Tijdrekening"],
+              "teaching_approach": "Praktisch werken met verschillende bronnen. Surinaamse archieven gebruiken. Kritisch denken stimuleren."
+            }
+          ]
+        },
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_hist_1",
+              "name": "Moderne Surinaamse Geschiedenis",
+              "subtopics": ["Onafhankelijkheid en na", "Decembermoorden", "Binnenlandse oorlog", "Democratie en ontwikkeling"],
+              "learning_objectives": [
+                "Post-onafhankelijkheidsontwikkelingen analyseren",
+                "Militair bewind en 1980-1987 periode",
+                "Binnenlandse oorlog (1986-1992) en gevolgen",
+                "Democratische transitie en hedendaagse uitdagingen"
+              ],
+              "common_difficulties": ["Gevoelige onderwerpen bespreken", "Politieke complexiteit", "Meerdere perspectieven"],
+              "teaching_approach": "Respectvol en evenwichtig. Primaire bronnen en getuigenissen. Kritische analyse van verschillende standpunten."
+            },
+            {
+              "id": "havo_hist_2",
+              "name": "Wereldoorlogen en Dekolonisatie",
+              "subtopics": ["WO I oorzaken en gevolgen", "Interbellum", "WO II", "Koude Oorlog en dekolonisatie"],
+              "learning_objectives": [
+                "Oorzaken en verloop WO I en II",
+                "Totalitaire regimes (fascisme, nazisme, communisme)",
+                "Koude Oorlog dynamiek",
+                "Dekolonisatieprocessen wereldwijd"
+              ],
+              "common_difficulties": ["Complexe oorzaken WO's", "Ideologieën onderscheiden", "Koude Oorlog proxy-conflicten"],
+              "teaching_approach": "Comparatief perspectief. Suriname in WOII (bauxiet). Dekolonisatie Suriname vs andere landen. Documentaires."
+            },
+            {
+              "id": "havo_hist_3",
+              "name": "Sociale en Culturele Geschiedenis",
+              "subtopics": ["Emancipatiebewegingen", "Culturele diversiteit", "Religie en samenleving", "Gender en gelijkheid"],
+              "learning_objectives": [
+                "Emancipatie van verschillende groepen (vrouwen, arbeiders, minderheden)",
+                "Multiculturalisme in Suriname",
+                "Rol van religie in Surinaamse samenleving",
+                "Gendergelijkheid door de tijd"
+              ],
+              "common_difficulties": ["Sociale veranderingen analyseren", "Culturele complexiteit", "Presentisme vermijden"],
+              "teaching_approach": "Surinaamse multiculturele samenleving als uniek voorbeeld. Oral history. Culturele artefacten en tradities."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_hist_1",
+              "name": "Atlantische Wereld en Slavernij",
+              "subtopics": ["Driehoekshandel", "Plantage-economieën", "Verzet en abolitionisme", "Erfenis van slavernij"],
+              "learning_objectives": [
+                "Atlantische handelssysteem en slavenhandel analyseren",
+                "Plantage-economie in Suriname en Cariben",
+                "Verzetsvormen en abolitiebeweging",
+                "Langetermijneffecten van slavernij op hedendaagse samenleving"
+              ],
+              "common_difficulties": ["Economische aspecten begrijpen", "Morele dimensies bespreken", "Historische continuïteit"],
+              "teaching_approach": "Bronnenonderzoek in archieven. Suriname als centraal voorbeeld. Debat over reparaties en erfgoed. Ethische reflectie."
+            },
+            {
+              "id": "vwo_hist_2",
+              "name": "Revoluties en Staatsvorming",
+              "subtopics": ["Franse Revolutie", "Amerikaanse onafhankelijkheid", "Latijns-Amerikaanse revoluties", "Nationalisme"],
+              "learning_objectives": [
+                "Revolutionaire bewegingen vergelijken",
+                "Verlichting ideeën en politieke verandering",
+                "Staatsvorming en nationale identiteit",
+                "Nationalisme in 19e en 20e eeuw"
+              ],
+              "common_difficulties": ["Ideologische concepten", "Comparatieve analyse", "Lange-termijn impact"],
+              "teaching_approach": "Comparatief: Europa vs Amerika's. Suriname's weg naar onafhankelijkheid in context. Primaire documenten analyseren."
+            },
+            {
+              "id": "vwo_hist_3",
+              "name": "Globalisering en Hedendaagse Wereld",
+              "subtopics": ["Economische globalisering", "Migratie en diaspora", "Internationale organisaties", "Mondiale uitdagingen"],
+              "learning_objectives": [
+                "Globalisering vanaf 1945 analyseren",
+                "Surinaamse diaspora en transnationale connecties",
+                "Rol van VN, IMF, Wereldbank, etc.",
+                "Hedendaagse uitdagingen (klimaat, ongelijkheid, conflict)"
+              ],
+              "common_difficulties": ["Globale processen begrijpen", "Suriname's positie", "Toekomstscenario's"],
+              "teaching_approach": "Actuele gebeurtenissen analyseren. Suriname in globale context. Kritisch denken over bronnen en perspectieven."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Maak tijdlijnen van belangrijke gebeurtenissen",
+        "Oefen met bronnenanalyse en -vergelijking",
+        "Leer oorzaak-gevolg relaties, niet alleen feiten",
+        "Schrijf regelmatig korte essays om argumentatie te oefenen",
+        "Verbind Surinaamse geschiedenis met wereldgeschiedenis"
+      ],
+      "anti_cheating_approach": "Leg historische concepten en context uit. Werk vergelijkbare bronnenanalyses uit. Vraag leerling eerst hun interpretatie en welke bronnen ze hebben geanalyseerd. Focus op historisch denken, niet feitenkennis alleen."
+    },
+    "economie": {
+      "name_nl": "Economie",
+      "name_en": "Economics",
+      "description_nl": "Economie curriculum voor het Surinaamse onderwijs",
+      "description_en": "Economics curriculum for Surinamese education",
+      "education_levels": {
+        "HAVO": {
+          "level_name": "Hoger Algemeen Voortgezet Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "havo_econ_1",
+              "name": "Basis Economische Concepten",
+              "subtopics": ["Schaarste en keuze", "Vraag en aanbod", "Marktevenwicht", "Elasticiteit"],
+              "learning_objectives": [
+                "Schaarste en opportuniteitskosten begrijpen",
+                "Vraag- en aanbodcurves tekenen en interpreteren",
+                "Marktevenwicht bepalen",
+                "Prijselasticiteit berekenen en interpreteren"
+              ],
+              "common_difficulties": ["Grafieken tekenen", "Verschuivingen vs bewegingen langs curve", "Elasticiteitsberekeningen"],
+              "teaching_approach": "Surinaamse voorbeelden (rijst, goud, olie). Grafieken stap-voor-stap. Actuele markten analyseren."
+            },
+            {
+              "id": "havo_econ_2",
+              "name": "Bedrijfseconomie",
+              "subtopics": ["Productie en kosten", "Opbrengsten", "Winst maximalisatie", "Marktstructuren"],
+              "learning_objectives": [
+                "Kosten berekenen (vaste, variabele, totale, marginale)",
+                "Opbrengsten en winst bepalen",
+                "Winstmaximalisatie-punt vinden",
+                "Marktvormen vergelijken (volkomen concurrentie, monopolie, etc.)"
+              ],
+              "common_difficulties": ["Marginale concepten", "Verschillende kostensoorten", "Marktvormen onderscheiden"],
+              "teaching_approach": "Surinaamse bedrijven als cases. Stappenplan voor berekeningen. Grafieken voor elk concept."
+            },
+            {
+              "id": "havo_econ_3",
+              "name": "Macro-economie Basis",
+              "subtopics": ["BNP en economische groei", "Werkloosheid", "Inflatie", "Overheidsbeleid"],
+              "learning_objectives": [
+                "BNP berekenen en interpreteren",
+                "Werkloosheidstypen herkennen",
+                "Inflatie oorzaken en gevolgen",
+                "Fiscaal en monetair beleid begrijpen"
+              ],
+              "common_difficulties": ["BNP componenten", "Beleidseffecten voorspellen", "Macro-indicatoren interpreteren"],
+              "teaching_approach": "Surinaamse economie analyseren. Actuele CBS-data gebruiken. Beleidskeuzes kritisch beoordelen."
+            }
+          ]
+        },
+        "VWO": {
+          "level_name": "Voorbereidend Wetenschappelijk Onderwijs",
+          "age_range": "16-18",
+          "topics": [
+            {
+              "id": "vwo_econ_1",
+              "name": "Geavanceerde Micro-economie",
+              "subtopics": ["Consumentengedrag", "Producentengedrag", "Marktfalen", "Welvaartseconomie"],
+              "learning_objectives": [
+                "Nut en preferenties modelleren",
+                "Productiecurves en isoquanten",
+                "Marktfalen (externe effecten, publieke goederen) analyseren",
+                "Welvaart meten (consumenten- en producentensurplus)"
+              ],
+              "common_difficulties": ["Nut-maximalisatie", "Isoquanten en isokostenlijnen", "Marktfalen kwantificeren"],
+              "teaching_approach": "Wiskundige benadering met grafieken. Surinaamse marktfalen voorbeelden (milieu, publieke goederen)."
+            },
+            {
+              "id": "vwo_econ_2",
+              "name": "Geavanceerde Macro-economie",
+              "subtopics": ["AD-AS model", "IS-LM model", "Philipscurve", "Internationale handel"],
+              "learning_objectives": [
+                "AD-AS model gebruiken voor analyse",
+                "IS-LM model toepassen",
+                "Trade-off werkloosheid-inflatie (Philipscurve)",
+                "Comparatieve voordelen en handelstheorie"
+              ],
+              "common_difficulties": ["Modellen combineren", "Beleid in modellen", "Internationale economie"],
+              "teaching_approach": "Stapsgewijze modelopbouw. Suriname's handelspositie. CARICOM en internationale economie."
+            },
+            {
+              "id": "vwo_econ_3",
+              "name": "Ontwikkelingseconomie",
+              "subtopics": ["Economische ontwikkeling", "Armoede en ongelijkheid", "Duurzame ontwikkeling", "Institutionele economie"],
+              "learning_objectives": [
+                "Ontwikkelingsindicatoren vergelijken",
+                "Armoede meten en verklaren",
+                "SDG's en duurzame ontwikkeling",
+                "Rol van instituties in economische groei"
+              ],
+              "common_difficulties": ["Ontwikkeling meten", "Ongelijkheid vs armoede", "Institutionele kwaliteit"],
+              "teaching_approach": "Suriname als ontwikkelingsland analyseren. Vergelijk met buurlanden. Beleidsevaluatie kritisch."
+            }
+          ]
+        }
+      },
+      "exam_prep_strategies": [
+        "Oefen met grafieken tekenen en interpreteren",
+        "Maak formulekaarten en oefen berekeningen",
+        "Analyseer actuele economische gebeurtenissen",
+        "Leer economische begrippen en hun exacte betekenis",
+        "Maak verbanden tussen micro- en macro-economie"
+      ],
+      "anti_cheating_approach": "Leg economische concepten uit met grafieken en voorbeelden. Werk vergelijkbare opgaven uit met stappenplan. Vraag leerling eerst hun economische redenering en welke concepten ze denken toe te passen."
+    }
+  },
+  "general_teaching_principles": {
+    "step_by_step_guidance": "Always break down complex problems into smaller, manageable steps",
+    "socratic_method": "Ask guiding questions instead of giving direct answers when appropriate",
+    "check_understanding": "Before providing more help, ask what the student has already tried or understood",
+    "conceptual_before_procedural": "Explain WHY something works before showing HOW to do it",
+    "real_world_connections": "Connect abstract concepts to Surinamese context and real-life situations",
+    "encourage_independence": "Teach problem-solving strategies, not just solutions",
+    "differentiation": "Adapt explanation level based on student's education level",
+    "multi_modal": "Suggest different approaches: visual, verbal, hands-on when applicable",
+    "mistake_friendly": "Treat errors as learning opportunities, not failures",
+    "cultural_relevance": "Use examples relevant to Surinamese culture and context"
+  },
+  "anti_cheating_strategies": {
+    "approach": "Educational, not punitive",
+    "principles": [
+      "Never provide complete homework answers without explanation",
+      "Always ask: 'What have you tried so far?' before helping",
+      "Focus on teaching the PROCESS, not just the answer",
+      "Provide hints and guide thinking rather than solving directly",
+      "Explain concepts thoroughly so student can solve similar problems",
+      "For essays/writing: suggest structure and ideas, never write full text",
+      "For math: show method with similar example, let student apply to their problem",
+      "For programming: explain concept and debugging approach, don't write complete code",
+      "Encourage showing work and explaining reasoning",
+      "Promote understanding over memorization"
+    ],
+    "red_flags": [
+      "Student asking for 'the answer' without showing any work",
+      "Requests to 'just write the essay/code for me'",
+      "Questions during typical exam hours (verify if it's homework help)",
+      "Copy-paste of entire assignment without specific question"
+    ],
+    "appropriate_responses": [
+      "Let's work through this together. What's the first step you think we should take?",
+      "I can help you understand how to approach this. Can you show me what you've tried?",
+      "Instead of giving you the answer, let me explain the concept so you can solve it yourself.",
+      "I'll show you a similar example, then you try your specific problem."
+    ]
+  }
+}

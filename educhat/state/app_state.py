@@ -1,8 +1,8 @@
 """Main application state for EduChat."""
 
 import reflex as rx
-from typing import List, Dict, Optional
-from datetime import datetime
+from typing import List, Dict, Optional, Any
+from datetime import datetime, date
 import uuid
 import asyncio
 from educhat.services.ai_service import get_ai_service
@@ -43,6 +43,11 @@ class AppState(AuthState):
     # Initialization flag  
     _initialized: bool = False
     _conversations_loaded_for_user: str = ""  # Track which user_id conversations were loaded for
+    
+    # Progress tracking state
+    current_practice_problem: Optional[Dict] = None  # Active practice problem
+    progress_data: Optional[Dict] = None  # User's progress summary
+    learning_streak: int = 0  # Current learning streak
     
     # ==========================================================================
     # Authentication & Session Management
@@ -1223,4 +1228,264 @@ class AppState(AuthState):
             print(f"[LOAD_MSGS] Error loading messages: {e}")
             traceback.print_exc()
             self.messages = []
-
+    
+    # ==========================================================================
+    # Progress Tracking Methods
+    # ==========================================================================
+    
+    async def track_learning_activity(
+        self,
+        subject: str,
+        education_level: str,
+        topic: Optional[str] = None,
+        subtopic: Optional[str] = None,
+        activity_type: str = "homework_help",
+        understood: Optional[bool] = None,
+        attempts: int = 1,
+        time_spent: Optional[int] = None,
+        student_feedback: Optional[str] = None
+    ):
+        """
+        Track a learning activity in the database.
+        
+        Args:
+            subject: Subject name (e.g., 'wiskunde')
+            education_level: Education level (e.g., 'HAVO')
+            topic: Topic within subject
+            subtopic: More specific subtopic
+            activity_type: Type of activity ('practice_problem', 'homework_help', etc.)
+            understood: Whether student understood the concept
+            attempts: Number of attempts/hints needed
+            time_spent: Time spent in seconds
+            student_feedback: Optional feedback from student
+        """
+        try:
+            if not self.user_id:
+                print("[PROGRESS] No user logged in")
+                return
+            
+            from educhat.services.supabase_client import get_supabase
+            supabase = get_supabase()
+            
+            # Insert progress record
+            data = {
+                "user_id": self.user_id,
+                "subject": subject.lower(),
+                "education_level": education_level.upper(),
+                "topic": topic,
+                "subtopic": subtopic,
+                "activity_type": activity_type,
+                "understood": understood,
+                "attempts": attempts,
+                "time_spent": time_spent,
+                "student_feedback": student_feedback
+            }
+            
+            result = supabase.table("student_progress").insert(data).execute()
+            print(f"[PROGRESS] Tracked activity: {subject}/{topic} - understood: {understood}")
+            
+            # Reload progress data
+            await self.load_progress_data()
+            
+        except Exception as e:
+            print(f"[PROGRESS] Error tracking activity: {e}")
+    
+    async def load_progress_data(self):
+        """Load user's progress summary from database."""
+        try:
+            if not self.user_id:
+                return
+            
+            from educhat.services.supabase_client import get_supabase
+            supabase = get_supabase()
+            
+            # Get subject mastery data
+            mastery_result = supabase.table("subject_mastery")\
+                .select("*")\
+                .eq("user_id", self.user_id)\
+                .execute()
+            
+            # Get learning streak
+            streak_result = supabase.table("learning_streaks")\
+                .select("*")\
+                .eq("user_id", self.user_id)\
+                .single()\
+                .execute()
+            
+            # Store data
+            self.progress_data = {
+                "mastery": mastery_result.data if mastery_result.data else [],
+                "timestamp": datetime.now().isoformat()
+            }
+            
+            if streak_result.data:
+                self.learning_streak = streak_result.data.get("current_streak", 0)
+            
+            print(f"[PROGRESS] Loaded progress data - {len(mastery_result.data or [])} subjects, {self.learning_streak} day streak")
+            
+        except Exception as e:
+            print(f"[PROGRESS] Error loading progress: {e}")
+            self.progress_data = None
+            self.learning_streak = 0
+    
+    async def get_weak_topics(self, subject: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get topics where student is struggling.
+        
+        Args:
+            subject: Optional subject filter
+        
+        Returns:
+            List of dicts with topic info and struggle metrics
+        """
+        try:
+            if not self.user_id:
+                return []
+            
+            from educhat.services.supabase_client import get_supabase
+            supabase = get_supabase()
+            
+            # Query weak topics view
+            query = supabase.rpc("weak_topics_per_user")\
+                .eq("user_id", self.user_id)
+            
+            if subject:
+                query = query.eq("subject", subject.lower())
+            
+            result = query.execute()
+            
+            return result.data if result.data else []
+            
+        except Exception as e:
+            print(f"[PROGRESS] Error getting weak topics: {e}")
+            return []
+    
+    async def get_recommended_practice(self) -> List[Dict[str, Any]]:
+        """
+        Get personalized practice recommendations based on progress.
+        
+        Returns:
+            List of recommended practice items
+        """
+        try:
+            if not self.progress_data:
+                await self.load_progress_data()
+            
+            recommendations = []
+            
+            if not self.progress_data:
+                return []
+            
+            # Analyze mastery data
+            for subject_mastery in self.progress_data.get("mastery", []):
+                mastery_level = subject_mastery.get("mastery_level", 0)
+                weak_topics = subject_mastery.get("weak_topics", [])
+                
+                # Recommend practice for low mastery
+                if mastery_level < 0.7 and weak_topics:
+                    recommendations.append({
+                        "subject": subject_mastery.get("subject"),
+                        "education_level": subject_mastery.get("education_level"),
+                        "reason": "Versterken zwakke onderwerpen",
+                        "topics": weak_topics[:3],  # Top 3 weak topics
+                        "mastery_level": mastery_level
+                    })
+            
+            # Sort by lowest mastery first
+            recommendations.sort(key=lambda x: x.get("mastery_level", 1))
+            
+            return recommendations
+            
+        except Exception as e:
+            print(f"[PROGRESS] Error getting recommendations: {e}")
+            return []
+    
+    async def generate_practice_problem(
+        self,
+        subject: str,
+        education_level: str,
+        topic: Optional[str] = None,
+        difficulty: str = "medium"
+    ):
+        """
+        Generate a custom practice problem and store it in state.
+        
+        Args:
+            subject: Subject name
+            education_level: Education level
+            topic: Optional specific topic
+            difficulty: Difficulty level
+        """
+        try:
+            self.is_loading = True
+            
+            ai_service = get_ai_service()
+            
+            # Get user context
+            user_context = ""
+            if self.user_context:
+                user_context = f"Leerstijl: {', '.join(self.user_context.get('learning_style', []))}. "
+                if self.user_context.get('weak_subjects'):
+                    user_context += f"Zwakke vakken: {', '.join(self.user_context.get('weak_subjects', []))}."
+            
+            # Generate problem
+            problem = await ai_service.generate_practice_problem(
+                subject=subject,
+                education_level=education_level,
+                topic=topic,
+                difficulty=difficulty,
+                user_context=user_context
+            )
+            
+            if problem.get("success"):
+                self.current_practice_problem = problem
+                print(f"[PRACTICE] Generated problem for {subject}/{topic}")
+            else:
+                print(f"[PRACTICE] Failed to generate: {problem.get('error')}")
+                self.current_practice_problem = None
+            
+        except Exception as e:
+            print(f"[PRACTICE] Error generating problem: {e}")
+            self.current_practice_problem = None
+        finally:
+            self.is_loading = False
+    
+    def clear_practice_problem(self):
+        """Clear the current practice problem."""
+        self.current_practice_problem = None
+    
+    async def submit_practice_answer(
+        self,
+        understood: bool,
+        attempts: int,
+        time_spent: Optional[int] = None,
+        feedback: Optional[str] = None
+    ):
+        """
+        Submit answer to practice problem and track progress.
+        
+        Args:
+            understood: Whether student understood and solved correctly
+            attempts: Number of attempts/hints used
+            time_spent: Time spent in seconds
+            feedback: Optional student feedback
+        """
+        if not self.current_practice_problem:
+            return
+        
+        problem = self.current_practice_problem
+        
+        await self.track_learning_activity(
+            subject=problem.get("subject", ""),
+            education_level=problem.get("education_level", ""),
+            topic=problem.get("topic"),
+            subtopic=None,
+            activity_type="practice_problem",
+            understood=understood,
+            attempts=attempts,
+            time_spent=time_spent,
+            student_feedback=feedback
+        )
+        
+        # Clear problem after submission
+        self.clear_practice_problem()

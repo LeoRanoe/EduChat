@@ -81,7 +81,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                         ),
                         transition="all 0.3s ease",
                     )
-                    for i in range(8)
+                    for i in range(11)  # Updated from 8 to 11
                 ],
                 spacing="2",
                 display=["none", "flex", "flex"],
@@ -430,6 +430,196 @@ def question_step_7(state: OnboardingState) -> rx.Component:
     )
 
 
+def question_step_8(state: OnboardingState) -> rx.Component:
+    """Question: Wat is jouw leerstijl?"""
+    from educhat.state.onboarding_state import LEARNING_STYLES
+    
+    return rx.vstack(
+        rx.heading(
+            rx.cond(
+                AuthState.is_dutch,
+                "Wat is jouw leerstijl?",
+                "What is your learning style?"
+            ),
+            font_size=["1rem", "1.0625rem", "1.125rem"],
+            font_weight="700",
+            color=T.text_primary,
+            line_height="1.3",
+            margin_bottom="0.375rem",
+            as_="h2",
+        ),
+        rx.text(
+            rx.cond(
+                AuthState.is_dutch,
+                "Selecteer de manieren waarop je het liefst leert (meerdere mogelijk)",
+                "Select the ways you prefer to learn (multiple choices possible)"
+            ),
+            font_size="0.875rem",
+            color=T.text_secondary,
+            line_height="1.4",
+            margin_bottom="0.625rem",
+        ),
+        multi_select_group(
+            options=LEARNING_STYLES,
+            selected_values=state.learning_style,
+            on_toggle=state.toggle_learning_style,
+        ),
+        spacing="0",
+        align="start",
+        width="100%",
+    )
+
+
+def question_step_9(state: OnboardingState) -> rx.Component:
+    """Question: Welke soort hulp bij huiswerk?"""
+    from educhat.state.onboarding_state import HOMEWORK_HELP_PREFERENCES
+    
+    return rx.vstack(
+        rx.heading(
+            rx.cond(
+                AuthState.is_dutch,
+                "Welke soort hulp bij huiswerk wil je?",
+                "What kind of homework help do you want?"
+            ),
+            font_size=["1rem", "1.0625rem", "1.125rem"],
+            font_weight="700",
+            color=T.text_primary,
+            line_height="1.3",
+            margin_bottom="0.375rem",
+            as_="h2",
+        ),
+        rx.text(
+            rx.cond(
+                AuthState.is_dutch,
+                "Dit helpt ons om je de juiste ondersteuning te geven",
+                "This helps us provide you with the right support"
+            ),
+            font_size="0.875rem",
+            color=T.text_secondary,
+            line_height="1.4",
+            margin_bottom="0.625rem",
+        ),
+        multi_select_group(
+            options=HOMEWORK_HELP_PREFERENCES,
+            selected_values=state.homework_help_preference,
+            on_toggle=state.toggle_homework_help_preference,
+        ),
+        spacing="0",
+        align="start",
+        width="100%",
+    )
+
+
+def question_step_10(state: OnboardingState) -> rx.Component:
+    """Question: Bij welke vakken heb je het meest moeite?"""
+    # Define subjects for difficulty rating
+    subjects = {
+        "wiskunde": {"label_nl": "Wiskunde", "label_en": "Mathematics"},
+        "nederlands": {"label_nl": "Nederlands", "label_en": "Dutch"},
+        "engels": {"label_nl": "Engels", "label_en": "English"},
+        "programmeren": {"label_nl": "Programmeren", "label_en": "Programming"},
+        "natuurkunde": {"label_nl": "Natuurkunde", "label_en": "Physics"},
+        "scheikunde": {"label_nl": "Scheikunde", "label_en": "Chemistry"},
+        "biologie": {"label_nl": "Biologie", "label_en": "Biology"},
+        "aardrijkskunde": {"label_nl": "Aardrijkskunde", "label_en": "Geography"},
+        "geschiedenis": {"label_nl": "Geschiedenis", "label_en": "History"},
+        "economie": {"label_nl": "Economie", "label_en": "Economics"},
+    }
+    
+    return rx.vstack(
+        rx.heading(
+            rx.cond(
+                AuthState.is_dutch,
+                "Bij welke vakken heb je het meest moeite?",
+                "Which subjects do you struggle with most?"
+            ),
+            font_size=["1rem", "1.0625rem", "1.125rem"],
+            font_weight="700",
+            color=T.text_primary,
+            line_height="1.3",
+            margin_bottom="0.375rem",
+            as_="h2",
+        ),
+        rx.text(
+            rx.cond(
+                AuthState.is_dutch,
+                "Selecteer de vakken waar je extra hulp bij nodig hebt",
+                "Select the subjects where you need extra help"
+            ),
+            font_size="0.875rem",
+            color=T.text_secondary,
+            line_height="1.4",
+            margin_bottom="0.625rem",
+        ),
+        rx.vstack(
+            *[
+                rx.hstack(
+                    rx.text(
+                        rx.cond(
+                            AuthState.is_dutch,
+                            subject_data["label_nl"],
+                            subject_data["label_en"]
+                        ),
+                        font_size="0.9375rem",
+                        font_weight="500",
+                        color=T.text_primary,
+                        width="140px",
+                    ),
+                    rx.hstack(
+                        *[
+                            rx.button(
+                                rx.cond(AuthState.is_dutch, level_label_nl, level_label_en),
+                                on_click=state.set_subject_difficulty(subject_id, level_id),
+                                background=rx.cond(
+                                    state.subject_difficulties.get(subject_id, "") == level_id,
+                                    COLORS["primary_green"],
+                                    T.bg_secondary
+                                ),
+                                color=rx.cond(
+                                    state.subject_difficulties.get(subject_id, "") == level_id,
+                                    "white",
+                                    T.text_secondary
+                                ),
+                                border=f"1.5px solid {T.border}",
+                                border_radius="8px",
+                                padding="8px 16px",
+                                font_size="0.875rem",
+                                cursor="pointer",
+                                transition="all 0.2s ease",
+                                _hover={
+                                    "background": COLORS["primary_green"],
+                                    "color": "white",
+                                    "border_color": COLORS["primary_green"],
+                                },
+                            )
+                            for level_id, level_label_nl, level_label_en in [
+                                ("none", "Geen", "None"),
+                                ("little", "Beetje", "A little"),
+                                ("moderate", "Matig", "Moderate"),
+                                ("much", "Veel", "A lot")
+                            ]
+                        ],
+                        spacing="2",
+                        flex="1",
+                    ),
+                    width="100%",
+                    justify="between",
+                    padding="12px",
+                    border_radius="12px",
+                    background=T.bg_secondary,
+                    border=f"1px solid {T.border_light}",
+                )
+                for subject_id, subject_data in subjects.items()
+            ],
+            spacing="3",
+            width="100%",
+        ),
+        spacing="0",
+        align="start",
+        width="100%",
+    )
+
+
 def quiz_content(state: OnboardingState) -> rx.Component:
     """Reimagined quiz with animated cards and modern layout."""
     return rx.box(
@@ -541,7 +731,19 @@ def quiz_content(state: OnboardingState) -> rx.Component:
                                                 rx.cond(
                                                     state.current_step == 6,
                                                     question_step_6(state),
-                                                    question_step_7(state),
+                                                    rx.cond(
+                                                        state.current_step == 7,
+                                                        question_step_7(state),
+                                                        rx.cond(
+                                                            state.current_step == 8,
+                                                            question_step_8(state),
+                                                            rx.cond(
+                                                                state.current_step == 9,
+                                                                question_step_9(state),
+                                                                question_step_10(state),
+                                                            ),
+                                                        ),
+                                                    ),
                                                 ),
                                             ),
                                         ),

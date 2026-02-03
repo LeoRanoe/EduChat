@@ -1,0 +1,518 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "purpose": "Teaching examples that guide learning without enabling direct cheating",
+    "usage": "Provide similar examples when students ask for help, then let them apply to their specific problem",
+    "last_updated": "2026-02-03"
+  },
+  "examples": {
+    "wiskunde": {
+      "glo_fractions": {
+        "concept": "Breuken optellen met verschillende noemers",
+        "example_problem": "Bereken: 1/3 + 1/4",
+        "step_by_step": [
+          "Stap 1: Vind een gemeenschappelijke noemer (kleinste gemene veelvoud van 3 en 4 = 12)",
+          "Stap 2: Maak gelijkwaardige breuken: 1/3 = 4/12 en 1/4 = 3/12",
+          "Stap 3: Tel de tellers op: 4/12 + 3/12 = 7/12",
+          "Antwoord: 7/12"
+        ],
+        "similar_practice": "Nu probeer jij: 1/2 + 1/5 (Welke gemeenschappelijke noemer gebruik je?)"
+      },
+      "mulo_equations": {
+        "concept": "Lineaire vergelijkingen oplossen",
+        "example_problem": "Los op: 3x + 7 = 22",
+        "step_by_step": [
+          "Stap 1: Isoleer de term met x → Trek 7 af van beide kanten: 3x = 15",
+          "Stap 2: Los x op → Deel beide kanten door 3: x = 5",
+          "Stap 3: Controleer → 3(5) + 7 = 15 + 7 = 22 ✓"
+        ],
+        "key_principle": "Wat je aan de ene kant doet, moet je ook aan de andere kant doen",
+        "similar_practice": "Nu jij: 2x + 5 = 17"
+      },
+      "havo_quadratic": {
+        "concept": "Kwadratische vergelijking met abc-formule",
+        "example_problem": "Los op: x² + 5x + 6 = 0",
+        "step_by_step": [
+          "Stap 1: Identificeer a, b, c → a=1, b=5, c=6",
+          "Stap 2: Bereken discriminant: D = b² - 4ac = 25 - 24 = 1",
+          "Stap 3: Pas abc-formule toe: x = (-b ± √D) / 2a",
+          "Stap 4: x = (-5 ± √1) / 2 = (-5 ± 1) / 2",
+          "Stap 5: x₁ = -2 of x₂ = -3"
+        ],
+        "alternative_method": "Je kunt ook ontbinden: (x+2)(x+3) = 0",
+        "similar_practice": "Probeer: x² + 6x + 8 = 0"
+      },
+      "vwo_derivative": {
+        "concept": "Afgeleide berekenen met productregel",
+        "example_problem": "Bereken de afgeleide van f(x) = x² · sin(x)",
+        "step_by_step": [
+          "Stap 1: Herken productvorm: f(x) = u·v waar u=x² en v=sin(x)",
+          "Stap 2: Bereken u' en v': u'=2x en v'=cos(x)",
+          "Stap 3: Pas productregel toe: f'(x) = u'·v + u·v'",
+          "Stap 4: f'(x) = 2x·sin(x) + x²·cos(x)"
+        ],
+        "formula": "Productregel: (u·v)' = u'·v + u·v'",
+        "similar_practice": "Probeer: g(x) = x³ · cos(x)"
+      }
+    },
+    "nederlands": {
+      "glo_dt_rule": {
+        "concept": "d/t-regel toepassen",
+        "example_problem": "Hij loop... naar school (lopen)",
+        "step_by_step": [
+          "Stap 1: Is het onderwerp STOFKRAMP? (jij, je) → NEE (het is 'hij')",
+          "Stap 2: Gebruik de stam + t → loop + t = loopt",
+          "Antwoord: Hij loopt naar school"
+        ],
+        "rule": "STOFKRAMP (jij, je, u niet meegerekend) krijgt alleen stam. Anderen krijgen stam+t",
+        "similar_practice": "Probeer: Zij speel... (spelen), Wij fiets... (fietsen)"
+      },
+      "mulo_sentence_analysis": {
+        "concept": "Zinsdelen herkennen",
+        "example_problem": "Ontleed: 'De jongen geeft zijn moeder een cadeau'",
+        "step_by_step": [
+          "Stap 1: Vind het werkwoord → 'geeft' (wat gebeurt er?)",
+          "Stap 2: Wie/wat geeft? → 'De jongen' (onderwerp)",
+          "Stap 3: Aan wie? → 'zijn moeder' (meewerkend voorwerp)",
+          "Stap 4: Wat wordt gegeven? → 'een cadeau' (lijdend voorwerp)"
+        ],
+        "visualization": "Onderwerp → Werkwoord → Meewerkend voorwerp → Lijdend voorwerp",
+        "similar_practice": "Ontleed: 'Het meisje schrijft haar vriendin een brief'"
+      },
+      "havo_argumentative_essay": {
+        "concept": "Betoog schrijven met STAAL-structuur",
+        "example_topic": "Moeten telefoons verboden worden op school?",
+        "structure": [
+          "Stelling: Telefoons moeten verboden worden tijdens lessen",
+          "Tegenargument: Tegenstanders zeggen dat telefoons nuttig zijn voor opzoeken",
+          "Argument: Echter, onderzoek toont dat telefoons afleiden en leerresultaten verminderen",
+          "Afsluiting: Daarom is een verbod tijdens lessen noodzakelijk",
+          "Link: Dit verbod helpt leerlingen om beter te focussen"
+        ],
+        "tips": "Begin met een pakkende openingszin. Gebruik signaalwoorden (echter, daarom, bovendien)",
+        "similar_practice": "Schrijf STAAL-structuur voor: 'Moet huiswerk afgeschaft worden?'"
+      },
+      "vwo_stylistic_analysis": {
+        "concept": "Stijlmiddelen analyseren en effect beschrijven",
+        "example_text": "'De wind huilde door de verlaten straten'",
+        "analysis": [
+          "Stijlmiddel: Personificatie (de wind 'huilt' - menselijke eigenschap)",
+          "Effect: Creëert sombere, onheilspellende sfeer",
+          "Betekenis: Versterkt gevoel van verlatenheid en eenzaamheid"
+        ],
+        "analysis_template": "Dit is [stijlmiddel], wat [effect] creëert en [betekenis/functie] heeft",
+        "similar_practice": "Analyseer: 'Haar ogen waren twee glinsterende sterren'"
+      }
+    },
+    "programmeren": {
+      "mulo_loop_basics": {
+        "concept": "For-loop gebruiken om getallen af te drukken",
+        "example_problem": "Print getallen 1 tot en met 5",
+        "code_example": "for i in range(1, 6):\n    print(i)",
+        "explanation": [
+          "range(1, 6) geeft getallen 1 t/m 5 (eindgetal niet inbegrepen!)",
+          "i is de variabele die elke waarde krijgt",
+          "De ingesprongen code wordt herhaald voor elke waarde"
+        ],
+        "common_mistake": "range(1, 5) geeft 1-4, niet 1-5. Gebruik range(1, 6) voor 1-5",
+        "similar_practice": "Schrijf een loop die getallen 10 t/m 20 print"
+      },
+      "havo_function_example": {
+        "concept": "Functie met parameters en return value",
+        "example_problem": "Schrijf een functie die de oppervlakte van een rechthoek berekent",
+        "code_example": "def bereken_oppervlakte(lengte, breedte):\n    oppervlakte = lengte * breedte\n    return oppervlakte\n\n# Gebruik:\nresultaat = bereken_oppervlakte(5, 3)\nprint(resultaat)  # Output: 15",
+        "explanation": [
+          "def = definitie van een functie",
+          "lengte en breedte zijn parameters (input)",
+          "return stuurt een waarde terug",
+          "Je moet de functie aanroepen om hem te gebruiken"
+        ],
+        "debugging_tip": "Als je geen output ziet, vergeet je misschien print() of return",
+        "similar_practice": "Schrijf een functie die de omtrek van een rechthoek berekent"
+      },
+      "vwo_recursion": {
+        "concept": "Recursieve functie voor faculteit",
+        "example_problem": "Bereken 5! (5 faculteit = 5 × 4 × 3 × 2 × 1)",
+        "code_example": "def faculteit(n):\n    # Base case\n    if n == 0 or n == 1:\n        return 1\n    # Recursive case\n    else:\n        return n * faculteit(n - 1)",
+        "explanation": [
+          "Base case: Waar stopt de recursie? (n=0 of n=1)",
+          "Recursive case: Functie roept zichzelf aan met kleinere waarde",
+          "faculteit(5) → 5 * faculteit(4) → 5 * 4 * faculteit(3) → etc."
+        ],
+        "visualization": "faculteit(5) = 5 * faculteit(4) = 5 * 24 = 120",
+        "warning": "Vergeet geen base case! Anders krijg je een stack overflow",
+        "similar_practice": "Schrijf een recursieve functie voor Fibonacci getallen"
+      },
+      "debugging_approach": {
+        "concept": "Systematisch debuggen",
+        "problem_type": "Code geeft een error of verkeerde output",
+        "debugging_steps": [
+          "1. Lees de error message zorgvuldig (welke regel? welk type error?)",
+          "2. Print waardes van variabelen op kritieke momenten",
+          "3. Test met simpele input eerst (bijv. lege lijst, 0, 1)",
+          "4. Commentaar delen van de code uit om probleem te isoleren",
+          "5. Gebruik een debugger om stap-voor-stap door code te gaan",
+          "6. Google de error message + programmeertaal"
+        ],
+        "common_errors": {
+          "IndexError": "Je probeert een element te pakken dat niet bestaat (bijv. lijst[10] terwijl lijst maar 5 elementen heeft)",
+          "NameError": "Variabele is niet gedefinieerd of verkeerd gespeld",
+          "IndentationError": "Python: Inspringen is niet correct",
+          "SyntaxError": "Typfout in de code (haakje vergeten, punt in plaats van komma, etc.)"
+        }
+      }
+    },
+    "engels": {
+      "glo_present_perfect": {
+        "concept": "Present Perfect vs Past Simple",
+        "rule": "Present Perfect = resultaat nu belangrijk. Past Simple = specifiek moment in verleden",
+        "examples": [
+          {
+            "sentence": "I have visited London. (= ooit in mijn leven, tijd niet belangrijk)",
+            "contrast": "I visited London last year. (= specifiek moment)"
+          },
+          {
+            "sentence": "She has finished her homework. (= ze is nu klaar)",
+            "contrast": "She finished her homework at 5 PM. (= specifieke tijd)"
+          }
+        ],
+        "formula": "Present Perfect = have/has + past participle (3e vorm)",
+        "signal_words": "ever, never, already, yet, just, recently",
+        "similar_practice": "Kies: 'I (have eaten / ate) breakfast this morning' - welke is correct en waarom?"
+      },
+      "mulo_conditional": {
+        "concept": "First Conditional (type 1)",
+        "use": "Reële mogelijkheid in de toekomst",
+        "structure": "If + present simple, will + infinitive",
+        "examples": [
+          "If it rains, we will stay home.",
+          "If you study hard, you will pass the exam.",
+          "We will go to the beach if the weather is nice."
+        ],
+        "explanation": "If-deel = voorwaarde (tegenwoordige tijd). Hoofdzin = gevolg (will + werkwoord)",
+        "similar_practice": "Maak een zin: If I (have) time tomorrow, I (visit) you."
+      },
+      "havo_essay_structure": {
+        "concept": "Opinion essay structuur",
+        "topic_example": "Should students wear uniforms?",
+        "structure": [
+          "Introduction: Hook + background + thesis statement ('I believe students should wear uniforms for three main reasons.')",
+          "Body Paragraph 1: Reason 1 + explanation + example",
+          "Body Paragraph 2: Reason 2 + explanation + example",
+          "Body Paragraph 3: Counterargument + refutation ('Some people argue... However...')",
+          "Conclusion: Restate thesis + summarize main points + final thought"
+        ],
+        "useful_phrases": [
+          "Firstly, / Secondly, / Finally,",
+          "For example, / For instance,",
+          "However, / Nevertheless, / On the other hand,",
+          "In conclusion, / To sum up,"
+        ],
+        "similar_practice": "Maak een outline voor: 'Should homework be banned?'"
+      },
+      "vwo_literary_analysis": {
+        "concept": "Analyzing symbolism in literature",
+        "example_text": "The green light in The Great Gatsby",
+        "analysis_approach": [
+          "What is the symbol? → The green light at Daisy's dock",
+          "What could it represent? → Hope, dreams, the American Dream, the past",
+          "How is it used in the text? → Gatsby reaches toward it, stares at it",
+          "What effect does it have? → Creates longing, represents unreachable goals",
+          "Connection to themes? → Relates to theme of illusion vs reality, impossible dreams"
+        ],
+        "analysis_sentence_template": "The [symbol] represents [meaning] and contributes to the theme of [theme] by [how it functions in the text]",
+        "similar_practice": "Analyze a symbol in your current reading"
+      }
+    },
+    "natuurkunde": {
+      "mulo_force": {
+        "concept": "Resulterende kracht berekenen",
+        "example_problem": "Twee krachten werken op een object: 10 N naar rechts en 6 N naar links. Wat is de resulterende kracht?",
+        "step_by_step": [
+          "Stap 1: Kies een positieve richting (bijv. rechts = +)",
+          "Stap 2: Geef krachten een teken: +10 N en -6 N",
+          "Stap 3: Tel op: 10 + (-6) = 4 N",
+          "Stap 4: Interpreteer: 4 N naar rechts (positief)"
+        ],
+        "key_principle": "Kracht is een vector → richting is belangrijk!",
+        "similar_practice": "Probeer: 15 N naar boven, 8 N naar beneden. Wat is de resulterende kracht?"
+      },
+      "mulo_ohm": {
+        "concept": "Wet van Ohm toepassen (V = I × R)",
+        "example_problem": "Een lampje heeft weerstand 6 Ω en er loopt 0.5 A stroom. Wat is de spanning?",
+        "step_by_step": [
+          "Stap 1: Identificeer wat je weet: R = 6 Ω, I = 0.5 A, V = ?",
+          "Stap 2: Gebruik V = I × R",
+          "Stap 3: Bereken: V = 0.5 × 6 = 3 V",
+          "Antwoord: 3 volt"
+        ],
+        "formula_triangle": "V boven, I en R onder → V=I×R, I=V/R, R=V/I",
+        "similar_practice": "Een weerstand van 12 Ω heeft spanning 6 V. Hoeveel stroom loopt er?"
+      },
+      "havo_energy": {
+        "concept": "Arbeid en kinetische energie",
+        "example_problem": "Een auto van 1000 kg versnelt van 0 naar 20 m/s. Hoeveel arbeid is verricht?",
+        "step_by_step": [
+          "Stap 1: Herken dat arbeid = verandering in kinetische energie",
+          "Stap 2: Ekin = ½mv² → Begin: 0 (stilstand)",
+          "Stap 3: Eind: ½ × 1000 × 20² = ½ × 1000 × 400 = 200,000 J",
+          "Stap 4: Arbeid = ΔE = 200,000 J = 200 kJ"
+        ],
+        "similar_practice": "Een bal van 2 kg valt van 5 m hoogte. Hoeveel kinetische energie heeft deze vlak voor de grond?"
+      },
+      "vwo_oscillation": {
+        "concept": "Harmonische oscillator periode berekenen",
+        "example_problem": "Een veer met veerconstante k=100 N/m en massa m=1 kg. Wat is de periode?",
+        "step_by_step": [
+          "Stap 1: Gebruik formule: T = 2π√(m/k)",
+          "Stap 2: Vul in: T = 2π√(1/100) = 2π√0.01",
+          "Stap 3: Bereken: T = 2π × 0.1 ≈ 0.628 s",
+          "Stap 4: Frequentie: f = 1/T ≈ 1.59 Hz (als gevraagd)"
+        ],
+        "teaching_approach": "Teken altijd de situatie. Check dimensies van je antwoord.",
+        "similar_practice": "Wat gebeurt er met de periode als je de massa verdubbelt?"
+      }
+    },
+    "scheikunde": {
+      "mulo_balancing": {
+        "concept": "Reactievergelijkingen kloppen",
+        "example_problem": "Klop: H₂ + O₂ → H₂O",
+        "step_by_step": [
+          "Stap 1: Tel atomen voor reactie: 2 H, 2 O",
+          "Stap 2: Tel atomen na reactie: 2 H, 1 O → niet gelijk!",
+          "Stap 3: Probeer coëfficiënten: 2H₂ + O₂ → 2H₂O",
+          "Stap 4: Check: Links: 4 H, 2 O | Rechts: 4 H, 2 O ✓"
+        ],
+        "key_principle": "Atomen gaan niet verloren in een reactie, alleen herschikking!",
+        "similar_practice": "Klop deze vergelijking: N₂ + H₂ → NH₃"
+      },
+      "havo_mole": {
+        "concept": "Molberekeningen",
+        "example_problem": "Hoeveel gram is 0.5 mol NaCl? (Na=23, Cl=35.5)",
+        "step_by_step": [
+          "Stap 1: Bereken molaire massa: M(NaCl) = 23 + 35.5 = 58.5 g/mol",
+          "Stap 2: Gebruik formule: m = n × M",
+          "Stap 3: m = 0.5 × 58.5 = 29.25 g",
+          "Antwoord: 29.25 gram NaCl"
+        ],
+        "formula_triangle": "m boven, n en M onder → m=n×M, n=m/M, M=m/n",
+        "similar_practice": "Hoeveel mol is 40 gram NaOH? (Na=23, O=16, H=1)"
+      },
+      "havo_ph": {
+        "concept": "pH berekenen van sterke zuren",
+        "example_problem": "Bereken pH van 0.01 M HCl oplossing",
+        "step_by_step": [
+          "Stap 1: HCl is een sterk zuur → volledige dissociatie",
+          "Stap 2: [H⁺] = [HCl] = 0.01 M = 10⁻² M",
+          "Stap 3: pH = -log[H⁺] = -log(10⁻²) = 2",
+          "Antwoord: pH = 2"
+        ],
+        "teaching_approach": "Sterke zuren: HCl, HNO₃, H₂SO₄ → volledige dissociatie",
+        "similar_practice": "Wat is de pH van 0.001 M HNO₃?"
+      },
+      "vwo_equilibrium": {
+        "concept": "Evenwichtsconstante berekenen",
+        "example_problem": "Bij evenwicht: [A]=2M, [B]=3M, [C]=6M voor A + B ⇌ C. Bereken Kc",
+        "step_by_step": [
+          "Stap 1: Schrijf Kc uitdrukking: Kc = [C] / ([A][B])",
+          "Stap 2: Vul concentraties in: Kc = 6 / (2 × 3)",
+          "Stap 3: Bereken: Kc = 6 / 6 = 1",
+          "Antwoord: Kc = 1 (geen eenheid voor deze reactie)"
+        ],
+        "key_principle": "Producten boven, reactanten onder. Coëfficiënten worden machten!",
+        "similar_practice": "Voor 2A ⇌ B: [A]=0.1M, [B]=0.05M. Bereken Kc"
+      }
+    },
+    "biologie": {
+      "mulo_cell": {
+        "concept": "Verschil planten- en dierencellen",
+        "example_problem": "Welke structuren heeft een plantencel maar niet een dierencel?",
+        "step_by_step": [
+          "Stap 1: Lijst plantencel-specifieke structuren:",
+          "  - Celwand (stevig, buiten celmembraan)",
+          "  - Chloroplasten (voor fotosynthese)",
+          "  - Grote vacuole (opslag water en stoffen)",
+          "Stap 2: Dierencellen hebben deze NIET",
+          "Antwoord: Celwand, chloroplasten, grote vacuole"
+        ],
+        "memory_tip": "Plant staat stil → heeft stevig celwand. Plant maakt eigen voedsel → chloroplasten",
+        "similar_practice": "Wat hebben planten- EN dierencellen beide?"
+      },
+      "mulo_photosynthesis": {
+        "concept": "Fotosynthese vergelijking",
+        "example_problem": "Schrijf de vergelijking voor fotosynthese",
+        "step_by_step": [
+          "Stap 1: Wat heeft plant nodig? → CO₂ en H₂O",
+          "Stap 2: Wat maakt plant? → Glucose (C₆H₁₂O₆) en O₂",
+          "Stap 3: Energie bron? → Licht (zonlicht)",
+          "Vergelijking: 6CO₂ + 6H₂O + licht → C₆H₁₂O₆ + 6O₂"
+        ],
+        "connection": "Dit is OMGEKEERDE van celademhaling!",
+        "similar_practice": "Waar in de plant vindt fotosynthese plaats?"
+      },
+      "havo_genetics": {
+        "concept": "Punnett square voor monohybride kruising",
+        "example_problem": "Bruin (B) is dominant over blauw (b) ogen. Bb × Bb kruising, wat zijn nakomelingen?",
+        "step_by_step": [
+          "Stap 1: Gameten: beide ouders maken B en b gameten",
+          "Stap 2: Maak Punnett square:",
+          "       B    b",
+          "   B | BB | Bb |",
+          "   b | Bb | bb |",
+          "Stap 3: Genotypen: 1 BB : 2 Bb : 1 bb (ratio 1:2:1)",
+          "Stap 4: Fenotypen: 3 bruin : 1 blauw (ratio 3:1)"
+        ],
+        "similar_practice": "Wat als heterozygoot (Bb) kruist met homozygoot recessief (bb)?"
+      },
+      "vwo_hardy_weinberg": {
+        "concept": "Hardy-Weinberg evenwicht berekening",
+        "example_problem": "16% van populatie heeft recessieve trait (aa). Wat is frequentie van A-allel?",
+        "step_by_step": [
+          "Stap 1: q² = 0.16 (frequentie aa)",
+          "Stap 2: q = √0.16 = 0.4 (frequentie a-allel)",
+          "Stap 3: p + q = 1, dus p = 1 - 0.4 = 0.6",
+          "Antwoord: Frequentie A-allel is 0.6 of 60%"
+        ],
+        "formulas": "p + q = 1 (allel freq.) en p² + 2pq + q² = 1 (genotype freq.)",
+        "similar_practice": "Als p=0.7, wat is frequentie van heterozygoten (Aa)?"
+      }
+    },
+    "aardrijkskunde": {
+      "mulo_scale": {
+        "concept": "Schaal berekenen op kaart",
+        "example_problem": "Op kaart met schaal 1:50.000 meet je 4 cm. Wat is werkelijke afstand?",
+        "step_by_step": [
+          "Stap 1: Schaal betekent: 1 cm op kaart = 50.000 cm werkelijk",
+          "Stap 2: 4 cm op kaart = 4 × 50.000 = 200.000 cm",
+          "Stap 3: Omrekenen: 200.000 cm = 2.000 m = 2 km",
+          "Antwoord: 2 kilometer"
+        ],
+        "conversion_tip": "100 cm = 1 m, 1000 m = 1 km → 100.000 cm = 1 km",
+        "similar_practice": "Schaal 1:25.000, je meet 6 cm. Hoeveel km is dat?"
+      },
+      "havo_population_pyramid": {
+        "concept": "Bevolkingspiramide interpreteren",
+        "example_problem": "Land heeft brede basis, smalle top. Wat betekent dit?",
+        "step_by_step": [
+          "Stap 1: Brede basis → veel jonge mensen (hoge geboortecijfer)",
+          "Stap 2: Smalle top → weinig ouderen (lagere levensverwachting)",
+          "Stap 3: Vorm → jonge, groeiende bevolking",
+          "Conclusie: Ontwikkelingsland, demografische transitie fase 2-3"
+        ],
+        "comparison": "Ontwikkeld land heeft smallere basis, bredere top (vergrijzing)",
+        "similar_practice": "Wat betekent een piramide met smalle basis en brede middengroep?"
+      },
+      "vwo_climate_classification": {
+        "concept": "Köppen klimaatclassificatie",
+        "example_problem": "Suriname: warm (>18°C), veel regen (>60mm per maand). Welk klimaat?",
+        "step_by_step": [
+          "Stap 1: Altijd warm → A (tropisch klimaat)",
+          "Stap 2: Veel regen hele jaar → f (geen droog seizoen)",
+          "Stap 3: Geen monsoon kenmerken → niet Am",
+          "Antwoord: Af (tropisch regenwoudklimaat)"
+        ],
+        "teaching_approach": "A=tropisch, B=droog, C=gematigd, D=koud, E=polair. Tweede letter = neerslag",
+        "similar_practice": "Gebied met droge winter, warme zomer. Welke Köppen code?"
+      }
+    },
+    "geschiedenis": {
+      "mulo_timeline": {
+        "concept": "Chronologie en eeuwen",
+        "example_problem": "In welke eeuw viel 1975 (onafhankelijkheid Suriname)?",
+        "step_by_step": [
+          "Stap 1: Eerste twee cijfers + 1 = eeuw",
+          "Stap 2: 1975 → 19 + 1 = 20ste eeuw",
+          "Antwoord: 20ste eeuw (1901-2000)"
+        ],
+        "examples": "1500 = 16e eeuw, 1850 = 19e eeuw, 2025 = 21e eeuw",
+        "similar_practice": "In welke eeuw was 1863 (afschaffing slavernij Suriname)?"
+      },
+      "havo_source_analysis": {
+        "concept": "Bronnenkritiek toepassen",
+        "example_problem": "Analyse een dagboek van een plantage-eigenaar over slavernij",
+        "step_by_step": [
+          "Stap 1: Type bron → Primair (uit die tijd), schriftelijk, persoonlijk",
+          "Stap 2: Auteur perspectief → Bevooroordeeld (eigenaar, niet slaaf)",
+          "Stap 3: Betrouwbaarheid → Eén kant, subjectief, maar wel uit die tijd",
+          "Stap 4: Bruikbaarheid → Ja, maar vergelijk met andere bronnen (slaven, abolitionisten)"
+        ],
+        "critical_questions": "Wie schreef het? Waarom? Wat wordt weggelaten?",
+        "similar_practice": "Analyseer een koloniaal rapport over 'inheemse volkeren'"
+      },
+      "vwo_historical_comparison": {
+        "concept": "Suriname's onafhankelijkheid vergelijken met andere landen",
+        "example_problem": "Vergelijk Suriname (1975) met Indonesië (1945) dekolonisatie",
+        "step_by_step": [
+          "Stap 1: Overeenkomsten - Beide Nederlandse koloniën, gewelddadige periode volgde",
+          "Stap 2: Verschillen - Indonesië via gewapende strijd, Suriname via onderhandeling",
+          "Stap 3: Context - WOII verzwakte Nederland → snellere dekolonisatie",
+          "Stap 4: Gevolgen - Beide migratiegolven naar Nederland, politieke instabiliteit"
+        ],
+        "analytical_framework": "Vergelijk: context, proces, actoren, gevolgen",
+        "similar_practice": "Vergelijk Suriname's dekolonisatie met een Britse/Franse kolonie"
+      }
+    },
+    "economie": {
+      "havo_supply_demand": {
+        "concept": "Marktevenwicht vinden",
+        "example_problem": "Vraag: Q = 100 - 2P, Aanbod: Q = 20 + 3P. Vind evenwicht",
+        "step_by_step": [
+          "Stap 1: Evenwicht → Qv = Qa",
+          "Stap 2: 100 - 2P = 20 + 3P",
+          "Stap 3: 100 - 20 = 3P + 2P → 80 = 5P → P = 16",
+          "Stap 4: Q = 100 - 2(16) = 68 OF Q = 20 + 3(16) = 68 ✓",
+          "Antwoord: P = €16, Q = 68 eenheden"
+        ],
+        "graph_tip": "Teken altijd vraag (dalend) en aanbod (stijgend) curves. Snijpunt = evenwicht",
+        "similar_practice": "Qv = 80 - P, Qa = 20 + 2P. Vind evenwichtsprijs en hoeveelheid"
+      },
+      "havo_elasticity": {
+        "concept": "Prijselasticiteit berekenen",
+        "example_problem": "Prijs stijgt van €10 naar €12, vraag daalt van 100 naar 80. Bereken PED",
+        "step_by_step": [
+          "Stap 1: % verandering vraag = (80-100)/100 × 100% = -20%",
+          "Stap 2: % verandering prijs = (12-10)/10 × 100% = 20%",
+          "Stap 3: PED = % ΔQ / % ΔP = -20% / 20% = -1",
+          "Interpretatie: |PED| = 1 → unitaire elasticiteit"
+        ],
+        "interpretation": "|PED| > 1 = elastisch, |PED| < 1 = inelastisch, |PED| = 1 = unitair",
+        "similar_practice": "Prijs €5→€6, vraag 200→150. Bereken PED. Elastisch of inelastisch?"
+      },
+      "vwo_market_structures": {
+        "concept": "Winstmaximalisatie in verschillende marktvormen",
+        "example_problem": "Bedrijf in volkomen concurrentie: MC=10+2Q, P=€30. Hoeveel produceren?",
+        "step_by_step": [
+          "Stap 1: Volkomen concurrentie → P = MR (prijs = marginale opbrengst)",
+          "Stap 2: Winstmaximalisatie → MR = MC",
+          "Stap 3: 30 = 10 + 2Q",
+          "Stap 4: 20 = 2Q → Q = 10 eenheden"
+        ],
+        "key_difference": "Volkomen concurrentie: P=MR | Monopolie: MR < P (dalende MR curve)",
+        "similar_practice": "Monopolist: P=50-Q, MC=10. Vind winstmaximaliserende Q (hint: MR=50-2Q)"
+      }
+    }
+  },
+  "teaching_strategies": {
+    "when_student_asks_for_help": [
+      "1. Ask: 'What have you tried so far?'",
+      "2. Identify the specific concept they're struggling with",
+      "3. Provide a SIMILAR example from this file, not their exact problem",
+      "4. Explain the concept and method step-by-step",
+      "5. Let the student apply the method to their specific problem",
+      "6. If they're still stuck, give hints without solving it for them"
+    ],
+    "scaffolding_approach": {
+      "level_1_hint": "Point to the relevant concept or formula",
+      "level_2_hint": "Explain the first step they should take",
+      "level_3_hint": "Show a similar example worked out",
+      "level_4_hint": "Guide through each step with questions",
+      "never": "Give the complete answer to their exact problem"
+    },
+    "checking_understanding": [
+      "Ask them to explain the concept back to you",
+      "Give them a slightly different problem to try",
+      "Ask 'Why do you think we do this step?'",
+      "Request them to check their own answer"
+    ]
+  }
+}

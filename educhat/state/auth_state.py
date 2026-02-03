@@ -101,6 +101,7 @@ class AuthState(rx.State):
     selected_day_events: List[Dict] = []
     is_syncing_calendar: bool = False
     last_calendar_sync: Optional[str] = None
+    is_loading: bool = False  # General loading state for various operations
     
     # ==========================================================================
     # Language Methods
@@ -670,11 +671,28 @@ class AuthState(rx.State):
         finally:
             # Always clear local state
             self._clear_auth_state()
+            # Reset loading state
+            self.is_loading = False
+            # Also reset is_guest
+            self.is_guest = False
+            # Clear auth modal
+            self.show_auth_modal = False
+            # Clear any errors
+            self._clear_errors()
             # SECURITY: Reset chat state to prevent conversation leakage
             if hasattr(self, '_reset_chat_state_for_user_switch'):
                 self._reset_chat_state_for_user_switch()
-            # Redirect to landing page
-            yield rx.redirect("/")
+            # Clear conversations and messages to prevent data leak
+            if hasattr(self, 'messages'):
+                self.messages = []
+            if hasattr(self, 'conversations'):
+                self.conversations = []
+            if hasattr(self, 'current_conversation_id'):
+                self.current_conversation_id = ""
+            # Yield state updates before redirect
+            yield
+            # Force full page reload with JavaScript to clear all client state
+            yield rx.call_script("window.location.href = window.location.origin + '/landing'")
     
     async def continue_as_guest(self):
         """Continue as guest user."""
