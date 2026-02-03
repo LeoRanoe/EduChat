@@ -84,6 +84,9 @@ class AuthState(rx.State):
     show_reminder_modal: bool = False
     reminder_title: str = ""
     reminder_date: str = ""
+    reminder_time: str = "09:00"  # Default to 9 AM
+    reminder_description: str = ""
+    reminder_location: str = ""
     reminders_loaded: bool = False
     
     # === Events ===
@@ -100,8 +103,18 @@ class AuthState(rx.State):
     calendar_events: List[Dict] = []
     selected_day_events: List[Dict] = []
     is_syncing_calendar: bool = False
-    last_calendar_sync: Optional[str] = None
+    last_calendar_sync: str = ""
     is_loading: bool = False  # General loading state for various operations
+    
+    # === Google Calendar Sync ===
+    show_google_events_modal: bool = False
+    new_google_events: List[Dict] = []
+    selected_google_events: List[str] = []  # List of event IDs
+    all_google_events_selected: bool = False
+    is_creating_reminders: bool = False
+    sync_in_progress: bool = False
+    sync_progress_current: int = 0
+    sync_progress_total: int = 0
     
     # ==========================================================================
     # Language Methods
@@ -139,6 +152,37 @@ class AuthState(rx.State):
         months = ["januari", "februari", "maart", "april", "mei", "juni",
                   "juli", "augustus", "september", "oktober", "november", "december"]
         return f"{self.calendar_day} {months[self.calendar_month - 1]} {self.calendar_year}"
+    
+    @rx.var
+    def current_week_range(self) -> str:
+        """Get formatted week range."""
+        from datetime import timedelta
+        selected_date = datetime(self.calendar_year, self.calendar_month, self.calendar_day)
+        start_of_week = selected_date - timedelta(days=selected_date.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+        return f"{start_of_week.day} {start_of_week.strftime('%b')} - {end_of_week.day} {end_of_week.strftime('%b %Y')}"
+    
+    @rx.var
+    def week_time_slots(self) -> List[Dict]:
+        """Generate time slots for week view."""
+        slots = []
+        for hour in range(8, 20):  # 8 AM to 8 PM
+            time_str = f"{hour:02d}:00"
+            # Check if any event exists at this time
+            has_event = False
+            event_title = ""
+            for event in self.selected_day_events:
+                event_time = event.get("start_time", "")
+                if event_time and event_time.startswith(f"{hour:02d}:"):
+                    has_event = True
+                    event_title = event.get("title", "")
+                    break
+            slots.append({
+                "time": time_str,
+                "has_event": has_event,
+                "event_title": event_title
+            })
+        return slots
     
     @rx.var
     def calendar_days(self) -> List[Dict]:
@@ -735,6 +779,8 @@ class AuthState(rx.State):
         try:
             await self.load_reminders_from_db()
             await self.load_upcoming_events()
+            # Auto-sync with Google Calendar in background
+            await self.auto_sync_google_calendar()
             # Load onboarding preferences (handled by AppState)
             if hasattr(self, 'load_onboarding_preferences'):
                 await self.load_onboarding_preferences()
@@ -951,75 +997,188 @@ class AuthState(rx.State):
         """Set reminder date."""
         self.reminder_date = value
     
+    def set_reminder_time(self, value: str):
+        """Set reminder time."""
+        self.reminder_time = value
+    
+    def set_reminder_description(self, value: str):
+        """Set reminder description."""
+        self.reminder_description = value
+    
+    def set_reminder_location(self, value: str):
+        """Set reminder location."""
+        self.reminder_location = value
+    
     async def create_reminder(self):
-        """Create a new reminder and sync to Google Calendar."""
-        if not self.reminder_title.strip() or not self.reminder_date:
+        """Create a new reminder and sync to Google Calendar with real-time updates."""
+        # Validate required fields
+        if not self.reminder_title.strip():
+            self.toast_message = "⚠ Titel is verplicht"
+            self.toast_type = "error"
+            self.show_toast = True
             return
         
+        if not self.reminder_date or not self.reminder_date.strip():
+            self.toast_message = "⚠ Datum is verplicht"
+            self.toast_type = "error"
+            self.show_toast = True
+            return
+        
+        # Combine date and time
+        datetime_str = f"{self.reminder_date}T{self.reminder_time}:00"
+        
+        temp_id = str(uuid.uuid4())
         new_reminder = {
-            "id": str(uuid.uuid4()),
+            "id": temp_id,
             "title": self.reminder_title.strip(),
             "date": self.reminder_date,
+            "time": self.reminder_time,
+            "datetime": datetime_str,
+            "description": self.reminder_description.strip(),
+            "location": self.reminder_location.strip(),
             "completed": "false",
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "sync_status": "pending",
+            "google_calendar_event_id": "",
+            "google_link": ""
         }
         
+        # Add to UI immediately with pending status
+        self.reminders = [new_reminder] + list(self.reminders)
+        self.reminder_title = ""
+        self.reminder_date = ""
+        self.reminder_time = "09:00"
+        self.reminder_description = ""
+        self.reminder_location = ""
+        self.show_reminder_modal = False
+        yield
+        
         # Save to database if authenticated
+        db_id = temp_id
         if self.is_authenticated and self.user_id:
             try:
                 from educhat.services.supabase_client import get_service
                 db = get_service()
-                date_obj = datetime.fromisoformat(self.reminder_date)
+                # Parse datetime with time
+                date_obj = datetime.fromisoformat(new_reminder["datetime"])
                 db_reminder = db.create_reminder(
                     user_id=self.user_id,
-                    title=self.reminder_title.strip(),
-                    date=date_obj
+                    title=new_reminder["title"],
+                    date=date_obj,
+                    description=new_reminder.get("description", ""),
+                    location=new_reminder.get("location", "")
                 )
-                new_reminder["id"] = str(db_reminder["id"])
-            except Exception as e:
-                print(f"Error saving reminder: {e}")
-        
-        # Sync to Google Calendar if authenticated
-        if self.is_authenticated:
-            try:
-                from educhat.services.google_calendar_service import get_calendar_service
+                db_id = str(db_reminder["id"])
                 
-                calendar_service = get_calendar_service(user_id=self.user_id)
-                if calendar_service.authenticate():
-                    # Parse date and create event
-                    date_obj = datetime.fromisoformat(self.reminder_date)
-                    # Set reminder for 9 AM on the date
-                    event_time = date_obj.replace(hour=9, minute=0, second=0)
+                # Update local reminder with real DB ID
+                for i, r in enumerate(self.reminders):
+                    if r["id"] == temp_id:
+                        self.reminders[i]["id"] = db_id
+                        break
+                yield
+                
+            except Exception as e:
+                print(f"Error saving reminder to database: {e}")
+                # Show error but continue with sync attempt
+        
+        # Sync to Google Calendar with real-time status updates
+        if self.is_authenticated and self.user_id:
+            try:
+                from educhat.services.sync_manager import get_sync_manager
+                
+                # Update status to syncing
+                for i, r in enumerate(self.reminders):
+                    if r["id"] == db_id:
+                        self.reminders[i]["sync_status"] = "syncing"
+                        break
+                yield
+                
+                # Authenticate and sync
+                sync_manager = get_sync_manager(self.user_id)
+                if sync_manager.authenticate():
+                    # Prepare reminder data for sync
+                    reminder_data = {
+                        "id": db_id,
+                        "title": new_reminder["title"],
+                        "date": self.reminder_date,
+                        "time": new_reminder["time"],
+                        "datetime": new_reminder["datetime"],
+                        "description": new_reminder["description"] or "Herinnering aangemaakt via EduChat",
+                        "location": new_reminder["location"]
+                    }
                     
-                    event = calendar_service.create_event(
-                        title=f"🔔 {self.reminder_title.strip()}",
-                        start_time=event_time,
-                        end_time=event_time + timedelta(hours=1),
-                        description="Herinnering aangemaakt via EduChat",
-                        reminders={
-                            'useDefault': False,
-                            'overrides': [
-                                {'method': 'popup', 'minutes': 24 * 60},  # 1 day before
-                                {'method': 'popup', 'minutes': 60},       # 1 hour before
-                            ],
-                        }
-                    )
+                    # Sync to Google Calendar
+                    result = await sync_manager.sync_reminder_to_google(reminder_data)
                     
-                    if event:
-                        new_reminder["calendar_event_id"] = event['id']
-                        print(f"Reminder synced to Google Calendar: {event.get('htmlLink')}")
+                    if result.success:
+                        # Update database with Google Calendar event ID
+                        from educhat.services.supabase_client import get_service
+                        db = get_service()
+                        db.client.table('reminders').update({
+                            'google_calendar_event_id': result.google_event_id,
+                            'sync_status': 'synced',
+                            'last_sync_at': datetime.now().isoformat(),
+                            'last_sync_direction': 'local_to_google'
+                        }).eq('id', db_id).execute()
+                        
+                        # Update local state with success
+                        sync_time = datetime.now().strftime("%H:%M")
+                        for i, r in enumerate(self.reminders):
+                            if r["id"] == db_id:
+                                self.reminders[i]["sync_status"] = "synced"
+                                self.reminders[i]["google_calendar_event_id"] = result.google_event_id
+                                self.reminders[i]["last_sync_time"] = sync_time
+                                # Get Google Calendar link
+                                self.reminders[i]["google_link"] = f"https://calendar.google.com/calendar/event?eid={result.google_event_id}"
+                                break
+                        
+                        # Show success toast
+                        self.toast_message = f"✓ Herinnering aangemaakt en gesynchroniseerd ({sync_time})"
+                        self.toast_type = "success"
+                        self.show_toast = True
+                    else:
+                        # Update with error status
+                        for i, r in enumerate(self.reminders):
+                            if r["id"] == db_id:
+                                self.reminders[i]["sync_status"] = "error"
+                                self.reminders[i]["sync_error"] = result.error or "Unknown error"
+                                break
+                        
+                        self.toast_message = f"✗ Sync mislukt: {result.error[:50] if result.error else 'Unknown error'}"
+                        self.toast_type = "error"
+                        self.show_toast = True
+                else:
+                    # Authentication failed
+                    for i, r in enumerate(self.reminders):
+                        if r["id"] == db_id:
+                            self.reminders[i]["sync_status"] = "error"
+                            self.reminders[i]["sync_error"] = "Google Calendar authenticatie mislukt"
+                            break
+                    
+                    self.toast_message = "✗ Google Calendar authenticatie mislukt"
+                    self.toast_type = "error"
+                    self.show_toast = True
+                    
             except Exception as e:
                 print(f"Error syncing reminder to Google Calendar: {e}")
+                import traceback
+                traceback.print_exc()
+                
+                # Update with error status
+                for i, r in enumerate(self.reminders):
+                    if r["id"] == db_id:
+                        self.reminders[i]["sync_status"] = "error"
+                        self.reminders[i]["sync_error"] = str(e)
+                        break
+                
+                self.toast_message = f"✗ Sync fout: {str(e)[:50]}"
+                self.toast_type = "error"
+                self.show_toast = True
         
-        self.reminders = [new_reminder] + list(self.reminders)
-        self.show_reminder_modal = False
-        self.reminder_title = ""
-        self.reminder_date = ""
+        # Refresh calendar events to show the new reminder
+        if self.show_calendar_view:
+            await self.load_calendar_events()
         
-        # Show success toast
-        self.toast_message = "Herinnering aangemaakt en gesynchroniseerd"
-        self.toast_type = "success"
-        self.show_toast = True
         yield
     
     async def create_reminder_from_event(self, event_id: str):
@@ -1090,6 +1249,10 @@ class AuthState(rx.State):
         
         self.reminders = [new_reminder] + list(self.reminders)
         
+        # Refresh calendar events to show the new reminder
+        if self.show_calendar_view:
+            await self.load_calendar_events()
+        
         # Show success toast
         self.toast_message = "Herinnering aangemaakt en gesynchroniseerd"
         self.toast_type = "success"
@@ -1106,37 +1269,53 @@ class AuthState(rx.State):
         self.reminders = updated
     
     async def delete_reminder(self, reminder_id: str):
-        """Delete a reminder from database and Google Calendar."""
-        # Find the reminder to get calendar_event_id
+        """Delete a reminder from database and Google Calendar with real-time updates."""
+        # Find the reminder to get google_calendar_event_id
         reminder_to_delete = None
         for r in self.reminders:
             if r["id"] == reminder_id:
                 reminder_to_delete = r
                 break
         
+        if not reminder_to_delete:
+            return
+        
+        google_event_id = reminder_to_delete.get("google_calendar_event_id") or reminder_to_delete.get("calendar_event_id")
+        
         # Delete from database if authenticated
         if self.is_authenticated and self.user_id:
             try:
-                from educhat.services.supabase_client import get_service
-                db = get_service()
-                db.client.table('reminders').delete().eq('id', reminder_id).execute()
+                from educhat.services.database import get_client
+                db = get_client()
+                db.table('reminders').delete().eq('id', reminder_id).execute()
             except Exception as e:
                 print(f"Error deleting reminder from database: {e}")
+                import traceback
+                traceback.print_exc()
         
         # Delete from Google Calendar if it was synced
-        if reminder_to_delete and reminder_to_delete.get("calendar_event_id"):
+        if google_event_id and self.is_authenticated:
             try:
-                from educhat.services.google_calendar_service import get_calendar_service
+                from educhat.services.sync_manager import get_sync_manager
                 
-                calendar_service = get_calendar_service(user_id=self.user_id)
-                if calendar_service.authenticate():
-                    calendar_service.delete_event(reminder_to_delete["calendar_event_id"])
-                    print(f"Deleted reminder from Google Calendar: {reminder_to_delete['calendar_event_id']}")
+                sync_manager = get_sync_manager(self.user_id)
+                if sync_manager.authenticate():
+                    result = await sync_manager.delete_google_event(google_event_id)
+                    
+                    if result.success:
+                        print(f"✓ Deleted reminder from Google Calendar: {google_event_id}")
+                    else:
+                        print(f"✗ Error deleting from Google Calendar: {result.error}")
             except Exception as e:
                 print(f"Error deleting reminder from Google Calendar: {e}")
         
         # Remove from local state
         self.reminders = [r for r in self.reminders if r["id"] != reminder_id]
+        
+        # Refresh calendar events if calendar is open
+        if self.show_calendar_view:
+            await self.load_calendar_events()
+        
         yield
     
     async def load_reminders_from_db(self):
@@ -1155,7 +1334,12 @@ class AuthState(rx.State):
                     "title": r["title"],
                     "date": str(r.get("date", "")),
                     "completed": "true" if r.get("sent", False) else "false",
-                    "created_at": str(r.get("created_at", ""))
+                    "created_at": str(r.get("created_at", "")),
+                    "google_calendar_event_id": r.get("google_calendar_event_id", ""),
+                    "sync_status": r.get("sync_status", "pending"),
+                    "last_sync_time": "",
+                    "sync_error": r.get("sync_error", ""),
+                    "google_link": f"https://calendar.google.com/calendar/event?eid={r.get('google_calendar_event_id', '')}" if r.get("google_calendar_event_id") else ""
                 }
                 for r in db_reminders
             ]
@@ -1208,6 +1392,46 @@ class AuthState(rx.State):
         self.calendar_day = now.day
         self._update_selected_day_events()
     
+    def previous_week(self):
+        """Navigate to previous week."""
+        from datetime import timedelta
+        current = datetime(self.calendar_year, self.calendar_month, self.calendar_day)
+        previous = current - timedelta(days=7)
+        self.calendar_year = previous.year
+        self.calendar_month = previous.month
+        self.calendar_day = previous.day
+        self._update_selected_day_events()
+    
+    def next_week(self):
+        """Navigate to next week."""
+        from datetime import timedelta
+        current = datetime(self.calendar_year, self.calendar_month, self.calendar_day)
+        next_date = current + timedelta(days=7)
+        self.calendar_year = next_date.year
+        self.calendar_month = next_date.month
+        self.calendar_day = next_date.day
+        self._update_selected_day_events()
+    
+    def previous_day(self):
+        """Navigate to previous day."""
+        from datetime import timedelta
+        current = datetime(self.calendar_year, self.calendar_month, self.calendar_day)
+        previous = current - timedelta(days=1)
+        self.calendar_year = previous.year
+        self.calendar_month = previous.month
+        self.calendar_day = previous.day
+        self._update_selected_day_events()
+    
+    def next_day(self):
+        """Navigate to next day."""
+        from datetime import timedelta
+        current = datetime(self.calendar_year, self.calendar_month, self.calendar_day)
+        next_date = current + timedelta(days=1)
+        self.calendar_year = next_date.year
+        self.calendar_month = next_date.month
+        self.calendar_day = next_date.day
+        self._update_selected_day_events()
+    
     def select_calendar_day(self, day: int):
         """Select a day in the calendar."""
         self.calendar_day = day
@@ -1233,13 +1457,16 @@ class AuthState(rx.State):
             return
         
         self.is_syncing_calendar = True
-        yield
         
         try:
             from educhat.services.google_calendar_service import get_calendar_service
             from educhat.services.supabase_client import get_service
             from educhat.services.event_scraper_service import scrape_and_sync_events
             from educhat.services.ai_service import get_ai_service
+            import asyncio
+            
+            # Get event loop
+            loop = asyncio.get_event_loop()
             
             # Get services
             calendar_service = get_calendar_service(user_id=self.user_id)
@@ -1259,8 +1486,6 @@ class AuthState(rx.State):
             print("[CALENDAR SYNC] Step 1: Syncing database events to Google Calendar...")
             db_events = db_service.get_upcoming_events(limit=100)
             if db_events:
-                import asyncio
-                loop = asyncio.get_event_loop()
                 sync_to_calendar_result = await loop.run_in_executor(
                     None,
                     lambda: calendar_service.sync_events_to_calendar(db_events)
@@ -1299,7 +1524,7 @@ class AuthState(rx.State):
             # Update state
             self.calendar_events = events
             self.upcoming_events = events[:10]  # Top 10 for events panel
-            self.last_calendar_sync = datetime.now().isoformat()
+            self.last_calendar_sync = datetime.now().strftime("%H:%M")
             
             # Update selected day events
             self._update_selected_day_events()
@@ -1330,24 +1555,246 @@ class AuthState(rx.State):
             self.show_toast = True
         finally:
             self.is_syncing_calendar = False
-            yield
     
     async def load_calendar_events(self):
-        """Load events from Google Calendar without scraping."""
+        """Load events from Google Calendar and local reminders."""
         try:
-            from educhat.services.google_calendar_service import get_calendar_service
+            all_events = []
             
+            # Load from Google Calendar
+            from educhat.services.google_calendar_service import get_calendar_service
             calendar_service = get_calendar_service(user_id=self.user_id)
             
             if calendar_service.authenticate():
-                events = calendar_service.get_upcoming_events(max_results=100)
-                self.calendar_events = events
-                self.upcoming_events = events[:10]
-                self._update_selected_day_events()
+                google_events = calendar_service.get_upcoming_events(max_results=100)
+                all_events.extend(google_events)
+            
+            # Load local reminders and add to calendar
+            from educhat.services.database import get_client
+            db = get_client()
+            
+            reminders = db.table("reminders")\
+                .select("*")\
+                .eq("user_id", self.user_id)\
+                .execute()
+            
+            if hasattr(reminders, 'data') and reminders.data:
+                for reminder in reminders.data:
+                    # Convert reminder to calendar event format
+                    reminder_event = {
+                        "id": f"reminder_{reminder['id']}",
+                        "title": f"🔔 {reminder['title']}",
+                        "date": reminder.get('date', ''),
+                        "datetime": reminder.get('datetime', ''),
+                        "description": reminder.get('description', ''),
+                        "location": reminder.get('location', ''),
+                        "type": "reminder",
+                        "sync_status": reminder.get('sync_status', 'pending')
+                    }
+                    all_events.append(reminder_event)
+            
+            self.calendar_events = all_events
+            self.upcoming_events = all_events[:10]
+            self._update_selected_day_events()
+            
         except Exception as e:
             print(f"Error loading calendar events: {e}")
+            import traceback
+            traceback.print_exc()
     
     def show_event_details(self, event_id: str):
         """Show event details (to be implemented)."""
         pass
+    
+    # ==========================================================================
+    # Google Calendar Import
+    # ==========================================================================
+    
+    def toggle_google_event_selection(self, event_id: str):
+        """Toggle selection of a Google Calendar event.
+        
+        Args:
+            event_id: Google Calendar event ID
+        """
+        if event_id in self.selected_google_events:
+            self.selected_google_events = [
+                eid for eid in self.selected_google_events if eid != event_id
+            ]
+        else:
+            self.selected_google_events = list(self.selected_google_events) + [event_id]
+        
+        # Update all selected state
+        self.all_google_events_selected = (
+            len(self.selected_google_events) == len(self.new_google_events)
+            and len(self.new_google_events) > 0
+        )
+    
+    def toggle_all_google_events(self, checked: bool):
+        """Toggle selection of all Google Calendar events.
+        
+        Args:
+            checked: Whether to select all
+        """
+        if checked:
+            self.selected_google_events = [e["id"] for e in self.new_google_events]
+            self.all_google_events_selected = True
+        else:
+            self.selected_google_events = []
+            self.all_google_events_selected = False
+    
+    def close_google_events_modal(self):
+        """Close Google events import modal."""
+        self.show_google_events_modal = False
+        self.selected_google_events = []
+        self.all_google_events_selected = False
+    
+    async def create_reminders_from_google_events(self):
+        """Create reminders from selected Google Calendar events."""
+        if not self.selected_google_events:
+            return
+        
+        self.is_creating_reminders = True
+        self.sync_progress_current = 0
+        self.sync_progress_total = len(self.selected_google_events)
+        yield
+        
+        try:
+            from educhat.services.supabase_client import get_service
+            
+            db = get_service()
+            created_count = 0
+            
+            for event_id in self.selected_google_events:
+                # Find the event
+                event = None
+                for e in self.new_google_events:
+                    if e["id"] == event_id:
+                        event = e
+                        break
+                
+                if not event:
+                    continue
+                
+                # Create reminder in database
+                try:
+                    date_str = event.get("date", event.get("start_time", ""))
+                    if "T" in date_str:
+                        date_obj = datetime.fromisoformat(date_str.replace("Z", ""))
+                    else:
+                        date_obj = datetime.fromisoformat(date_str)
+                    
+                    db_reminder = db.create_reminder(
+                        user_id=self.user_id,
+                        title=event.get("title", "Reminder"),
+                        date=date_obj
+                    )
+                    
+                    # Update reminder with Google Calendar event ID
+                    db.client.table('reminders').update({
+                        'google_calendar_event_id': event_id,
+                        'sync_status': 'synced',
+                        'last_sync_at': datetime.now().isoformat(),
+                        'last_sync_direction': 'google_to_local'
+                    }).eq('id', db_reminder["id"]).execute()
+                    
+                    # Add to local state
+                    new_reminder = {
+                        "id": str(db_reminder["id"]),
+                        "title": event.get("title", "Reminder"),
+                        "date": date_str,
+                        "completed": "false",
+                        "created_at": datetime.now().isoformat(),
+                        "google_calendar_event_id": event_id,
+                        "sync_status": "synced",
+                        "google_link": event.get("html_link", "")
+                    }
+                    self.reminders = [new_reminder] + list(self.reminders)
+                    created_count += 1
+                    self.sync_progress_current += 1
+                    yield
+                    
+                except Exception as e:
+                    print(f"Error creating reminder from Google event: {e}")
+                    continue
+            
+            # Close modal and show success
+            self.show_google_events_modal = False
+            self.selected_google_events = []
+            self.all_google_events_selected = False
+            
+            # Refresh calendar if open
+            if self.show_calendar_view:
+                await self.load_calendar_events()
+            
+            # Show toast
+            self.toast_message = f"✓ {created_count} herinneringen aangemaakt"
+            self.toast_type = "success"
+            self.show_toast = True
+            
+        except Exception as e:
+            print(f"Error creating reminders from Google events: {e}")
+            self.toast_message = f"Fout bij aanmaken herinneringen: {str(e)[:50]}"
+            self.toast_type = "error"
+            self.show_toast = True
+        finally:
+            self.is_creating_reminders = False
+            self.sync_progress_current = 0
+            self.sync_progress_total = 0
+            yield
+    
+    async def auto_sync_google_calendar(self):
+        """Auto-sync with Google Calendar on app launch (background, non-blocking)."""
+        if not self.is_authenticated or not self.user_id:
+            return
+        
+        try:
+            from educhat.services.sync_manager import get_sync_manager
+            from educhat.services.supabase_client import get_service
+            
+            sync_manager = get_sync_manager(self.user_id)
+            
+            # Authenticate silently
+            if not sync_manager.authenticate():
+                print("[AUTO-SYNC] Google Calendar authentication not configured or failed")
+                return
+            
+            print("[AUTO-SYNC] Starting background sync with Google Calendar...")
+            
+            # Fetch events from Google Calendar
+            google_events, error = await sync_manager.fetch_google_events(days_ahead=90)
+            
+            if error:
+                print(f"[AUTO-SYNC] Error fetching Google events: {error}")
+                return
+            
+            # Get local data
+            db = get_service()
+            local_events = db.get_upcoming_events(limit=200)
+            
+            # Compare and find new events
+            comparison = sync_manager.compare_with_local(
+                google_events,
+                list(self.reminders),
+                local_events
+            )
+            
+            new_events = comparison['new_in_google']
+            
+            if new_events:
+                print(f"[AUTO-SYNC] Found {len(new_events)} new events in Google Calendar")
+                
+                # Store new events for user to review
+                self.new_google_events = new_events
+                
+                # Show modal asking user which to import
+                self.show_google_events_modal = True
+                self.last_calendar_sync = datetime.now().strftime("%H:%M")
+            else:
+                print("[AUTO-SYNC] No new events found. Calendar is up to date.")
+                self.last_calendar_sync = datetime.now().strftime("%H:%M")
+                
+        except Exception as e:
+            print(f"[AUTO-SYNC] Error during auto-sync: {e}")
+            import traceback
+            traceback.print_exc()
 

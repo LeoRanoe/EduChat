@@ -410,7 +410,9 @@ class SupabaseService:
         user_id: str,
         title: str,
         date: datetime,
-        event_id: Optional[str] = None
+        event_id: Optional[str] = None,
+        description: Optional[str] = None,
+        location: Optional[str] = None
     ) -> Dict[str, Any]:
         """Create a new reminder."""
         self._ensure_connected()
@@ -418,7 +420,9 @@ class SupabaseService:
             'user_id': user_id,
             'title': title,
             'date': date.isoformat(),
-            'event_id': event_id
+            'event_id': event_id,
+            'description': description,
+            'location': location
         }
         response = self.client.table('reminders').insert(data).execute()
         return response.data[0]

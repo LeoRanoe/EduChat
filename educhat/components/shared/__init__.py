@@ -42,6 +42,13 @@ from educhat.components.shared.reminders_modal import reminders_modal
 from educhat.components.shared.events_panel import events_panel
 from educhat.components.shared.settings_modal import settings_modal
 from educhat.components.shared.calendar_view import calendar_view
+from educhat.components.shared.sync_status import (
+    sync_status_badge,
+    sync_retry_button,
+    google_calendar_link_button,
+    sync_progress_indicator,
+)
+from educhat.components.shared.google_events_import import google_events_import_modal
 
 __all__ = [
     "logo",
@@ -78,5 +85,10 @@ __all__ = [
     "events_panel",
     "settings_modal",
     "calendar_view",
+    "sync_status_badge",
+    "sync_retry_button",
+    "google_calendar_link_button",
+    "sync_progress_indicator",
+    "google_events_import_modal",
 ]
 

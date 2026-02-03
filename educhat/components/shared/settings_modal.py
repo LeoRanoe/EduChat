@@ -26,7 +26,7 @@ def settings_modal() -> rx.Component:
                 right="0",
                 bottom="0",
                 background=T.overlay,
-                z_index="1000",
+                z_index="1100",
                 on_click=AuthState.toggle_settings_modal,
             ),
             # Modal content
@@ -391,7 +391,7 @@ def settings_modal() -> rx.Component:
                 border_radius=RADIUS["xl"],
                 padding="1.5rem",
                 box_shadow=T.shadow_xl,
-                z_index="1001",
+                z_index="1101",
                 overflow_y="auto",
                 class_name="modal-content",
             ),

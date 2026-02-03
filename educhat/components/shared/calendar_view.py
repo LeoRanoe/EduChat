@@ -272,6 +272,169 @@ def calendar_day_events() -> rx.Component:
     )
 
 
+def calendar_week_view() -> rx.Component:
+    """Week view calendar component."""
+    return rx.vstack(
+        # Week header with navigation
+        rx.hstack(
+            rx.box(
+                rx.icon("chevron-left", size=20, color=T.text_primary),
+                on_click=AuthState.previous_week,
+                cursor="pointer",
+                padding="0.5rem",
+                border_radius=RADIUS["sm"],
+                _hover={"background": T.bg_hover},
+            ),
+            rx.text(
+                AuthState.current_week_range,
+                font_size="1.125rem",
+                font_weight="700",
+                color=T.text_primary,
+                flex="1",
+                text_align="center",
+            ),
+            rx.box(
+                rx.icon("chevron-right", size=20, color=T.text_primary),
+                on_click=AuthState.next_week,
+                cursor="pointer",
+                padding="0.5rem",
+                border_radius=RADIUS["sm"],
+                _hover={"background": T.bg_hover},
+            ),
+            justify="between",
+            width="100%",
+            padding="0.5rem 0",
+        ),
+        # Time slots grid
+        rx.box(
+            rx.vstack(
+                rx.foreach(
+                    AuthState.week_time_slots,
+                    lambda slot: rx.hstack(
+                        rx.text(
+                            slot["time"],
+                            font_size="0.75rem",
+                            color=T.text_secondary,
+                            width="60px",
+                            text_align="right",
+                        ),
+                        rx.box(
+                            rx.cond(
+                                slot["has_event"],
+                                rx.box(
+                                    rx.text(
+                                        slot["event_title"],
+                                        font_size="0.75rem",
+                                        font_weight="600",
+                                        color=T.text_on_primary,
+                                    ),
+                                    padding="0.5rem",
+                                    background=COLORS["primary_green"],
+                                    border_radius=RADIUS["sm"],
+                                ),
+                                rx.fragment(),
+                            ),
+                            flex="1",
+                            min_height="40px",
+                            border=f"1px solid {T.border_light}",
+                            border_radius=RADIUS["sm"],
+                            padding="0.25rem",
+                        ),
+                        spacing="2",
+                        width="100%",
+                        align="start",
+                    ),
+                ),
+                spacing="1",
+                width="100%",
+            ),
+            max_height="500px",
+            overflow_y="auto",
+            width="100%",
+        ),
+        spacing="3",
+        width="100%",
+    )
+
+
+def calendar_day_view() -> rx.Component:
+    """Day view calendar component."""
+    return rx.vstack(
+        # Day header with navigation
+        rx.hstack(
+            rx.box(
+                rx.icon("chevron-left", size=20, color=T.text_primary),
+                on_click=AuthState.previous_day,
+                cursor="pointer",
+                padding="0.5rem",
+                border_radius=RADIUS["sm"],
+                _hover={"background": T.bg_hover},
+            ),
+            rx.text(
+                AuthState.selected_day_formatted,
+                font_size="1.125rem",
+                font_weight="700",
+                color=T.text_primary,
+                flex="1",
+                text_align="center",
+            ),
+            rx.box(
+                rx.icon("chevron-right", size=20, color=T.text_primary),
+                on_click=AuthState.next_day,
+                cursor="pointer",
+                padding="0.5rem",
+                border_radius=RADIUS["sm"],
+                _hover={"background": T.bg_hover},
+            ),
+            rx.button(
+                "Vandaag",
+                on_click=AuthState.go_to_today,
+                size="2",
+                variant="soft",
+                color_scheme="green",
+            ),
+            justify="between",
+            width="100%",
+            padding="0.5rem 0",
+        ),
+        # Events for the day
+        rx.box(
+            rx.vstack(
+                rx.cond(
+                    AuthState.selected_day_events.length() > 0,
+                    rx.vstack(
+                        rx.foreach(
+                            AuthState.selected_day_events,
+                            event_card_mini,
+                        ),
+                        spacing="2",
+                        width="100%",
+                    ),
+                    rx.box(
+                        rx.vstack(
+                            rx.icon("calendar-x", size=48, color=T.text_tertiary),
+                            rx.text(
+                                "Geen evenementen voor deze dag",
+                                font_size="0.875rem",
+                                color=T.text_secondary,
+                            ),
+                            spacing="3",
+                            align_items="center",
+                        ),
+                        padding="3rem",
+                        text_align="center",
+                    ),
+                ),
+                spacing="2",
+                width="100%",
+            ),
+            width="100%",
+        ),
+        spacing="3",
+        width="100%",
+    )
+
+
 def calendar_view_controls() -> rx.Component:
     """View controls for calendar."""
     return rx.hstack(
@@ -315,12 +478,30 @@ def calendar_view_controls() -> rx.Component:
             spacing="2",
             flex_wrap="wrap",
         ),
-        
+        # Google Calendar sync indicator
+        rx.cond(
+            AuthState.last_calendar_sync != "",
+            rx.hstack(
+                rx.icon("check-circle", size=14, color=COLORS["primary_green"]),
+                rx.text(
+                    "Gesynchroniseerd",
+                    font_size="0.75rem",
+                    color=T.text_secondary,
+                ),
+                spacing="1",
+                padding="0.5rem 0.75rem",
+                background=f"{COLORS['primary_green']}10",
+                border_radius=RADIUS["md"],
+                align="center",
+            ),
+            rx.fragment(),
+        ),
         width="100%",
         padding="0.5rem 0",
         flex_wrap="wrap",
         gap="1rem",
         align="center",
+        justify="between",
     )
 
 
@@ -337,7 +518,7 @@ def calendar_view() -> rx.Component:
                 right="0",
                 bottom="0",
                 background=T.overlay,
-                z_index="1002",
+                z_index="999",
                 on_click=AuthState.toggle_calendar_view,
             ),
             # Calendar modal
@@ -394,15 +575,12 @@ def calendar_view() -> rx.Component:
                             width="100%",
                             align="start",
                         ),
-                        # Week and day views would go here
-                        rx.box(
-                            rx.text(
-                                "Week en Dag weergaven komen binnenkort!",
-                                color=T.text_secondary,
-                                font_size="0.875rem",
-                            ),
-                            padding="2rem",
-                            text_align="center",
+                        rx.cond(
+                            AuthState.calendar_view == "week",
+                            # Week view
+                            calendar_week_view(),
+                            # Day view
+                            calendar_day_view(),
                         ),
                     ),
                     
@@ -437,14 +615,14 @@ def calendar_view() -> rx.Component:
             class_name="calendar-modal",
             border_radius=RADIUS["xl"],
             box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-            z_index="1003",
+            z_index="999",
             ),
             position="fixed",
             top="0",
             left="0",
             right="0",
             bottom="0",
-            z_index="1000",
+            z_index="998",
         ),
         rx.fragment(),
     )

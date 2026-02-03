@@ -3,6 +3,7 @@
 import reflex as rx
 from educhat.styles.theme import COLORS, RADIUS, T
 from educhat.state.auth_state import AuthState
+from educhat.components.shared.sync_status import sync_status_badge
 
 
 def reminder_item(reminder: dict) -> rx.Component:
@@ -29,10 +30,47 @@ def reminder_item(reminder: dict) -> rx.Component:
                     line_height="1.4",
                 ),
                 rx.text(
-                    f"📅 {reminder['date']}",
+                    rx.cond(
+                        reminder.get("time", "") != "",
+                        f"📅 {reminder['date']} om {reminder.get('time', '')}",
+                        f"📅 {reminder['date']}",
+                    ),
                     font_size="0.8125rem",
                     color=T.text_tertiary,
                     line_height="1.4",
+                ),
+                # Show description if exists
+                rx.cond(
+                    reminder.get("description", "") != "",
+                    rx.text(
+                        reminder.get("description", ""),
+                        font_size="0.8125rem",
+                        color=T.text_tertiary,
+                        line_height="1.4",
+                        max_width="400px",
+                        overflow="hidden",
+                        text_overflow="ellipsis",
+                        white_space="nowrap",
+                    ),
+                    rx.fragment(),
+                ),
+                # Show location if exists
+                rx.cond(
+                    reminder.get("location", "") != "",
+                    rx.text(
+                        f"📍 {reminder.get('location', '')}",
+                        font_size="0.8125rem",
+                        color=T.text_tertiary,
+                        line_height="1.4",
+                    ),
+                    rx.fragment(),
+                ),
+                # Sync status badge
+                sync_status_badge(
+                    status=reminder.get("sync_status", "pending"),
+                    last_sync_time=reminder.get("last_sync_time", ""),
+                    error_message=reminder.get("sync_error", ""),
+                    google_link=reminder.get("google_link", ""),
                 ),
                 spacing="1",
                 align_items="start",
@@ -134,10 +172,63 @@ def reminders_modal() -> rx.Component:
                                     "box_shadow": f"0 0 0 3px {COLORS['primary_green']}15",
                                 },
                             ),
+                            rx.hstack(
+                                rx.input(
+                                    type="date",
+                                    value=AuthState.reminder_date,
+                                    on_change=AuthState.set_reminder_date,
+                                    width="100%",
+                                    padding="0.875rem 1rem",
+                                    min_height="48px",
+                                    border=f"1px solid {T.border}",
+                                    border_radius=RADIUS["md"],
+                                    font_size="0.9375rem",
+                                    line_height="1.5",
+                                    _focus={
+                                        "border_color": COLORS["primary_green"],
+                                        "box_shadow": f"0 0 0 3px {COLORS['primary_green']}15",
+                                    },
+                                ),
+                                rx.input(
+                                    type="time",
+                                    value=AuthState.reminder_time,
+                                    on_change=AuthState.set_reminder_time,
+                                    width="140px",
+                                    padding="0.875rem 1rem",
+                                    min_height="48px",
+                                    border=f"1px solid {T.border}",
+                                    border_radius=RADIUS["md"],
+                                    font_size="0.9375rem",
+                                    line_height="1.5",
+                                    _focus={
+                                        "border_color": COLORS["primary_green"],
+                                        "box_shadow": f"0 0 0 3px {COLORS['primary_green']}15",
+                                    },
+                                ),
+                                spacing="3",
+                                width="100%",
+                            ),
+                            rx.text_area(
+                                placeholder="Beschrijving (optioneel)",
+                                value=AuthState.reminder_description,
+                                on_change=AuthState.set_reminder_description,
+                                width="100%",
+                                min_height="80px",
+                                padding="0.875rem 1rem",
+                                border=f"1px solid {T.border}",
+                                border_radius=RADIUS["md"],
+                                font_size="0.9375rem",
+                                line_height="1.5",
+                                resize="vertical",
+                                _focus={
+                                    "border_color": COLORS["primary_green"],
+                                    "box_shadow": f"0 0 0 3px {COLORS['primary_green']}15",
+                                },
+                            ),
                             rx.input(
-                                type="date",
-                                value=AuthState.reminder_date,
-                                on_change=AuthState.set_reminder_date,
+                                placeholder="Locatie (optioneel)",
+                                value=AuthState.reminder_location,
+                                on_change=AuthState.set_reminder_location,
                                 width="100%",
                                 padding="0.875rem 1rem",
                                 min_height="48px",
