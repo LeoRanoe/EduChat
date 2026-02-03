@@ -4,6 +4,7 @@ import reflex as rx
 from educhat.pages import index
 from educhat.pages.onboarding import onboarding
 from educhat.pages.landing import landing
+from educhat.pages.auth_callback import auth_callback
 
 
 # Create the app instance with theme configuration
@@ -47,5 +48,11 @@ app.add_page(
     route="/onboarding",
     title="Onboarding - EduChat",
     description="Personaliseer je EduChat ervaring",
+)
+app.add_page(
+    auth_callback,
+    route="/auth/callback",
+    title="Authenticating...",
+    description="Processing OAuth authentication",
 )
 

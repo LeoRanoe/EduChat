@@ -1204,7 +1204,13 @@ class AuthState(rx.State):
         ]
     
     async def sync_calendar_events(self):
-        """Sync events from Google Calendar and scrape new events."""
+        """Bidirectional sync: Database ↔ Google Calendar.
+        
+        This method:
+        1. Syncs EduChat database events TO Google Calendar
+        2. Syncs Google Calendar events BACK to database
+        3. Optionally scrapes new events from websites
+        """
         if self.is_syncing_calendar:
             return
         
@@ -1213,12 +1219,13 @@ class AuthState(rx.State):
         
         try:
             from educhat.services.google_calendar_service import get_calendar_service
+            from educhat.services.supabase_client import get_service
             from educhat.services.event_scraper_service import scrape_and_sync_events
             from educhat.services.ai_service import get_ai_service
             
             # Get services
             calendar_service = get_calendar_service(user_id=self.user_id)
-            ai_service = get_ai_service()
+            db_service = get_service()
             
             # Authenticate with Google Calendar
             if not calendar_service.authenticate():
@@ -1227,14 +1234,48 @@ class AuthState(rx.State):
                 self.show_toast = True
                 return
             
-            # Scrape and sync events
-            result = await scrape_and_sync_events(
-                ai_service=ai_service,
-                calendar_service=calendar_service,
-                user_institutions=None  # Could get from onboarding data
-            )
+            total_synced = 0
+            total_scraped = 0
             
-            # Load events from Google Calendar
+            # STEP 1: Sync DATABASE events TO Google Calendar
+            print("[CALENDAR SYNC] Step 1: Syncing database events to Google Calendar...")
+            db_events = db_service.get_upcoming_events(limit=100)
+            if db_events:
+                import asyncio
+                loop = asyncio.get_event_loop()
+                sync_to_calendar_result = await loop.run_in_executor(
+                    None,
+                    lambda: calendar_service.sync_events_to_calendar(db_events)
+                )
+                total_synced += sync_to_calendar_result['created']
+                print(f"[CALENDAR SYNC] ✓ Created {sync_to_calendar_result['created']} events in Google Calendar")
+                print(f"[CALENDAR SYNC] ⊘ Skipped {sync_to_calendar_result['skipped']} duplicate events")
+                if sync_to_calendar_result['errors']:
+                    print(f"[CALENDAR SYNC] ✗ Errors: {sync_to_calendar_result['errors'][:3]}")
+            
+            # STEP 2: Sync Google Calendar events BACK to database
+            print("[CALENDAR SYNC] Step 2: Syncing Google Calendar events to database...")
+            sync_to_db_result = await loop.run_in_executor(
+                None,
+                lambda: calendar_service.sync_calendar_to_database(db_service)
+            )
+            print(f"[CALENDAR SYNC] ✓ Saved {sync_to_db_result['saved']} events to database")
+            print(f"[CALENDAR SYNC] ⊘ Skipped {sync_to_db_result['skipped']} existing events")
+            
+            # STEP 3 (Optional): Scrape new events from websites
+            # Only do this if user explicitly requests it or on periodic basis
+            # Commenting out to avoid slow sync times on every click
+            # 
+            # ai_service = get_ai_service()
+            # scrape_result = await scrape_and_sync_events(
+            #     ai_service=ai_service,
+            #     calendar_service=calendar_service,
+            #     user_institutions=None
+            # )
+            # total_scraped = scrape_result['scraped']
+            # total_synced += scrape_result['synced']
+            
+            # Load all events from Google Calendar for display
             events = calendar_service.get_upcoming_events(max_results=100)
             
             # Update state
@@ -1246,13 +1287,27 @@ class AuthState(rx.State):
             self._update_selected_day_events()
             
             # Show success message
-            self.toast_message = f"{result['scraped']} evenementen gevonden, {result['synced']} gesynchroniseerd"
+            message_parts = []
+            if sync_to_calendar_result['created'] > 0:
+                message_parts.append(f"{sync_to_calendar_result['created']} naar Google")
+            if sync_to_db_result['saved'] > 0:
+                message_parts.append(f"{sync_to_db_result['saved']} naar database")
+            if total_scraped > 0:
+                message_parts.append(f"{total_scraped} gescraped")
+            
+            if message_parts:
+                self.toast_message = f"✓ Gesynchroniseerd: {', '.join(message_parts)}"
+            else:
+                self.toast_message = "✓ Kalender is up-to-date (geen nieuwe evenementen)"
+            
             self.toast_type = "success"
             self.show_toast = True
             
         except Exception as e:
-            print(f"Error syncing calendar: {e}")
-            self.toast_message = "Fout bij synchroniseren kalender"
+            print(f"[CALENDAR SYNC] Error: {e}")
+            import traceback
+            traceback.print_exc()
+            self.toast_message = f"Fout bij synchroniseren: {str(e)[:100]}"
             self.toast_type = "error"
             self.show_toast = True
         finally:

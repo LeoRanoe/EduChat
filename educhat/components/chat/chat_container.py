@@ -154,7 +154,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                         rx.text(
                             "Of start met een stap-voor-stap gids:",
                             font_size=["0.9375rem", "1rem", "1.0625rem"],
-                            color=T.text_primary,
+                            color=rx.cond(rx.color_mode == "dark", "#FFFFFF", "#111827"),
                             font_weight="700",
                             text_align="center",
                             margin_bottom="20px",

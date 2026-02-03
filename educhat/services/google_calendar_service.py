@@ -366,6 +366,162 @@ class GoogleCalendarService:
         return results
 
 
+    def sync_events_to_calendar(
+        self,
+        events: List[Dict[str, Any]],
+        calendar_id: str = 'primary'
+    ) -> Dict[str, Any]:
+        """Sync events from database to Google Calendar with deduplication.
+        
+        Args:
+            events: List of events from database with keys: title, date, description, institution
+            calendar_id: Calendar ID (default: 'primary')
+        
+        Returns:
+            Dictionary with sync statistics: {'created': int, 'skipped': int, 'errors': list}
+        """
+        if not self.service:
+            if not self.authenticate():
+                return {'created': 0, 'skipped': 0, 'errors': ['Authentication failed']}
+        
+        results = {'created': 0, 'skipped': 0, 'errors': []}
+        
+        # Get existing events from calendar for deduplication
+        existing_events = self.get_upcoming_events(max_results=500, days_ahead=365)
+        existing_titles = {event['title'].lower() for event in existing_events}
+        
+        for event_data in events:
+            try:
+                title = event_data.get('title', 'Untitled Event')
+                
+                # Skip if already exists (case-insensitive match)
+                if title.lower() in existing_titles:
+                    results['skipped'] += 1
+                    continue
+                
+                # Parse date
+                date_str = event_data.get('date') or event_data.get('start_time')
+                if not date_str:
+                    results['errors'].append(f"No date for event: {title}")
+                    continue
+                
+                # Handle different date formats
+                try:
+                    if isinstance(date_str, str):
+                        # Try parsing ISO format or other common formats
+                        for fmt in ['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S']:
+                            try:
+                                start_time = datetime.strptime(date_str.split('T')[0] if 'T' in date_str else date_str, fmt)
+                                break
+                            except ValueError:
+                                continue
+                        else:
+                            # If no format matched, use current date + 7 days
+                            start_time = datetime.now() + timedelta(days=7)
+                    else:
+                        start_time = date_str
+                except Exception as e:
+                    results['errors'].append(f"Invalid date for {title}: {e}")
+                    continue
+                
+                # Set default end time (1 hour after start)
+                end_time = start_time + timedelta(hours=1)
+                
+                # Create event
+                description = event_data.get('description', '')
+                institution = event_data.get('institution') or event_data.get('institution_id') or ''
+                if institution and isinstance(institution, dict):
+                    institution = institution.get('name', '')
+                
+                # Add source information to description
+                full_description = description
+                if institution:
+                    full_description = f"📍 {institution}\n\n{description}"
+                if event_data.get('url'):
+                    full_description += f"\n\n🔗 {event_data['url']}"
+                
+                event = self.create_event(
+                    title=title,
+                    start_time=start_time,
+                    end_time=end_time,
+                    description=full_description,
+                    location=str(institution),
+                    calendar_id=calendar_id
+                )
+                
+                if event:
+                    results['created'] += 1
+                    existing_titles.add(title.lower())  # Add to dedup set
+                else:
+                    results['errors'].append(f"Failed to create event: {title}")
+                    
+            except Exception as e:
+                results['errors'].append(f"Error processing {event_data.get('title', 'unknown')}: {str(e)}")
+        
+        return results
+    
+    def sync_calendar_to_database(
+        self,
+        database_service,
+        calendar_id: str = 'primary'
+    ) -> Dict[str, Any]:
+        """Sync events from Google Calendar back to database.
+        
+        Args:
+            database_service: Supabase database service instance
+            calendar_id: Calendar ID (default: 'primary')
+        
+        Returns:
+            Dictionary with sync statistics
+        """
+        if not self.service:
+            if not self.authenticate():
+                return {'saved': 0, 'skipped': 0, 'errors': ['Authentication failed']}
+        
+        results = {'saved': 0, 'skipped': 0, 'errors': []}
+        
+        try:
+            # Get events from Google Calendar
+            calendar_events = self.get_upcoming_events(max_results=500, days_ahead=365, calendar_id=calendar_id)
+            
+            # Save to database
+            for event in calendar_events:
+                try:
+                    # Check if event already exists in database
+                    existing = database_service.client.table('events').select('id').eq(
+                        'title', event['title']
+                    ).execute()
+                    
+                    if existing.data:
+                        results['skipped'] += 1
+                        continue
+                    
+                    # Prepare event data for database
+                    event_data = {
+                        'title': event['title'],
+                        'description': event.get('description', ''),
+                        'date': event.get('start_time'),
+                        'end_date': event.get('end_time'),
+                        'event_type': 'general',
+                        'url': event.get('html_link'),
+                        'google_calendar_id': event.get('id'),
+                        'synced_from_google': True,
+                        'scraped_at': datetime.now().isoformat(),
+                    }
+                    
+                    # Save to database
+                    database_service.client.table('events').insert(event_data).execute()
+                    results['saved'] += 1
+                    
+                except Exception as e:
+                    results['errors'].append(f"Error saving {event.get('title', 'unknown')}: {str(e)}")
+        
+        except Exception as e:
+            results['errors'].append(f"Error fetching calendar events: {str(e)}")
+        
+        return results
+
+
 def get_calendar_service(user_id: Optional[str] = None) -> GoogleCalendarService:
     """Get or create a Google Calendar service instance.
     

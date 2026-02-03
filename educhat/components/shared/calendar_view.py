@@ -221,6 +221,8 @@ def calendar_day_events() -> rx.Component:
                     color=T.text_primary,
                 ),
                 spacing="2",
+                width="100%",
+                align="center",
             ),
             
             rx.cond(
@@ -247,6 +249,18 @@ def calendar_day_events() -> rx.Component:
                     padding="2rem",
                     text_align="center",
                 ),
+            ),
+            
+            # Sync button
+            rx.button(
+                rx.icon("refresh-cw", size=16),
+                "Synchroniseren",
+                on_click=AuthState.sync_calendar_events,
+                size="2",
+                variant="soft",
+                color_scheme="green",
+                loading=AuthState.is_syncing_calendar,
+                width="100%",
             ),
             
             spacing="3",
@@ -299,24 +313,14 @@ def calendar_view_controls() -> rx.Component:
                 color_scheme="green",
             ),
             spacing="2",
+            flex_wrap="wrap",
         ),
         
-        rx.hstack(
-            rx.button(
-                rx.icon("refresh-cw", size=16),
-                "Sync",
-                on_click=AuthState.sync_calendar_events,
-                size="2",
-                variant="soft",
-                color_scheme="green",
-                loading=AuthState.is_syncing_calendar,
-            ),
-            spacing="2",
-        ),
-        
-        justify="between",
         width="100%",
         padding="0.5rem 0",
+        flex_wrap="wrap",
+        gap="1rem",
+        align="center",
     )
 
 
@@ -420,18 +424,20 @@ def calendar_view() -> rx.Component:
                 padding="2rem",
                 position="relative",
                 z_index="2",
+                overflow="hidden",
             ),
             position="fixed",
-                top="50%",
-                left="50%",
-                transform="translate(-50%, -50%)",
-                width="min(95vw, 1100px)",
-                max_height="90vh",
-                overflow_y="auto",
-                class_name="calendar-modal",
-                border_radius=RADIUS["xl"],
-                box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                z_index="1003",
+            top="50%",
+            left="50%",
+            transform="translate(-50%, -50%)",
+            width="min(95vw, 1100px)",
+            max_height="90vh",
+            overflow_y="auto",
+            overflow_x="hidden",
+            class_name="calendar-modal",
+            border_radius=RADIUS["xl"],
+            box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            z_index="1003",
             ),
             position="fixed",
             top="0",

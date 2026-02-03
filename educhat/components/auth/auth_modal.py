@@ -305,7 +305,7 @@ def _right_panel() -> rx.Component:
             AuthState.auth_success != "",
             rx.box(
                 rx.box(
-                    rx.icon(tag="check-circle", size=16, color=T.success),
+                    rx.icon(tag="check", size=16, color=T.success),
                     width="24px",
                     height="24px",
                     display="flex",
@@ -339,7 +339,7 @@ def _right_panel() -> rx.Component:
             rx.box(
                 rx.box(
                     rx.box(
-                        rx.icon(tag="alert-circle", size=16, color=T.error),
+                        rx.icon(tag="alert-triangle", size=16, color=T.error),
                         width="24px",
                         height="24px",
                         display="flex",

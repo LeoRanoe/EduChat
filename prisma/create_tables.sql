@@ -148,15 +148,16 @@ CREATE INDEX idx_onboarding_answers_question_id ON onboarding_answers(question_i
 
 CREATE TABLE IF NOT EXISTS reminders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     event_id UUID REFERENCES events(id) ON DELETE SET NULL,
     title VARCHAR NOT NULL,
     date TIMESTAMP WITH TIME ZONE NOT NULL,
     sent BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    sent_at TIMESTAMP WITH TIME ZONE
 );
 
-CREATE INDEX idx_reminders_user_id ONauth. reminders(user_id);
+CREATE INDEX idx_reminders_user_id ON reminders(user_id);
 CREATE INDEX idx_reminders_event_id ON reminders(event_id);
 CREATE INDEX idx_reminders_date ON reminders(date);
 CREATE INDEX idx_reminders_sent ON reminders(sent, date);

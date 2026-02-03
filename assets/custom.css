@@ -145,10 +145,10 @@ html.dark {
   --sidebar-border: #1f2028;
   
   /* Text Colors */
-  --text-primary: #e6eef6;
-  --text-secondary: #b0bac6;
-  --text-tertiary: #8a94a0;
-  --text-muted: #5a6370;
+  --text-primary: #FFFFFF;
+  --text-secondary: #FFFFFF;
+  --text-tertiary: #E5E7EB;
+  --text-muted: #9CA3AF;
   --text-inverse: #111827;
   --text-on-primary: #FFFFFF;
   
@@ -806,7 +806,7 @@ body.dark .calendar-modal {
 }
 
 /* =============================================================================
-   COMPONENT STYLES - BUTTONS
+   BUTTON & QUICK ACTION STYLES
    ============================================================================= */
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
@@ -836,6 +836,35 @@ body.dark .calendar-modal {
 
 .btn-ghost:hover {
   background: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Quick action buttons - ensure text is visible */
+button[class*="action"] {
+  color: var(--text-primary) !important;
+}
+
+button[class*="action"] > * {
+  color: var(--text-primary) !important;
+}
+
+button[class*="action"] p,
+button[class*="action"] span,
+button[class*="action"] div:has(> p) {
+  color: var(--text-primary) !important;
+}
+
+/* Conversation template buttons - ensure all text is visible */
+button:has([class*="template"]) {
+  color: var(--text-primary) !important;
+}
+
+button:has([class*="template"]) p,
+button:has([class*="template"]) span {
+  color: var(--text-primary) !important;
+}
+
+button:has(> *:nth-child(2)) > *:nth-child(2) {
   color: var(--text-primary) !important;
 }
 
@@ -1060,6 +1089,27 @@ body.dark .calendar-modal {
   box-shadow: var(--shadow-lg);
 }
 
+/* CTA Section - Ensure text on gradient background is visible */
+/* Green gradient section has white text */
+[style*="linear-gradient(135deg"]:has([style*="primary_green"]),
+.cta-section {
+  color: #FFFFFF;
+}
+
+.cta-section h1,
+.cta-section h2,
+.cta-section h3,
+.cta-section h4,
+.cta-section h5,
+.cta-section h6 {
+  color: #FFFFFF;
+}
+
+.cta-section p,
+.cta-section span {
+  color: rgba(255, 255, 255, 0.95);
+}
+
 /* =============================================================================
    REDUCED MOTION - Accessibility
    ============================================================================= */
@@ -1090,6 +1140,23 @@ body.dark .calendar-modal {
     --text-secondary: #CCCCCC;
     --text-tertiary: #AAAAAA;
   }
+}
+
+/* =============================================================================
+   DARK MODE TEXT FIX - Ensure white text in dark mode
+   ============================================================================= */
+.dark text[style*="color: #111827"],
+.dark text[style*="color:#111827"],
+.radix-themes.dark text[style*="color: #111827"],
+.radix-themes.dark text[style*="color:#111827"] {
+  color: #FFFFFF !important;
+}
+
+.dark text[style*="color: #4B5563"],
+.dark text[style*="color:#4B5563"],
+.radix-themes.dark text[style*="color: #4B5563"],
+.radix-themes.dark text[style*="color:#4B5563"] {
+  color: #FFFFFF !important;
 }
 
 /* =============================================================================

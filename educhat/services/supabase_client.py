@@ -786,6 +786,58 @@ class SupabaseService:
         
         response = self.client.table('events').delete().lt('scraped_at', cutoff).execute()
         return len(response.data) if response.data else 0
+    
+    def mark_event_synced_to_google(self, event_id: str, google_calendar_id: str) -> bool:
+        """
+        Mark an event as synced to Google Calendar.
+        
+        Args:
+            event_id: Database event ID
+            google_calendar_id: Google Calendar event ID
+            
+        Returns:
+            True if updated successfully
+        """
+        self._ensure_connected()
+        
+        try:
+            data = {
+                'google_calendar_id': google_calendar_id,
+                'synced_to_google': True,
+                'last_synced': datetime.now().isoformat(),
+            }
+            response = self.client.table('events').update(data).eq('id', event_id).execute()
+            return len(response.data) > 0
+        except Exception as e:
+            print(f"Error marking event as synced: {e}")
+            return False
+    
+    def get_unsynced_events(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """
+        Get events that haven't been synced to Google Calendar yet.
+        
+        Args:
+            limit: Maximum number of events to return
+            
+        Returns:
+            List of unsynced events
+        """
+        self._ensure_connected()
+        
+        try:
+            response = (
+                self.client.table('events')
+                .select('*, institutions(*)')
+                .eq('synced_to_google', False)
+                .gte('date', datetime.now().isoformat())
+                .order('date', desc=False)
+                .limit(limit)
+                .execute()
+            )
+            return response.data
+        except Exception as e:
+            print(f"Error getting unsynced events: {e}")
+            return []
 
 
 # Singleton instance
