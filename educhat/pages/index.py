@@ -3,7 +3,7 @@
 import reflex as rx
 from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
-from educhat.components.chat import sidebar, chat_container
+from educhat.components.chat import sidebar, chat_container, calendar_sync_bar
 from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, settings_modal, calendar_view, google_events_import_modal
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
@@ -90,6 +90,9 @@ def authenticated_chat() -> rx.Component:
         
         # Main content area
         rx.box(
+            # Calendar sync bar - compact header for Google Calendar status and manual sync
+            calendar_sync_bar(),
+            
             # Guest banner padding spacer (only when banner is visible)
             rx.cond(
                 AppState.is_guest & ~AuthState.guest_banner_dismissed,

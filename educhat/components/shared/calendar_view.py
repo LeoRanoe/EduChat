@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 from educhat.styles.theme import COLORS, RADIUS, T
 from educhat.state.auth_state import AuthState
+from educhat.components.shared.sync_status import sync_status_badge
 
 
 def calendar_day_cell(day_data: dict) -> rx.Component:
@@ -176,6 +177,21 @@ def event_card_mini(event: dict) -> rx.Component:
                     ),
                     spacing="2",
                     width="100%",
+                    align="center",
+                ),
+                # Show sync status for reminders
+                rx.cond(
+                    event.get("type", "") == "reminder",
+                    sync_status_badge(
+                        status=event.get("sync_status", "pending"),
+                        last_sync_time=event.get("last_sync_at", ""),
+                        google_link=rx.cond(
+                            event.get("google_calendar_event_id", "") != "",
+                            f"https://calendar.google.com/calendar/event?eid={event.get('google_calendar_event_id', '')}",
+                            ""
+                        )
+                    ),
+                    rx.fragment(),
                 ),
                 rx.cond(
                     event.get("institution", "") != "",

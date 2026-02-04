@@ -30,7 +30,7 @@ TOAST_CONFIG = {
         "background": T.warning_light,
         "border": T.warning,
         "text": T.text_primary,
-        "icon": "alert-triangle",
+        "icon": "triangle-alert",
     },
     "info": {
         "background": T.info_light,

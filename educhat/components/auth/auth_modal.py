@@ -339,7 +339,7 @@ def _right_panel() -> rx.Component:
             rx.box(
                 rx.box(
                     rx.box(
-                        rx.icon(tag="alert-triangle", size=16, color=T.error),
+                        rx.icon(tag="triangle-alert", size=16, color=T.error),
                         width="24px",
                         height="24px",
                         display="flex",

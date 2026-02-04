@@ -142,7 +142,7 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
                     ),
                     rx.button(
                         rx.hstack(
-                            rx.icon("check-circle", size=18),
+                            rx.icon("circle-check", size=18),
                             rx.text(tx("complete"), font_weight="600"),
                             spacing="2",
                             align="center",
@@ -181,9 +181,22 @@ def navigation_buttons(state: OnboardingState) -> rx.Component:
         left="0",
         right="0",
         z_index="100",
-        background=T.bg_card,
-        border_top=f"1px solid {T.border_light}",
-        box_shadow="0 -4px 16px rgba(0,0,0,0.06)",
+        background=rx.cond(
+            rx.color_mode == "dark",
+            "rgba(26, 32, 44, 0.98)",  # Dark mode: bijna volledig dekkend donkergrijs
+            "rgba(255, 255, 255, 0.98)"  # Light mode: bijna volledig dekkend wit
+        ),
+        backdrop_filter="blur(12px)",  # Extra blur voor betere leesbaarheid
+        border_top=rx.cond(
+            rx.color_mode == "dark",
+            "1px solid rgba(255, 255, 255, 0.1)",
+            "1px solid rgba(0, 0, 0, 0.08)"
+        ),
+        box_shadow=rx.cond(
+            rx.color_mode == "dark",
+            "0 -4px 16px rgba(0, 0, 0, 0.3)",
+            "0 -4px 16px rgba(0, 0, 0, 0.06)"
+        ),
     )
 
 
@@ -553,7 +566,7 @@ def question_step_10(state: OnboardingState) -> rx.Component:
         ),
         rx.vstack(
             *[
-                rx.hstack(
+                rx.vstack(
                     rx.text(
                         rx.cond(
                             AuthState.is_dutch,
@@ -563,7 +576,7 @@ def question_step_10(state: OnboardingState) -> rx.Component:
                         font_size="0.9375rem",
                         font_weight="500",
                         color=T.text_primary,
-                        width="140px",
+                        margin_bottom="0.5rem",
                     ),
                     rx.hstack(
                         *[
@@ -582,10 +595,12 @@ def question_step_10(state: OnboardingState) -> rx.Component:
                                 ),
                                 border=f"1.5px solid {T.border}",
                                 border_radius="8px",
-                                padding="8px 16px",
-                                font_size="0.875rem",
+                                padding="8px 12px",
+                                font_size="0.8125rem",
                                 cursor="pointer",
                                 transition="all 0.2s ease",
+                                flex="1",
+                                min_width="0",
                                 _hover={
                                     "background": COLORS["primary_green"],
                                     "color": "white",
@@ -600,14 +615,13 @@ def question_step_10(state: OnboardingState) -> rx.Component:
                             ]
                         ],
                         spacing="2",
-                        flex="1",
+                        width="100%",
                     ),
-                    width="100%",
-                    justify="between",
                     padding="12px",
                     border_radius="12px",
                     background=T.bg_secondary,
                     border=f"1px solid {T.border_light}",
+                    width="100%",
                 )
                 for subject_id, subject_data in subjects.items()
             ],
@@ -788,6 +802,8 @@ def quiz_content(state: OnboardingState) -> rx.Component:
             width="100%",
             min_height="100vh",
             padding_bottom="100px",
+            overflow_y="auto",
+            overflow_x="hidden",
         ),
         
         # Navigation footer - fixed at bottom
@@ -1034,9 +1050,12 @@ def onboarding() -> rx.Component:
                         background="transparent",
                         position="relative",
                         z_index="1",
+                        overflow_y="auto",
+                        overflow_x="hidden",
                         **{
                             "@media (min-width: 1024px)": {
                                 "width": "60%",
+                                "height": "100vh",
                             }
                         }
                     ),

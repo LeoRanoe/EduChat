@@ -26,41 +26,52 @@ def sync_status_badge(
     """
     return rx.cond(
         status == "syncing",
-        # Syncing state
+        # Syncing state - BRIGHT BLUE
         rx.hstack(
-            rx.icon("loader-2", size=12, class_name="animate-spin"),
+            rx.icon("loader-circle", size=14, class_name="animate-spin", color="#3B82F6"),
             rx.text(
-                "Synchroniseren...",
-                font_size="0.6875rem",
-                color=T.text_secondary,
+                "Bezig met syncen...",
+                font_size="0.75rem",
+                font_weight="600",
+                color="#3B82F6",
             ),
-            spacing="1",
-            padding="0.25rem 0.5rem",
-            background=f"{COLORS['primary_green']}10",
-            border_radius=RADIUS["sm"],
+            spacing="2",
+            padding="0.4rem 0.75rem",
+            background="#3B82F620",
+            border="1px solid #3B82F640",
+            border_radius=RADIUS["md"],
             align="center",
         ),
         rx.cond(
             status == "synced",
-            # Synced state
+            # Synced state - BRIGHT GREEN with clear indicator
             rx.cond(
                 google_link != "",
                 # With Google Calendar link
                 rx.link(
                     rx.hstack(
-                        rx.icon("check-circle", size=12, color=COLORS["primary_green"]),
+                        rx.icon("circle-check", size=14, color="#10B981"),
                         rx.text(
-                            f"✓ {last_sync_time}",
-                            font_size="0.6875rem",
-                            color=COLORS["primary_green"],
+                            "Gesynchroniseerd",
+                            font_size="0.75rem",
+                            font_weight="600",
+                            color="#10B981",
                         ),
-                        spacing="1",
-                        padding="0.25rem 0.5rem",
-                        background=f"{COLORS['primary_green']}15",
-                        border_radius=RADIUS["sm"],
+                        rx.text(
+                            f"({last_sync_time})",
+                            font_size="0.7rem",
+                            color="#059669",
+                        ),
+                        rx.icon("external-link", size=12, color="#059669"),
+                        spacing="2",
+                        padding="0.4rem 0.75rem",
+                        background="#10B98120",
+                        border="1px solid #10B98140",
+                        border_radius=RADIUS["md"],
                         align="center",
                         _hover={
-                            "background": f"{COLORS['primary_green']}25",
+                            "background": "#10B98130",
+                            "border_color": "#10B98160",
                         },
                         transition="all 0.2s ease",
                     ),
@@ -70,53 +81,68 @@ def sync_status_badge(
                 ),
                 # Without link
                 rx.hstack(
-                    rx.icon("check-circle", size=12, color=COLORS["primary_green"]),
+                    rx.icon("circle-check", size=14, color="#10B981"),
                     rx.text(
-                        f"✓ {last_sync_time}",
-                        font_size="0.6875rem",
-                        color=COLORS["primary_green"],
+                        "Gesynchroniseerd",
+                        font_size="0.75rem",
+                        font_weight="600",
+                        color="#10B981",
                     ),
-                    spacing="1",
-                    padding="0.25rem 0.5rem",
-                    background=f"{COLORS['primary_green']}15",
-                    border_radius=RADIUS["sm"],
+                    rx.text(
+                        f"({last_sync_time})",
+                        font_size="0.7rem",
+                        color="#059669",
+                    ),
+                    spacing="2",
+                    padding="0.4rem 0.75rem",
+                    background="#10B98120",
+                    border="1px solid #10B98140",
+                    border_radius=RADIUS["md"],
                     align="center",
                 ),
             ),
             rx.cond(
                 status == "error",
-                # Error state
+                # Error state - BRIGHT RED
                 rx.box(
                     rx.hstack(
-                        rx.icon("alert-circle", size=12, color=T.error),
+                        rx.icon("circle-x", size=14, color="#EF4444"),
                         rx.text(
                             "Sync mislukt",
-                            font_size="0.6875rem",
-                            color=T.error,
+                            font_size="0.75rem",
+                            font_weight="600",
+                            color="#EF4444",
                         ),
-                        spacing="1",
+                        spacing="2",
                         align="center",
                     ),
-                    padding="0.25rem 0.5rem",
-                    background=f"{T.error}15",
-                    border_radius=RADIUS["sm"],
+                    padding="0.4rem 0.75rem",
+                    background="#EF444420",
+                    border="1px solid #EF444440",
+                    border_radius=RADIUS["md"],
+                    cursor="pointer",
+                    _hover={
+                        "background": "#EF444430",
+                        "border_color": "#EF444460",
+                    },
                     title=error_message,
-                    cursor="help",
                 ),
                 rx.cond(
                     status == "pending",
-                    # Pending state
+                    # Pending state - ORANGE/AMBER for visibility
                     rx.hstack(
-                        rx.icon("clock", size=12, color=T.text_tertiary),
+                        rx.icon("clock", size=14, color="#F59E0B"),
                         rx.text(
-                            "Wacht op sync",
-                            font_size="0.6875rem",
-                            color=T.text_tertiary,
+                            "Nog niet gesynchroniseerd",
+                            font_size="0.75rem",
+                            font_weight="600",
+                            color="#F59E0B",
                         ),
-                        spacing="1",
-                        padding="0.25rem 0.5rem",
-                        background=T.bg_tertiary,
-                        border_radius=RADIUS["sm"],
+                        spacing="2",
+                        padding="0.4rem 0.75rem",
+                        background="#F59E0B20",
+                        border="1px solid #F59E0B40",
+                        border_radius=RADIUS["md"],
                         align="center",
                     ),
                     rx.fragment(),

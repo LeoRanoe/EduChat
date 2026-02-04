@@ -98,6 +98,8 @@ class AuthState(rx.State):
     show_calendar_view: bool = False
     calendar_view: str = "month"  # "month", "week", "day"
     calendar_year: int = datetime.now().year
+    google_calendar_connected: bool = False  # Connection status indicator
+    is_manual_syncing: bool = False  # Manual sync loading state
     calendar_month: int = datetime.now().month
     calendar_day: int = datetime.now().day
     calendar_events: List[Dict] = []
@@ -736,7 +738,7 @@ class AuthState(rx.State):
             # Yield state updates before redirect
             yield
             # Force full page reload with JavaScript to clear all client state
-            yield rx.call_script("window.location.href = window.location.origin + '/landing'")
+            yield rx.call_script("window.location.href = window.location.origin + '/'")
     
     async def continue_as_guest(self):
         """Continue as guest user."""
@@ -779,6 +781,8 @@ class AuthState(rx.State):
         try:
             await self.load_reminders_from_db()
             await self.load_upcoming_events()
+            # Check Google Calendar connection
+            await self.check_google_calendar_connection()
             # Auto-sync with Google Calendar in background
             await self.auto_sync_google_calendar()
             # Load onboarding preferences (handled by AppState)
@@ -1282,18 +1286,8 @@ class AuthState(rx.State):
         
         google_event_id = reminder_to_delete.get("google_calendar_event_id") or reminder_to_delete.get("calendar_event_id")
         
-        # Delete from database if authenticated
-        if self.is_authenticated and self.user_id:
-            try:
-                from educhat.services.database import get_client
-                db = get_client()
-                db.table('reminders').delete().eq('id', reminder_id).execute()
-            except Exception as e:
-                print(f"Error deleting reminder from database: {e}")
-                import traceback
-                traceback.print_exc()
-        
-        # Delete from Google Calendar if it was synced
+        # Delete from Google Calendar FIRST (if synced)
+        google_delete_success = True
         if google_event_id and self.is_authenticated:
             try:
                 from educhat.services.sync_manager import get_sync_manager
@@ -1306,11 +1300,38 @@ class AuthState(rx.State):
                         print(f"✓ Deleted reminder from Google Calendar: {google_event_id}")
                     else:
                         print(f"✗ Error deleting from Google Calendar: {result.error}")
+                        google_delete_success = False
             except Exception as e:
                 print(f"Error deleting reminder from Google Calendar: {e}")
+                google_delete_success = False
+        
+        # Delete from database if authenticated
+        if self.is_authenticated and self.user_id:
+            try:
+                from educhat.services.database import get_client
+                db = get_client()
+                db.table('reminders').delete().eq('id', reminder_id).execute()
+                print(f"✓ Deleted reminder from database: {reminder_id}")
+            except Exception as e:
+                print(f"Error deleting reminder from database: {e}")
+                import traceback
+                traceback.print_exc()
         
         # Remove from local state
         self.reminders = [r for r in self.reminders if r["id"] != reminder_id]
+        
+        # Show success/warning toast
+        if google_event_id:
+            if google_delete_success:
+                self.toast_message = "✓ Reminder verwijderd (inclusief Google Calendar)"
+                self.toast_type = "success"
+            else:
+                self.toast_message = "⚠ Reminder verwijderd van app, maar niet van Google Calendar"
+                self.toast_type = "warning"
+        else:
+            self.toast_message = "✓ Reminder verwijderd"
+            self.toast_type = "success"
+        self.show_toast = True
         
         # Refresh calendar events if calendar is open
         if self.show_calendar_view:
@@ -1332,12 +1353,16 @@ class AuthState(rx.State):
                 {
                     "id": str(r["id"]),
                     "title": r["title"],
-                    "date": str(r.get("date", "")),
+                    "date": str(r.get("date", "")).split('T')[0] if 'T' in str(r.get("date", "")) else str(r.get("date", "")),  # Extract date part
+                    "time": str(r.get("date", "")).split('T')[1][:5] if 'T' in str(r.get("date", "")) else "09:00",  # Extract time part
+                    "datetime": str(r.get("date", "")),  # Full timestamp
+                    "description": r.get("description", ""),
+                    "location": r.get("location", ""),
                     "completed": "true" if r.get("sent", False) else "false",
                     "created_at": str(r.get("created_at", "")),
                     "google_calendar_event_id": r.get("google_calendar_event_id", ""),
                     "sync_status": r.get("sync_status", "pending"),
-                    "last_sync_time": "",
+                    "last_sync_at": str(r.get("last_sync_at", ""))[:16] if r.get("last_sync_at") else "",  # Format: YYYY-MM-DD HH:MM
                     "sync_error": r.get("sync_error", ""),
                     "google_link": f"https://calendar.google.com/calendar/event?eid={r.get('google_calendar_event_id', '')}" if r.get("google_calendar_event_id") else ""
                 }
@@ -1505,6 +1530,10 @@ class AuthState(rx.State):
             print(f"[CALENDAR SYNC] ✓ Saved {sync_to_db_result['saved']} events to database")
             print(f"[CALENDAR SYNC] ⊘ Skipped {sync_to_db_result['skipped']} existing events")
             
+            # STEP 2.5: Sync deletions from Google Calendar
+            print("[CALENDAR SYNC] Step 2.5: Checking for deleted events in Google Calendar...")
+            await self.sync_deleted_events_from_google()
+            
             # STEP 3 (Optional): Scrape new events from websites
             # Only do this if user explicitly requests it or on periodic basis
             # Commenting out to avoid slow sync times on every click
@@ -1556,6 +1585,54 @@ class AuthState(rx.State):
         finally:
             self.is_syncing_calendar = False
     
+    async def sync_deleted_events_from_google(self):
+        """Check for events deleted in Google Calendar and remove them from database."""
+        if not self.is_authenticated or not self.user_id:
+            return
+        
+        try:
+            from educhat.services.google_calendar_service import get_calendar_service
+            from educhat.services.database import get_client
+            
+            # Get all Google Calendar events
+            calendar_service = get_calendar_service(user_id=self.user_id)
+            if not calendar_service.authenticate():
+                return
+            
+            google_events = calendar_service.get_upcoming_events(max_results=500)
+            google_event_ids = {event.get('id') for event in google_events if event.get('id')}
+            
+            # Get all synced reminders from database
+            db = get_client()
+            reminders = db.table('reminders')\
+                .select('id, google_calendar_event_id')\
+                .eq('user_id', self.user_id)\
+                .not_.is_('google_calendar_event_id', 'null')\
+                .execute()
+            
+            # Check for deleted events
+            deleted_count = 0
+            if hasattr(reminders, 'data') and reminders.data:
+                for reminder in reminders.data:
+                    google_id = reminder.get('google_calendar_event_id')
+                    if google_id and google_id not in google_event_ids:
+                        # Event was deleted in Google Calendar
+                        reminder_id = reminder['id']
+                        db.table('reminders').delete().eq('id', reminder_id).execute()
+                        
+                        # Remove from local state
+                        self.reminders = [r for r in self.reminders if r['id'] != str(reminder_id)]
+                        deleted_count += 1
+                        print(f"✓ Removed reminder {reminder_id} (deleted in Google Calendar)")
+            
+            if deleted_count > 0:
+                print(f"✓ Synced {deleted_count} deletions from Google Calendar")
+                
+        except Exception as e:
+            print(f"Error syncing deleted events from Google: {e}")
+            import traceback
+            traceback.print_exc()
+    
     async def load_calendar_events(self):
         """Load events from Google Calendar and local reminders."""
         try:
@@ -1580,22 +1657,52 @@ class AuthState(rx.State):
             
             if hasattr(reminders, 'data') and reminders.data:
                 for reminder in reminders.data:
+                    # Extract date from timestamp for calendar display
+                    date_value = reminder.get('date', '')
+                    if 'T' in date_value:
+                        # Extract YYYY-MM-DD from YYYY-MM-DDTHH:MM:SS
+                        display_date = date_value.split('T')[0]
+                        # Extract time HH:MM
+                        start_time = date_value.split('T')[1][:5]
+                    else:
+                        display_date = date_value
+                        start_time = "09:00"
+                    
+                    # Format last_sync_at for display
+                    last_sync_display = ""
+                    if reminder.get('last_sync_at'):
+                        try:
+                            sync_time = str(reminder.get('last_sync_at', ''))
+                            # Extract time HH:MM from timestamp
+                            if 'T' in sync_time:
+                                last_sync_display = sync_time.split('T')[1][:5]
+                            elif ' ' in sync_time:
+                                last_sync_display = sync_time.split(' ')[1][:5]
+                        except:
+                            last_sync_display = ""
+                    
                     # Convert reminder to calendar event format
                     reminder_event = {
                         "id": f"reminder_{reminder['id']}",
                         "title": f"🔔 {reminder['title']}",
-                        "date": reminder.get('date', ''),
-                        "datetime": reminder.get('datetime', ''),
+                        "date": display_date,  # Use clean date for calendar matching
+                        "datetime": date_value,  # Keep full timestamp
+                        "start_time": start_time,  # Add start_time for display
                         "description": reminder.get('description', ''),
                         "location": reminder.get('location', ''),
                         "type": "reminder",
-                        "sync_status": reminder.get('sync_status', 'pending')
+                        "sync_status": reminder.get('sync_status', 'pending'),
+                        "google_calendar_event_id": reminder.get('google_calendar_event_id', ''),
+                        "last_sync_at": last_sync_display
                     }
                     all_events.append(reminder_event)
             
             self.calendar_events = all_events
             self.upcoming_events = all_events[:10]
             self._update_selected_day_events()
+            
+            # Also check for deletions from Google Calendar
+            await self.sync_deleted_events_from_google()
             
         except Exception as e:
             print(f"Error loading calendar events: {e}")
@@ -1742,6 +1849,63 @@ class AuthState(rx.State):
             self.sync_progress_total = 0
             yield
     
+    async def check_google_calendar_connection(self):
+        """Check if Google Calendar is connected and authenticated."""
+        if not self.is_authenticated or not self.user_id:
+            self.google_calendar_connected = False
+            return
+        
+        try:
+            from educhat.services.google_calendar_service import get_calendar_service
+            
+            calendar_service = get_calendar_service(user_id=self.user_id)
+            self.google_calendar_connected = calendar_service.authenticate()
+            
+            if self.google_calendar_connected:
+                print("[GOOGLE CALENDAR] ✓ Connected and authenticated")
+            else:
+                print("[GOOGLE CALENDAR] ✗ Not connected or authentication failed")
+                
+        except Exception as e:
+            print(f"[GOOGLE CALENDAR] Connection check error: {e}")
+            self.google_calendar_connected = False
+    
+    async def manual_sync_calendar(self):
+        """Manual sync triggered by user button click."""
+        if not self.is_authenticated or not self.user_id:
+            self.toast_message = "Log in om te synchroniseren met Google Calendar"
+            self.toast_type = "warning"
+            self.show_toast = True
+            return
+        
+        if self.is_manual_syncing:
+            return
+        
+        self.is_manual_syncing = True
+        yield
+        
+        try:
+            # Check connection first
+            await self.check_google_calendar_connection()
+            
+            if not self.google_calendar_connected:
+                self.toast_message = "Google Calendar niet verbonden. Configureer eerst je credentials."
+                self.toast_type = "error"
+                self.show_toast = True
+                return
+            
+            # Perform full bidirectional sync
+            await self.sync_calendar_events()
+            
+        except Exception as e:
+            print(f"[MANUAL SYNC] Error: {e}")
+            self.toast_message = f"Synchronisatie mislukt: {str(e)[:80]}"
+            self.toast_type = "error"
+            self.show_toast = True
+        finally:
+            self.is_manual_syncing = False
+            yield
+    
     async def auto_sync_google_calendar(self):
         """Auto-sync with Google Calendar on app launch (background, non-blocking)."""
         if not self.is_authenticated or not self.user_id:
@@ -1756,7 +1920,10 @@ class AuthState(rx.State):
             # Authenticate silently
             if not sync_manager.authenticate():
                 print("[AUTO-SYNC] Google Calendar authentication not configured or failed")
+                self.google_calendar_connected = False
                 return
+            
+            self.google_calendar_connected = True
             
             print("[AUTO-SYNC] Starting background sync with Google Calendar...")
             
