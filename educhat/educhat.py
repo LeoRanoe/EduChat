@@ -15,6 +15,7 @@ app = rx.App(
     stylesheets=[
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
         "/landing-animations.css",
+        "/theme-stability.css",
     ],
     style={
         "font_family": "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -29,6 +30,31 @@ app = rx.App(
         has_background=True,
         radius="medium",
     ),
+    # Prevent theme flashing on page load
+    head_components=[
+        rx.script(
+            """
+            // Prevent dark mode flash on page load
+            // Check localStorage and system preference before Reflex loads
+            (function() {
+                try {
+                    const stored = localStorage.getItem('chakra-ui-color-mode');
+                    const isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (isDark) {
+                        document.documentElement.style.colorScheme = 'dark';
+                    } else {
+                        document.documentElement.style.colorScheme = 'light';
+                    }
+                } catch (e) {
+                    // Fallback to system preference
+                    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                        document.documentElement.style.colorScheme = 'dark';
+                    }
+                }
+            })();
+            """
+        )
+    ]
 )
 
 # Add pages

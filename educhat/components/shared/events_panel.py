@@ -109,44 +109,61 @@ def events_panel() -> rx.Component:
                     # Header
                     rx.hstack(
                         rx.hstack(
-                            rx.icon("calendar", size=20, color=T.accent),
+                            rx.icon("calendar", size=24, color=COLORS["primary_green"]),
                             rx.text(
                                 "Belangrijke Datums",
-                                font_size="1.125rem",
+                                font_size="1.25rem",
                                 font_weight="700",
                                 color=T.text_primary,
+                                letter_spacing="-0.5px",
                             ),
                             spacing="2",
                             align="center",
                         ),
                         rx.box(
-                            rx.icon("x", size=18, color=T.text_secondary),
+                            rx.icon("x", size=20, color=T.text_secondary),
                             on_click=AuthState.toggle_events_panel,
                             cursor="pointer",
                             padding="0.5rem",
                             border_radius=RADIUS["sm"],
                             _hover={
                                 "background": T.bg_hover,
+                                "color": T.text_primary,
                             },
                             transition="all 0.2s ease",
                         ),
                         justify="between",
                         width="100%",
+                        padding_bottom="1rem",
+                        border_bottom=f"1px solid {T.border_light}",
                     ),
                     
                     # Action buttons
                     rx.hstack(
                         rx.button(
-                            rx.icon("calendar", size=16),
-                            "Kalender Weergave",
+                            rx.hstack(
+                                rx.icon("calendar", size=16),
+                                rx.text("Kalender Weergave"),
+                                spacing="2",
+                                align="center",
+                            ),
                             on_click=AuthState.toggle_calendar_view,
-                            size="2",
-                            variant="soft",
-                            color_scheme="green",
                             width="100%",
+                            padding="0.875rem 1rem",
+                            background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                            color=T.text_on_primary,
+                            font_weight="600",
+                            border_radius=RADIUS["md"],
+                            cursor="pointer",
+                            _hover={
+                                "transform": "translateY(-2px)",
+                                "box_shadow": T.shadow_md,
+                            },
+                            transition="all 0.2s ease",
                         ),
                         spacing="2",
                         width="100%",
+                        padding="1rem 0",
                     ),
                     
                     # Info text

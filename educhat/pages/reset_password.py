@@ -175,7 +175,7 @@ def reset_password_page() -> rx.Component:
             rx.cond(
                 ResetPasswordState.reset_success,
                 rx.box(
-                    rx.icon("check-circle", size=48, color=T.success),
+                    rx.icon("check_check", size=48, color=T.success),
                     rx.heading(
                         "Wachtwoord gewijzigd!",
                         size="6",
@@ -195,7 +195,7 @@ def reset_password_page() -> rx.Component:
                     rx.cond(
                         ResetPasswordState.reset_error != "",
                         rx.box(
-                            rx.icon("alert-circle", size=16, color=T.error),
+                            rx.icon("circle_alert", size=16, color=T.error),
                             rx.text(
                                 ResetPasswordState.reset_error,
                                 font_size="14px",

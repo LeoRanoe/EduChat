@@ -1,0 +1,97 @@
+/* EduChat Theme Stability Fixes */
+
+/* Prevent theme flashing on page load */
+html {
+  color-scheme: light dark;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ensure smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* Disable transitions during actual mode toggle to prevent double-transitions */
+.chakra-ui-light,
+.chakra-ui-dark {
+  transition: none !important;
+}
+
+/* Light mode (default) */
+[data-theme="light"],
+html[data-theme="light"],
+html:not([data-theme]) {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --text-primary: #1a202c;
+  --text-secondary: #6b7280;
+  --border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode */
+[data-theme="dark"],
+html[data-theme="dark"],
+[class*="dark"] {
+  color-scheme: dark;
+  --bg-primary: #1a202c;
+  --bg-secondary: #2d3748;
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --text-primary: #f7fafc;
+  --text-secondary: #a0aec0;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Fix button hover states consistency */
+button {
+  position: relative;
+}
+
+button:focus-within {
+  outline: 2px solid var(--color-primary, #10b981);
+  outline-offset: 2px;
+}
+
+/* Ensure icons change color on theme change */
+[class*="icon"] {
+  transition: color 0.3s ease !important;
+}
+
+/* Fix text color transitions */
+body,
+p,
+span,
+div {
+  transition: color 0.3s ease, background-color 0.3s ease !important;
+}
+
+/* Prevent jank on theme switch */
+html,
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* localStorage persistence indicator (for debugging) */
+.theme-toggle-btn {
+  position: relative;
+}
+
+.theme-toggle-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+/* Show indicator when theme is saved */
+.theme-toggle-btn[data-saved="true"]::after {
+  opacity: 0.5;
+}

@@ -672,7 +672,7 @@ def sidebar(
                                 icon_color="#3B82F6",
                                 hover_bg="rgba(59, 130, 246, 0.1)",
                             ),
-                            # Accessible dark mode toggle in sidebar using Reflex color mode
+                            # Reliable dark mode toggle with proper state management
                             rx.el.button(
                                 rx.hstack(
                                     rx.color_mode_cond(
@@ -695,18 +695,25 @@ def sidebar(
                                     dark="Schakel naar lichte modus",
                                 ),
                                 title=rx.color_mode_cond(
-                                    light="Schakel naar donkere modus - vermindert vermoeidheid van de ogen",
-                                    dark="Schakel naar lichte modus - vermindert vermoeidheid van de ogen",
+                                    light="Donkere modus - vermindert vermoeidheid van de ogen",
+                                    dark="Lichte modus - vermindert vermoeidheid van de ogen",
                                 ),
                                 cursor="pointer",
                                 padding="0.625rem 0.75rem",
                                 border_radius=RADIUS["lg"],
                                 flex="1",
                                 min_height="40px",
-                                background="transparent",
-                                border="none",
+                                background=rx.color_mode_cond(light="transparent", dark="rgba(255, 255, 255, 0.05)"),
+                                border="1px solid",
+                                border_color=rx.color_mode_cond(light="transparent", dark="rgba(255, 255, 255, 0.1)"),
                                 transition=TRANSITIONS["fast"],
-                                _hover={"background": "var(--bg-hover)"},
+                                _hover={
+                                    "background": rx.color_mode_cond(light="rgba(0, 0, 0, 0.05)", dark="rgba(255, 255, 255, 0.08)"),
+                                    "border_color": rx.color_mode_cond(light="rgba(0, 0, 0, 0.1)", dark="rgba(255, 255, 255, 0.15)"),
+                                },
+                                _active={
+                                    "background": rx.color_mode_cond(light="rgba(0, 0, 0, 0.1)", dark="rgba(255, 255, 255, 0.12)"),
+                                },
                                 _focus_visible={
                                     "outline": "2px solid var(--color-primary)",
                                     "outline_offset": "2px",
