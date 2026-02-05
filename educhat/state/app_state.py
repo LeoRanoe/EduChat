@@ -708,6 +708,13 @@ class AppState(AuthState):
             
             # ALWAYS get context (with defaults if needed)
             self.user_context = onboarding_state.get_user_context()
+            
+            # CRITICAL: Add user name to context for AI personalization
+            if self.user_name:
+                self.user_context["user_name"] = self.user_name
+                self.user_context["name"] = self.user_name  # Fallback key
+                print(f"[ONBOARDING] Added user name to context: {self.user_name}")
+            
             self.onboarding_loaded = True
             print(f"[ONBOARDING] Context set: {self.user_context}")
                 
@@ -720,6 +727,10 @@ class AppState(AuthState):
                 "audience": "adult learner, professional context",
                 "onboarding_completed": False,
             }
+            # Add user name even in error case
+            if self.user_name:
+                self.user_context["user_name"] = self.user_name
+                self.user_context["name"] = self.user_name
             self.onboarding_loaded = True
     
     def get_ai_context_string(self) -> str:

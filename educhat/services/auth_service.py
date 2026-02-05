@@ -401,6 +401,42 @@ class AuthService:
                 "message": "Als dit e-mailadres bij ons bekend is, ontvang je een reset link."
             }
     
+    async def update_password_with_token(self, access_token: str, new_password: str) -> Dict:
+        """
+        Update user password using a reset token from email.
+        
+        Args:
+            access_token: The access token from the reset email link
+            new_password: The new password
+            
+        Returns:
+            Dict with success status
+        """
+        try:
+            # Validate password
+            if not new_password or len(new_password) < 8:
+                return {"success": False, "error": "Wachtwoord moet minimaal 8 tekens bevatten"}
+            
+            # Update user password with the access token
+            await asyncio.to_thread(
+                lambda: self.client.auth.update_user({
+                    "password": new_password
+                }, access_token)
+            )
+            
+            return {
+                "success": True,
+                "message": "Wachtwoord succesvol gewijzigd"
+            }
+        except Exception as e:
+            print(f"Update password error: {e}")
+            error_msg = str(e).lower()
+            
+            if "invalid" in error_msg or "expired" in error_msg:
+                return {"success": False, "error": "Reset link is verlopen of ongeldig. Vraag een nieuwe aan."}
+            
+            return {"success": False, "error": "Kon wachtwoord niet wijzigen. Probeer opnieuw."}
+    
     async def resend_confirmation(self, email: str) -> Dict:
         """
         Resend confirmation email to user.

@@ -26,6 +26,9 @@ class AuthState(rx.State):
     # Session tokens (stored in state, can be persisted to localStorage via JS)
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
+    token_expires_at: Optional[int] = None  # Unix timestamp
+    last_token_refresh: Optional[int] = None  # Unix timestamp
+    session_timeout_warning: bool = False
     
     # === Language Settings ===
     language: str = "nl"  # "nl" for Dutch, "en" for English
@@ -69,6 +72,7 @@ class AuthState(rx.State):
     email_needs_confirmation: bool = False
     pending_confirmation_email: str = ""
     resending_confirmation: bool = False
+    show_email_confirmation_modal: bool = False
     
     # === Toast Notifications ===
     show_toast: bool = False
@@ -114,6 +118,9 @@ class AuthState(rx.State):
     selected_google_events: List[str] = []  # List of event IDs
     all_google_events_selected: bool = False
     is_creating_reminders: bool = False
+    
+    # === OAuth Deduplication ===
+    _last_oauth_code: str = ""  # Track last processed OAuth code to prevent duplicates
     sync_in_progress: bool = False
     sync_progress_current: int = 0
     sync_progress_total: int = 0
@@ -308,12 +315,18 @@ class AuthState(rx.State):
         self.signup_firstname = value
         self.firstname_error = ""
         self.auth_error = ""
+        # Validate in real-time
+        if value and len(value.strip()) < 2:
+            self.firstname_error = "Voornaam moet minimaal 2 tekens bevatten"
     
     def set_signup_lastname(self, value: str):
         """Set signup lastname."""
         self.signup_lastname = value
         self.lastname_error = ""
         self.auth_error = ""
+        # Validate in real-time
+        if value and len(value.strip()) < 2:
+            self.lastname_error = "Achternaam moet minimaal 2 tekens bevatten"
     
     def toggle_remember_me(self):
         """Toggle remember me checkbox."""
@@ -508,6 +521,11 @@ class AuthState(rx.State):
                 self.user_name = result["user"]["name"]
                 self.access_token = result["session"]["access_token"]
                 self.refresh_token = result["session"]["refresh_token"]
+                self.token_expires_at = result["session"].get("expires_at")
+                
+                # Set last refresh time
+                import time
+                self.last_token_refresh = int(time.time())
                 
                 # Clear any previous session data (e.g., guest conversations)
                 if hasattr(self, 'conversations'):
@@ -531,6 +549,10 @@ class AuthState(rx.State):
                 # Reset initialization flag so chat reinitializes
                 if hasattr(self, '_initialized'):
                     self._initialized = False
+                
+                # Save session to localStorage if remember_me is enabled
+                if self.remember_me:
+                    yield self._save_session_to_storage()
                 
                 # Load user data
                 await self._load_user_data()
@@ -590,8 +612,14 @@ class AuthState(rx.State):
             if result["success"]:
                 # Check if email confirmation is required
                 if result.get("requires_confirmation"):
-                    self.auth_success = result.get("message", "Controleer je e-mail om je account te bevestigen")
+                    # Show email confirmation prompt
+                    self.email_needs_confirmation = True
+                    self.pending_confirmation_email = self.signup_email.strip()
+                    self.auth_success = result.get("message", "Account aangemaakt! Controleer je e-mail om je account te bevestigen voordat je inlogt.")
+                    # Switch to login mode so user can try logging in after confirming
                     self.auth_mode = "login"
+                    # Pre-fill login email for convenience
+                    self.login_email = self.signup_email.strip()
                     self._clear_form()
                 else:
                     # SECURITY: Reset chat state FIRST to prevent conversation leakage
@@ -606,6 +634,11 @@ class AuthState(rx.State):
                     self.user_name = result["user"]["name"]
                     self.access_token = result["session"]["access_token"] if result.get("session") else None
                     self.refresh_token = result["session"]["refresh_token"] if result.get("session") else None
+                    self.token_expires_at = result["session"].get("expires_at") if result.get("session") else None
+                    
+                    # Set last refresh time
+                    import time
+                    self.last_token_refresh = int(time.time())
                     
                     # Close modal and clear form
                     self.show_auth_modal = False
@@ -660,6 +693,20 @@ class AuthState(rx.State):
             self.auth_error = "Ongeldige authenticatie code"
             yield rx.redirect("/")
             return
+        
+        # Prevent duplicate processing of same OAuth code (prevents 400 Bad Request)
+        if code == self._last_oauth_code:
+            print(f"[OAuth Callback] Duplicate code detected, skipping: {code[:20]}...")
+            # If user is already authenticated, redirect to chat
+            if self.is_authenticated:
+                yield rx.redirect("/chat")
+            else:
+                yield rx.redirect("/")
+            return
+        
+        # Mark this code as being processed
+        self._last_oauth_code = code
+        print(f"[OAuth Callback] Processing new code: {code[:20]}...")
             
         try:
             from educhat.services.auth_service import get_auth_service
@@ -680,6 +727,11 @@ class AuthState(rx.State):
                 self.user_name = user["name"]
                 self.access_token = session.get("access_token")
                 self.refresh_token = session.get("refresh_token")
+                self.token_expires_at = session.get("expires_at")
+                
+                # Set last refresh time
+                import time
+                self.last_token_refresh = int(time.time())
                 
                 # Close modal
                 self.show_auth_modal = False
@@ -717,14 +769,16 @@ class AuthState(rx.State):
         finally:
             # Always clear local state
             self._clear_auth_state()
-            # Reset loading state
-            self.is_loading = False
             # Also reset is_guest
             self.is_guest = False
             # Clear auth modal
             self.show_auth_modal = False
             # Clear any errors
             self._clear_errors()
+            # Clear remember_me
+            self.remember_me = False
+            # Clear session from localStorage
+            yield self._clear_session_from_storage()
             # SECURITY: Reset chat state to prevent conversation leakage
             if hasattr(self, '_reset_chat_state_for_user_switch'):
                 self._reset_chat_state_for_user_switch()
@@ -735,10 +789,8 @@ class AuthState(rx.State):
                 self.conversations = []
             if hasattr(self, 'current_conversation_id'):
                 self.current_conversation_id = ""
-            # Yield state updates before redirect
-            yield
-            # Force full page reload with JavaScript to clear all client state
-            yield rx.call_script("window.location.href = window.location.origin + '/'")
+            # Redirect to home page (this will clear all state)
+            yield rx.redirect("/")
     
     async def continue_as_guest(self):
         """Continue as guest user."""
@@ -794,6 +846,15 @@ class AuthState(rx.State):
     async def check_session(self):
         """Check if there's an existing session on app load."""
         try:
+            # First, try to restore session from localStorage if remember_me was enabled
+            yield self._restore_session_from_storage()
+            
+            # If session was restored from storage, we're done
+            if self.is_authenticated:
+                await self._load_user_data()
+                return
+            
+            # Otherwise, check Supabase for active session
             from educhat.services.auth_service import get_auth_service
             auth_service = get_auth_service()
             
@@ -810,6 +871,129 @@ class AuthState(rx.State):
                 await self._load_user_data()
         except Exception as e:
             print(f"Session check error: {e}")
+    
+    def _save_session_to_storage(self):
+        """Save session tokens to localStorage for persistence."""
+        if not self.access_token or not self.refresh_token:
+            return rx.call_script("")
+        
+        # Create session data object
+        session_data = {
+            "access_token": self.access_token,
+            "refresh_token": self.refresh_token,
+            "user_id": self.user_id,
+            "user_email": self.user_email,
+            "user_name": self.user_name,
+            "timestamp": "Date.now()"
+        }
+        
+        # Save to localStorage
+        return rx.call_script(f"""
+            localStorage.setItem('educhat_session', JSON.stringify({{
+                access_token: '{self.access_token}',
+                refresh_token: '{self.refresh_token}',
+                user_id: '{self.user_id}',
+                user_email: '{self.user_email}',
+                user_name: '{self.user_name}',
+                timestamp: Date.now()
+            }}));
+            console.log('[Session] Session saved to localStorage');
+        """)
+    
+    def _restore_session_from_storage(self):
+        """Restore session from localStorage if available."""
+        return rx.call_script("""
+            (function() {
+                const sessionData = localStorage.getItem('educhat_session');
+                if (sessionData) {
+                    try {
+                        const session = JSON.parse(sessionData);
+                        const now = Date.now();
+                        const sessionAge = now - (session.timestamp || 0);
+                        const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+                        
+                        if (sessionAge < maxAge) {
+                            console.log('[Session] Restoring session from localStorage');
+                            // Trigger state update via custom event
+                            window.dispatchEvent(new CustomEvent('restore_session', {
+                                detail: session
+                            }));
+                        } else {
+                            console.log('[Session] Session expired, clearing localStorage');
+                            localStorage.removeItem('educhat_session');
+                        }
+                    } catch (e) {
+                        console.error('[Session] Error parsing session data:', e);
+                        localStorage.removeItem('educhat_session');
+                    }
+                }
+            })();
+        """)
+    
+    def _clear_session_from_storage(self):
+        """Clear session from localStorage on logout."""
+        return rx.call_script("""
+            localStorage.removeItem('educhat_session');
+            console.log('[Session] Session cleared from localStorage');
+        """)
+    
+    async def refresh_access_token(self):
+        """Refresh the access token using the refresh token."""
+        if not self.refresh_token:
+            print("[Session] No refresh token available")
+            return
+        
+        try:
+            from educhat.services.auth_service import get_auth_service
+            auth_service = get_auth_service()
+            
+            result = await auth_service.refresh_session(self.refresh_token)
+            
+            if result.get("success"):
+                self.access_token = result["session"]["access_token"]
+                self.refresh_token = result["session"]["refresh_token"]
+                self.token_expires_at = result["session"].get("expires_at")
+                
+                # Update last refresh timestamp
+                import time
+                self.last_token_refresh = int(time.time())
+                
+                # Update localStorage if remember_me was enabled
+                if self.remember_me:
+                    yield self._save_session_to_storage()
+                
+                print("[Session] Access token refreshed successfully")
+            else:
+                print(f"[Session] Token refresh failed: {result.get('error')}")
+        except Exception as e:
+            print(f"[Session] Error refreshing token: {e}")
+    
+    async def check_and_refresh_token(self):
+        """Check if token needs refresh and refresh it proactively."""
+        if not self.is_authenticated or not self.token_expires_at:
+            return
+        
+        import time
+        current_time = int(time.time())
+        
+        # Refresh token if it expires in less than 5 minutes (300 seconds)
+        time_until_expiry = self.token_expires_at - current_time
+        
+        if time_until_expiry < 300:  # 5 minutes
+            print(f"[Session] Token expires in {time_until_expiry} seconds, refreshing...")
+            await self.refresh_access_token()
+            yield
+        elif time_until_expiry < 0:
+            # Token already expired
+            print("[Session] Token expired, logging out...")
+            self.toast_message = "Je sessie is verlopen. Log opnieuw in."
+            self.toast_type = "warning"
+            self.show_toast = True
+            await self.logout()
+    
+    def dismiss_session_warning(self):
+        """Dismiss the session timeout warning."""
+        self.session_timeout_warning = False
     
     # ==========================================================================
     # Email Confirmation
@@ -862,10 +1046,15 @@ class AuthState(rx.State):
             
             result = await auth_service.reset_password(email)
             
-            self.auth_success = result.get("message", "Check je e-mail voor reset instructies")
+            # Show user-friendly success message
+            self.auth_success = "We hebben een wachtwoord reset link naar je e-mail gestuurd. Check je inbox en spam folder."
+            self.auth_error = ""
+            self.email_error = ""
         except Exception as e:
             print(f"Password reset error: {e}")
-            self.auth_success = "Check je e-mail voor reset instructies"
+            # Always show success to prevent email enumeration
+            self.auth_success = "We hebben een wachtwoord reset link naar je e-mail gestuurd als dit adres bij ons bekend is."
+            self.auth_error = ""
         finally:
             self.auth_loading = False
     

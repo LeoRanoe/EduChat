@@ -1,7 +1,12 @@
 """
-Authentication Modal Component - Professional Implementation
-Modern, responsive login/signup modal with proper validation feedback,
-loading states, and accessibility features.
+Authentication Modal Component - Modern Professional Implementation
+Sleek, responsive login/signup modal with:
+- Glass morphism design
+- Smooth animations and transitions
+- Real-time password strength feedback
+- Email confirmation prompts
+- Accessibility features
+- Dark mode support
 """
 
 import reflex as rx
@@ -27,29 +32,17 @@ def tx(key: str) -> rx.Var:
 # ============================================================================
 
 MODAL_CONFIG = {
-    "width": ["95vw", "90vw", "900px"],
-    "max_height": ["90vh", "85vh", "620px"],
-    "left_panel_width": "45%",
-    "right_panel_width": "55%",
+    "width": ["95vw", "90vw", "1000px"],
+    "max_height": ["95vh", "90vh", "680px"],
+    "left_panel_width": "42%",
+    "right_panel_width": "58%",
 }
 
 INPUT_STYLES = {
-    "base": {
-        "width": "100%",
-        "padding": "14px 14px 14px 42px",
-        "border_radius": RADIUS["lg"],
-        "font_size": "15px",
-        "line_height": "1.5",
-        "height": "48px",
-        "color": T.text_primary,
-        "background": T.bg_input,
-        "outline": "none",
-        "transition": TRANSITIONS["fast"],
-    },
-    "focus": {
-        "border_color": COLORS["primary_green"],
-        "box_shadow": f"0 0 0 3px rgba(16, 163, 127, 0.12)",
-    },
+    "height": "52px",
+    "font_size": "15px",
+    "border_radius": RADIUS["xl"],
+    "transition": TRANSITIONS["normal"],
 }
 
 
@@ -58,56 +51,63 @@ INPUT_STYLES = {
 # ============================================================================
 
 def auth_modal() -> rx.Component:
-    """Main authentication modal component."""
+    """Main authentication modal component with modern glass morphism design."""
     return rx.cond(
         AuthState.show_auth_modal,
         rx.box(
-            # Backdrop with blur
+            # Simplified Backdrop
             rx.box(
                 position="fixed",
                 top="0",
                 left="0",
                 width="100vw",
                 height="100vh",
-                background=T.overlay,
-                backdrop_filter="blur(8px)",
+                background="rgba(0, 0, 0, 0.5)",
                 z_index="999",
                 on_click=AuthState.close_auth_modal,
-                class_name="animate-fadeIn",
             ),
             
-            # Modal Container
+            # Modal Container with glass effect
             rx.box(
-                # Close Button
+                # Modern Close Button
                 rx.box(
                     rx.icon(
                         tag="x",
-                        size=18,
+                        size=20,
                         color=T.text_secondary,
                     ),
                     position="absolute",
-                    top="16px",
-                    right="16px",
-                    padding="10px",
+                    top="20px",
+                    right="20px",
+                    width="40px",
+                    height="40px",
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
                     cursor="pointer",
                     border_radius=RADIUS["full"],
-                    background=T.bg_card,
-                    box_shadow=SHADOWS["sm"],
+                    background=rx.color_mode_cond(
+                        light="rgba(255, 255, 255, 0.9)",
+                        dark="rgba(30, 30, 35, 0.9)"
+                    ),
+                    border=f"1px solid {T.border_light}",
+                    box_shadow="0 2px 8px rgba(0, 0, 0, 0.1)",
                     z_index="10",
                     on_click=AuthState.close_auth_modal,
                     transition=TRANSITIONS["fast"],
                     _hover={
                         "background": T.bg_hover,
                         "transform": "scale(1.05)",
+                        "border_color": T.error,
                     },
                 ),
                 
                 # Two-column layout
                 rx.box(
-                    # Left: Branding (hidden on mobile)
+                    # Left: Enhanced Branding (hidden on mobile)
                     _left_panel(),
                     
-                    # Right: Form
+                    # Right: Form Panel
                     _right_panel(),
                     
                     display="flex",
@@ -118,20 +118,20 @@ def auth_modal() -> rx.Component:
                 position="fixed",
                 top="50%",
                 left="50%",
-                transform="translate(-50%, -50%)",
+                transform="translate(-50%, -50%) translateZ(0)",
                 width=MODAL_CONFIG["width"],
-                max_width="900px",
-                max_height=["95vh", "90vh", "720px"],
+                max_width="1000px",
+                max_height=["95vh", "90vh", "800px"],
                 background=rx.color_mode_cond(
-                    light="#FFFFFF",
-                    dark="#111217"
+                    light="white",
+                    dark="rgba(17, 18, 23, 1)"
                 ),
-                border_radius=RADIUS["2xl"],
-                box_shadow=SHADOWS["2xl"],
+                border=f"1px solid {T.border}",
+                border_radius=RADIUS["xl"],
+                box_shadow="0 10px 25px rgba(0, 0, 0, 0.15)",
                 overflow="hidden",
                 display="flex",
                 z_index="1000",
-                class_name="animate-scaleIn auth-modal-box",
             ),
         ),
     )
@@ -143,54 +143,72 @@ def auth_modal() -> rx.Component:
 
 
 def _left_panel() -> rx.Component:
-    """Left branding panel - hidden on mobile."""
+    """Left branding panel with modern gradient and floating elements."""
     return rx.box(
         rx.box(
-            # Logo with glow effect
+            # Static Logo
             rx.box(
-                rx.icon(
-                    tag="shield-check",
-                    size=48,
-                    color=T.text_on_primary,
+                rx.box(
+                    rx.icon(
+                        tag="graduation-cap",
+                        size=56,
+                        color="white",
+                    ),
+                    padding="20px",
+                    background="rgba(255, 255, 255, 0.2)",
+                    border="2px solid rgba(255, 255, 255, 0.3)",
+                    border_radius=RADIUS["2xl"],
+                    box_shadow="0 4px 12px rgba(0, 0, 0, 0.1)",
                 ),
-                padding="16px",
-                background=T.primary_light,
-                border_radius=RADIUS["2xl"],
-                margin_bottom="24px",
-                box_shadow=T.shadow_primary,
-            ),
-            
-            # Title
-            rx.heading(
-                tx("auth_welcome"),
-                size="7",
-                color=T.text_on_primary,
-                margin_bottom="12px",
-                font_weight="700",
-                letter_spacing="-0.02em",
-            ),
-            
-            # Subtitle
-            rx.text(
-                tx("auth_subtitle"),
-                color=T.text_on_primary,
-                font_size="15px",
                 margin_bottom="32px",
-                line_height="1.6",
+                display="flex",
+                justify_content="center",
             ),
             
-            # Benefits list
+            # Modern Title
             rx.box(
-                _benefit_item(tx("benefit_direct_answers")),
-                _benefit_item(tx("benefit_study_material")),
-                _benefit_item(tx("benefit_24_7")),
-                _benefit_item(tx("benefit_free")),
+                rx.heading(
+                    "Welkom bij",
+                    size="5",
+                    color="rgba(255, 255, 255, 0.95)",
+                    margin_bottom="4px",
+                    font_weight="500",
+                    letter_spacing="-0.01em",
+                ),
+                rx.heading(
+                    "EduChat",
+                    size="8",
+                    color="white",
+                    margin_bottom="16px",
+                    font_weight="800",
+                    letter_spacing="-0.02em",
+                ),
+                text_align="center",
+            ),
+            
+            # Subtitle with better spacing
+            rx.text(
+                "Jouw AI-assistent voor Surinaams onderwijs",
+                color="rgba(255, 255, 255, 0.9)",
+                font_size="16px",
+                margin_bottom="40px",
+                line_height="1.6",
+                text_align="center",
+                font_weight="400",
+            ),
+            
+            # Modern Benefits list with cards
+            rx.box(
+                _modern_benefit_card("sparkles", "Directe antwoorden", "Op al je vragen over onderwijs"),
+                _modern_benefit_card("book-open", "Studiemateriaal", "Persoonlijk voor jou samengesteld"),
+                _modern_benefit_card("clock", "24/7 beschikbaar", "Leer wanneer het jou uitkomt"),
+                _modern_benefit_card("heart", "Gratis te gebruiken", "Geen kosten, geen verplichtingen"),
                 display="flex",
                 flex_direction="column",
-                gap="14px",
+                gap="12px",
             ),
             
-            padding="40px",
+            padding=["32px 24px", "40px 32px", "48px 40px"],
             display="flex",
             flex_direction="column",
             justify_content="center",
@@ -198,30 +216,80 @@ def _left_panel() -> rx.Component:
         ),
         
         width=MODAL_CONFIG["left_panel_width"],
-        background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+        background=f"linear-gradient(135deg, #10A37F 0%, #0D8F6F 50%, #0A7B5F 100%)",
         display=["none", "none", "flex"],
         position="relative",
         overflow="hidden",
-        # Decorative circles
-            _before={
+        # Modern decorative elements
+        _before={
             "content": "''",
             "position": "absolute",
-            "top": "-50px",
-            "right": "-50px",
-            "width": "150px",
-            "height": "150px",
-            "background": T.primary_muted,
+            "top": "-100px",
+            "right": "-100px",
+            "width": "250px",
+            "height": "250px",
+            "background": "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
             "border_radius": "50%",
+            "animation": "pulse 4s ease-in-out infinite",
         },
         _after={
             "content": "''",
             "position": "absolute",
-            "bottom": "-30px",
-            "left": "-30px",
-            "width": "100px",
-            "height": "100px",
-            "background": T.primary_muted,
+            "bottom": "-80px",
+            "left": "-80px",
+            "width": "200px",
+            "height": "200px",
+            "background": "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)",
             "border_radius": "50%",
+            "animation": "pulse 5s ease-in-out infinite reverse",
+        },
+    )
+
+
+def _modern_benefit_card(icon: str, title: str, description: str) -> rx.Component:
+    """Modern benefit card with icon, title and description."""
+    return rx.box(
+        rx.box(
+            rx.icon(
+                tag=icon,
+                size=20,
+                color=COLORS["primary_green"],
+            ),
+            width="40px",
+            height="40px",
+            display="flex",
+            align_items="center",
+            justify_content="center",
+            background="white",
+            border_radius=RADIUS["lg"],
+            flex_shrink="0",
+            box_shadow="0 2px 8px rgba(0, 0, 0, 0.1)",
+        ),
+        rx.box(
+            rx.text(
+                title,
+                color="white",
+                font_size="14px",
+                font_weight="600",
+                margin_bottom="2px",
+            ),
+            rx.text(
+                description,
+                color="rgba(255, 255, 255, 0.8)",
+                font_size="12px",
+                line_height="1.4",
+            ),
+        ),
+        display="flex",
+        align_items="center",
+        gap="16px",
+        padding="16px",
+        background="rgba(255, 255, 255, 0.15)",
+        border="1px solid rgba(255, 255, 255, 0.2)",
+        border_radius=RADIUS["lg"],
+        transition=TRANSITIONS["fast"],
+        _hover={
+            "background": "rgba(255, 255, 255, 0.2)",
         },
     )
 
@@ -262,52 +330,64 @@ def _benefit_item(text) -> rx.Component:
 
 
 def _right_panel() -> rx.Component:
-    """Right panel with form."""
+    """Right panel with modern form design."""
     return rx.box(
-        # Header with logo (visible on mobile)
+        # Compact Header with logo (visible on mobile)
         rx.box(
             rx.box(
-                rx.icon(
-                    tag="graduation-cap",
-                    size=32,
-                    color=COLORS["primary_green"],
+                rx.box(
+                    rx.icon(
+                        tag="graduation-cap",
+                        size=28,
+                        color=COLORS["primary_green"],
+                    ),
+                    width="48px",
+                    height="48px",
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                    background=rx.color_mode_cond(
+                        light=f"{COLORS['primary_light']}",
+                        dark=f"rgba(16, 163, 127, 0.12)"
+                    ),
+                    border_radius=RADIUS["xl"],
+                    margin_bottom="12px",
+                ),
+                rx.heading(
+                    "EduChat",
+                    size="6",
+                    font_weight="700",
+                    color=T.text_primary,
+                    letter_spacing="-0.02em",
+                    margin_bottom="4px",
                 ),
                 rx.text(
-                    "EduChat",
-                    font_size="26px",
-                    font_weight="700",
-                    color=COLORS["primary_green"],
-                    margin_left="10px",
-                    letter_spacing="-0.02em",
+                    rx.cond(
+                        AuthState.auth_mode == "login",
+                        "Log in op je account",
+                        "Maak een nieuw account",
+                    ),
+                    color=T.text_secondary,
+                    font_size="14px",
+                    line_height="1.4",
                 ),
-                display="flex",
-                align_items="center",
-                margin_bottom="8px",
+                text_align="center",
             ),
-            rx.text(
-                rx.cond(
-                    AuthState.auth_mode == "login",
-                    tx("auth_login_title"),
-                    tx("auth_signup_title"),
-                ),
-                color=T.text_secondary,
-                font_size="14px",
-                line_height="1.4",
-            ),
-            margin_bottom="20px",
+            margin_bottom="28px",
+            display=["block", "block", "none"],  # Only show on mobile
         ),
         
-        # Tab Selector
-        _tab_selector(),
+        # Enhanced Tab Selector
+        _modern_tab_selector(),
         
-        # Success Message
+        # Success Message with modern styling
         rx.cond(
             AuthState.auth_success != "",
             rx.box(
                 rx.box(
-                    rx.icon(tag="check", size=16, color=T.success),
-                    width="24px",
-                    height="24px",
+                    rx.icon(tag="check-circle", size=18, color=T.success),
+                    width="32px",
+                    height="32px",
                     display="flex",
                     align_items="center",
                     justify_content="center",
@@ -317,31 +397,31 @@ def _right_panel() -> rx.Component:
                 ),
                 rx.text(
                     AuthState.auth_success,
-                    color=COLORS["primary_green"],
-                    font_size="13px",
-                    margin_left="10px",
+                    color=T.success,
+                    font_size="14px",
                     font_weight="500",
+                    line_height="1.5",
                 ),
                 display="flex",
                 align_items="center",
-                padding="14px 16px",
+                gap="12px",
+                padding="16px 18px",
                 background=T.success_light,
-                border=f"1px solid {COLORS['primary_green']}30",
+                border=f"1px solid {rx.color_mode_cond(light=COLORS['success'], dark='rgba(52, 211, 153, 0.3)')}",
                 border_radius=RADIUS["lg"],
-                margin_bottom="16px",
-                class_name="animate-fadeInUp",
+                margin_bottom="20px",
             ),
         ),
         
-        # Error Message  
+        # Error Message with modern styling
         rx.cond(
             AuthState.auth_error != "",
             rx.box(
                 rx.box(
                     rx.box(
-                        rx.icon(tag="triangle-alert", size=16, color=T.error),
-                        width="24px",
-                        height="24px",
+                        rx.icon(tag="alert-triangle", size=18, color=T.error),
+                        width="32px",
+                        height="32px",
                         display="flex",
                         align_items="center",
                         justify_content="center",
@@ -352,57 +432,61 @@ def _right_panel() -> rx.Component:
                     rx.text(
                         AuthState.auth_error,
                         color=T.error,
-                        font_size="13px",
-                        margin_left="10px",
+                        font_size="14px",
                         font_weight="500",
+                        line_height="1.5",
                     ),
                     display="flex",
                     align_items="center",
+                    gap="12px",
                 ),
                 
-                # Show "Resend confirmation" button if email needs confirmation
+                # Enhanced "Resend confirmation" button
                 rx.cond(
                     AuthState.email_needs_confirmation,
                     rx.button(
                         rx.cond(
                             AuthState.resending_confirmation,
                             rx.box(
-                                rx.spinner(size="1", color="white"),
-                                rx.text("Verzenden...", margin_left="8px", font_size="12px"),
+                                rx.spinner(size="2", color="white"),
+                                rx.text("Verzenden...", margin_left="8px", font_size="13px", font_weight="500"),
                                 display="flex",
                                 align_items="center",
+                                justify_content="center",
                             ),
                             rx.box(
-                                rx.icon(tag="mail", size=14),
-                                rx.text("Bevestigingsmail opnieuw verzenden", margin_left="6px", font_size="12px"),
+                                rx.icon(tag="mail-check", size=16),
+                                rx.text("Bevestigingsmail opnieuw verzenden", margin_left="8px", font_size="13px", font_weight="500"),
                                 display="flex",
                                 align_items="center",
+                                justify_content="center",
                             ),
                         ),
                         width="100%",
-                        padding="10px",
-                        margin_top="12px",
+                        padding="12px 16px",
+                        margin_top="14px",
                         background=COLORS["primary_green"],
                         color="white",
                         border="none",
-                        border_radius=RADIUS["md"],
-                        cursor="pointer",
+                        border_radius=RADIUS["lg"],
+                        cursor=rx.cond(AuthState.resending_confirmation, "not-allowed", "pointer"),
                         font_weight="500",
+                        min_height="44px",
                         on_click=AuthState.resend_confirmation_email,
-                        transition=TRANSITIONS["fast"],
-                        _hover={"background": COLORS["dark_green"]},
+                        transition=TRANSITIONS["normal"],
+                        _hover={"background": COLORS["dark_green"], "transform": "translateY(-1px)"},
+                        _active={"transform": "translateY(0)"},
                         disabled=AuthState.resending_confirmation,
                     ),
                 ),
                 
-                padding="14px 16px",
+                padding="16px 18px",
                 background=T.error_light,
-                border=f"1px solid {T.error}30",
+                border=f"1px solid {rx.color_mode_cond(light=T.error, dark='rgba(248, 113, 113, 0.3)')}",
                 border_radius=RADIUS["lg"],
-                margin_bottom="16px",
+                margin_bottom="20px",
                 display="flex",
                 flex_direction="column",
-                class_name="animate-shake",
             ),
         ),
         
@@ -413,7 +497,7 @@ def _right_panel() -> rx.Component:
             _signup_form(),
         ),
         
-        # Divider
+        # Modern Divider
         rx.box(
             rx.box(
                 flex="1",
@@ -423,9 +507,10 @@ def _right_panel() -> rx.Component:
             rx.text(
                 "of",
                 color=T.text_tertiary,
-                font_size="12px",
+                font_size="13px",
                 padding="0 16px",
                 font_weight="500",
+                letter_spacing="0.5px",
             ),
             rx.box(
                 flex="1",
@@ -434,53 +519,209 @@ def _right_panel() -> rx.Component:
             ),
             display="flex",
             align_items="center",
-            margin="16px 0",
+            margin="20px 0",
         ),
         
-        # Guest Button
+        # Enhanced Guest Button
         rx.button(
-            rx.icon(tag="user", size=16),
-            rx.text("Doorgaan als gast", margin_left="8px"),
+            rx.box(
+                rx.icon(tag="user-round", size=18),
+                rx.text("Doorgaan als gast", margin_left="10px", font_weight="600"),
+                display="flex",
+                align_items="center",
+                justify_content="center",
+            ),
             width="100%",
-            padding="14px",
-            min_height="48px",
+            padding="15px",
+            min_height="52px",
             background="transparent",
             color=COLORS["primary_green"],
-            border=f"1.5px solid {COLORS['primary_green']}",
-            border_radius=RADIUS["lg"],
+            border=f"2px solid {COLORS['primary_green']}",
+            border_radius=RADIUS["xl"],
             cursor="pointer",
-            font_size="14px",
-            font_weight="500",
+            font_size="15px",
             on_click=AuthState.continue_as_guest,
-            transition=TRANSITIONS["fast"],
+            transition=TRANSITIONS["normal"],
             _hover={
-                "background": COLORS["primary_light"],
+                "background": rx.color_mode_cond(
+                    light=COLORS["primary_light"],
+                    dark="rgba(16, 163, 127, 0.12)"
+                ),
                 "border_color": COLORS["dark_green"],
+                "transform": "translateY(-2px)",
+                "box_shadow": "0 4px 12px rgba(16, 163, 127, 0.2)",
+            },
+            _active={
+                "transform": "translateY(0)",
             },
         ),
         
-        # Guest info
-        rx.text(
-            "Gastmodus: beperkte functies",
+        # Guest info with icon
+        rx.box(
+            rx.icon(tag="info", size=12, color=T.text_tertiary),
+            rx.text(
+                "Gastmodus: beperkte functies, geen opgeslagen voorkeuren",
+                font_size="11px",
+                margin_left="6px",
+            ),
+            display="flex",
+            align_items="center",
+            justify_content="center",
             color=T.text_tertiary,
-            font_size="11px",
-            text_align="center",
-            margin_top="8px",
+            margin_top="10px",
         ),
         
         width=["100%", "100%", MODAL_CONFIG["right_panel_width"]],
-        padding=["24px 18px", "28px 24px", "32px 28px"],
+        padding=["24px 16px", "28px 20px", "32px 28px"],
         display="flex",
         flex_direction="column",
         overflow_y="auto",
+        overflow_x="hidden",
+        style={
+            "scroll-behavior": "smooth",
+            "-webkit-overflow-scrolling": "touch",
+        },
         background=T.bg_primary,
-        class_name="auth-form-panel",
     )
 
 
 # ============================================================================
 # TAB SELECTOR
 # ============================================================================
+
+
+def _modern_tab_selector() -> rx.Component:
+    """Modern tab selector with smooth transitions and elevated design."""
+    return rx.box(
+        rx.box(
+            # Login Tab
+            rx.box(
+                rx.box(
+                    rx.icon(
+                        tag="log-in",
+                        size=16,
+                        color=rx.cond(
+                            AuthState.auth_mode == "login",
+                            "white",
+                            T.text_secondary
+                        ),
+                        margin_right="8px",
+                    ),
+                    rx.text(
+                        "Inloggen",
+                        font_size="14px",
+                        font_weight="600",
+                        color=rx.cond(
+                            AuthState.auth_mode == "login",
+                            "white",
+                            T.text_secondary
+                        ),
+                    ),
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                ),
+                padding="12px 20px",
+                cursor="pointer",
+                border_radius=RADIUS["xl"],
+                background=rx.cond(
+                    AuthState.auth_mode == "login",
+                    f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                    "transparent"
+                ),
+                box_shadow=rx.cond(
+                    AuthState.auth_mode == "login",
+                    "0 4px 12px rgba(16, 163, 127, 0.3)",
+                    "none"
+                ),
+                flex="1",
+                text_align="center",
+                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                transform=rx.cond(
+                    AuthState.auth_mode == "login",
+                    "translateY(-2px)",
+                    "translateY(0)"
+                ),
+                on_click=lambda: AuthState.set_auth_mode("login"),
+                _hover={
+                    "background": rx.cond(
+                        AuthState.auth_mode != "login",
+                        T.bg_hover,
+                        None
+                    ),
+                },
+            ),
+            
+            # Signup Tab
+            rx.box(
+                rx.box(
+                    rx.icon(
+                        tag="user-plus",
+                        size=16,
+                        color=rx.cond(
+                            AuthState.auth_mode == "signup",
+                            "white",
+                            T.text_secondary
+                        ),
+                        margin_right="8px",
+                    ),
+                    rx.text(
+                        "Registreren",
+                        font_size="14px",
+                        font_weight="600",
+                        color=rx.cond(
+                            AuthState.auth_mode == "signup",
+                            "white",
+                            T.text_secondary
+                        ),
+                    ),
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                ),
+                padding="12px 20px",
+                cursor="pointer",
+                border_radius=RADIUS["xl"],
+                background=rx.cond(
+                    AuthState.auth_mode == "signup",
+                    f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                    "transparent"
+                ),
+                box_shadow=rx.cond(
+                    AuthState.auth_mode == "signup",
+                    "0 4px 12px rgba(16, 163, 127, 0.3)",
+                    "none"
+                ),
+                flex="1",
+                text_align="center",
+                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                transform=rx.cond(
+                    AuthState.auth_mode == "signup",
+                    "translateY(-2px)",
+                    "translateY(0)"
+                ),
+                on_click=lambda: AuthState.set_auth_mode("signup"),
+                _hover={
+                    "background": rx.cond(
+                        AuthState.auth_mode != "signup",
+                        T.bg_hover,
+                        None
+                    ),
+                },
+            ),
+            
+            display="flex",
+            gap="6px",
+        ),
+        background=rx.color_mode_cond(
+            light="rgba(243, 244, 246, 0.8)",
+            dark="rgba(30, 30, 35, 0.8)"
+        ),
+        padding="5px",
+        border_radius=RADIUS["2xl"],
+        margin_bottom="24px",
+        border=f"1px solid {T.border_light}",
+    )
 
 
 def _tab_selector() -> rx.Component:
@@ -897,7 +1138,7 @@ def _signup_form() -> rx.Component:
                 font_size="13px",
                 font_weight="500",
                 color=T.text_primary,
-                margin_bottom="6px",
+                margin_bottom="4px",
             ),
             rx.box(
                 rx.icon(
@@ -914,16 +1155,16 @@ def _signup_form() -> rx.Component:
                     on_change=AuthState.set_signup_firstname,
                     placeholder="Je voornaam",
                     width="100%",
-                    padding="14px 14px 14px 40px",
+                    padding="12px 12px 12px 36px",
                     border=rx.cond(
                         AuthState.firstname_error != "",
                         f"1.5px solid {T.error}",
                         f"1.5px solid {T.border}"
                     ),
                     border_radius="8px",
-                    font_size="15px",
-                    line_height="1.5",
-                    height="48px",
+                    font_size="14px",
+                    line_height="1.4",
+                    height="44px",
                     color=T.text_primary,
                     background=T.bg_input,
                     outline="none",
@@ -941,7 +1182,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="10px",
+            margin_bottom="8px",
         ),
         
         # Last Name Field
@@ -995,7 +1236,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="10px",
+            margin_bottom="8px",
         ),
         
         # Email Field
@@ -1023,7 +1264,7 @@ def _signup_form() -> rx.Component:
                     placeholder="jouw@email.com",
                     type="email",
                     width="100%",
-                    padding="14px 14px 14px 40px",
+                    padding="12px 12px 12px 36px",
                     border=rx.cond(
                         AuthState.email_error != "",
                         f"1.5px solid {T.error}",
@@ -1032,7 +1273,7 @@ def _signup_form() -> rx.Component:
                     border_radius="8px",
                     font_size="15px",
                     line_height="1.5",
-                    height="48px",
+                    height="44px",
                     color=T.text_primary,
                     background=T.bg_input,
                     outline="none",
@@ -1050,7 +1291,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="10px",
+            margin_bottom="8px",
         ),
         
         # Password Field
@@ -1078,7 +1319,7 @@ def _signup_form() -> rx.Component:
                     placeholder="Minimaal 8 karakters",
                     type=rx.cond(AuthState.show_signup_password, "text", "password"),
                     width="100%",
-                    padding="14px 40px 14px 40px",
+                    padding="12px 36px 12px 36px",
                     border=rx.cond(
                         AuthState.password_error != "",
                         f"1.5px solid {T.error}",
@@ -1087,7 +1328,7 @@ def _signup_form() -> rx.Component:
                     border_radius="8px",
                     font_size="15px",
                     line_height="1.5",
-                    height="48px",
+                    height="44px",
                     color=T.text_primary,
                     background=T.bg_input,
                     outline="none",
@@ -1117,7 +1358,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="10px",
+            margin_bottom="8px",
         ),
         
         # Confirm Password Field
@@ -1145,7 +1386,7 @@ def _signup_form() -> rx.Component:
                     placeholder="Herhaal wachtwoord",
                     type=rx.cond(AuthState.show_confirm_password, "text", "password"),
                     width="100%",
-                    padding="14px 40px 14px 40px",
+                    padding="12px 36px 12px 36px",
                     border=rx.cond(
                         AuthState.confirm_password_error != "",
                         f"1.5px solid {T.error}",
@@ -1154,7 +1395,7 @@ def _signup_form() -> rx.Component:
                     border_radius="8px",
                     font_size="15px",
                     line_height="1.5",
-                    height="48px",
+                    height="44px",
                     color=T.text_primary,
                     background=T.bg_input,
                     outline="none",
@@ -1184,7 +1425,7 @@ def _signup_form() -> rx.Component:
                     margin_top="4px",
                 ),
             ),
-            margin_bottom="16px",
+            margin_bottom="12px",
         ),
         
         # Submit Button

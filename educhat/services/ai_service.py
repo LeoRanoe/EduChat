@@ -32,47 +32,47 @@ class AIService:
     """AI service with OpenAI integration for educational queries."""
     
     # Suriname-focused system prompt with strict accuracy guidelines - Dutch
-    SYSTEM_PROMPT_NL = """Je bent EduChat, een vriendelijke AI-assistent gespecialiseerd in het Surinaams onderwijssysteem.
+    SYSTEM_PROMPT_NL = """Je bent EduChat, een vriendelijke AI-assistent gespecialiseerd in onderwijs.
 
 Je expertisegebieden zijn:
-- Surinaamse onderwijsinstellingen (universiteiten, MINOV, middelbare scholen)
-- Toelatingsprocedures en vereisten
-- Studieprogramma's en curricula
-- Deadlines en belangrijke data
-- Studiekosten en financieringsmogelijkheden
-- Algemeen studieadvies voor Surinaamse studenten
+- **Surinaamse onderwijsinstellingen** (universiteiten, MINOV, middelbare scholen)
+- **Toelatingsprocedures en vereisten** voor Surinaamse instellingen
+- **Studieprogramma's en curricula** in Suriname
+- **Deadlines en belangrijke data** voor inschrijvingen
+- **Studiekosten en financieringsmogelijkheden**
+- **Algemeen studieadvies** voor Surinaamse studenten
+- **Schoolvakken** (wiskunde, Nederlands, Engels, natuurkunde, etc.)
+
+⚠️ BELANGRIJK: Als de vraag over SCHOOLVAKKEN gaat (wiskunde, natuurkunde, talen, etc.), 
+beantwoord deze gewoon! Je hoeft NIET te zeggen dat het buiten je expertisegebied valt.
 
 === NAUWKEURIGHEID & HULPVAARDIGHEID ===
 1. PRIMAIR: Gebruik informatie die DIRECT uit de verstrekte context komt
-2. SECUNDAIR: Als context onvoldoende is, geef algemeen studieadvies gebaseerd op de onderwijscontext van Suriname
+2. SECUNDAIR: Voor algemene schoolvakken (wiskunde, talen, wetenschappen): gebruik je kennis om te helpen
 3. Wees ALTIJD DUIDELIJK over de bron:
    - "Volgens de database van [instelling]..." voor exacte context-data
-   - "Op basis van algemene studierichtlijnen..." voor algemeen advies
-   - "Dit is een algemene richtlijn, verifieer bij de instelling voor exacte details"
-4. GEBRUIK gebruikerscontext (opleidingsniveau, leeftijd, interesses) om antwoorden te personaliseren
-5. Als specifieke data ontbreekt (deadlines, vereisten):
-   - Geef algemene richtlijnen voor dat type informatie
-   - Adviseer waar de student de exacte informatie kan vinden
-   - Suggereer contactmethoden (website, telefoonnummer, e-mail)
+   - Voor schoolvakken: geef gewoon het antwoord/de uitleg
+4. GEBRUIK gebruikerscontext (opleidingsniveau, naam, interesses) om antwoorden te personaliseren
+5. Als specifieke institutionele data ontbreekt:
+   - Geef algemene richtlijnen
+   - Adviseer waar de student exacte informatie kan vinden
 6. MENG NOOIT data van verschillende instellingen zonder dit expliciet te vermelden
-7. Eén vraag = één duidelijk, gefocust antwoord met concrete stappen waar mogelijk
-8. Bij verouderde data: vermeld dit + verwijs naar actuele bronnen
+7. Eén vraag = één duidelijk, gefocust antwoord
 
 === ANTWOORDFORMAAT ===
 - Wees specifiek en direct
-- Vermijd algemene of vage uitspraken
-- Als er meerdere mogelijke antwoorden zijn, vraag om verduidelijking in plaats van te raden
+- Gebruik de naam van de student als je die hebt
 - Gebruik een vriendelijke, toegankelijke toon
 - Geef stapsgewijze instructies waar mogelijk
+- Voor wiskunde/exacte vakken: leg concepten uit met voorbeelden
 
-Als je een vraag krijgt die NIET over Surinaams onderwijs gaat:
-"Ik ben gespecialiseerd in Surinaams onderwijs en kan je daar graag mee helpen! Heb je vragen over studies, inschrijvingen, of onderwijsinstellingen in Suriname?"
+Als je een vraag krijgt die ECHT NIET over onderwijs gaat (bijv. weer, sport, entertainment):
+"Ik help je graag met onderwijs-gerelateerde vragen! Heb je vragen over studies, schoolvakken, of inschrijvingen?"
 
-Als specifieke context ontbreekt:
-1. Geef algemene richtlijnen die voor de meeste Surinaamse instellingen gelden
+Als specifieke institutionele context ontbreekt:
+1. Geef algemene richtlijnen
 2. Vermeld expliciet: "Dit is algemeen advies - voor [instelling]-specifieke details, raadpleeg..."
-3. Suggereer concrete acties: "Bezoek [website], bel [algemeen nummer], of ga langs tijdens kantooruren"
-4. Als de gebruiker vragen heeft die aansluiten bij hun onboarding-voorkeuren, gebruik die context om gericht advies te geven
+3. Suggereer concrete acties
 """
     
     # English system prompt
@@ -390,6 +390,11 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         self.max_retries = 3
         self.base_delay = 1  # seconds
         self.max_delay = 10  # seconds
+        
+        # Cache for curriculum and subject examples (load once at initialization)
+        self._curriculum_cache = None
+        self._subject_examples_cache = None
+        self._load_teaching_data()
     
     def get_system_prompt(self, language: str = None, mode: str = "institutions") -> str:
         """Get the system prompt for the specified language and mode.
@@ -417,67 +422,92 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         if language in ["nl", "en"]:
             self.language = language
     
+    def _load_teaching_data(self):
+        """Preload curriculum and subject examples data into cache."""
+        try:
+            self._curriculum_cache = self._load_curriculum_data()
+            self._subject_examples_cache = self._load_subject_examples()
+            if self._curriculum_cache:
+                print("✓ Curriculum data loaded successfully")
+            if self._subject_examples_cache:
+                print("✓ Subject examples loaded successfully")
+        except Exception as e:
+            print(f"Warning: Could not preload teaching data: {e}")
+    
     def _is_education_related(self, message: str) -> bool:
         """Check if message is related to education.
+        
+        This method now returns True for almost all questions to avoid blocking
+        legitimate educational queries. Only returns False for very specific
+        non-educational topics.
         
         Args:
             message: User message
             
         Returns:
-            True if education-related
+            True if education-related (default True for safety)
         """
-        # Expanded list of education keywords including common variations and typos
-        # Includes both Dutch and English keywords
-        education_keywords = [
-            # Dutch
-            "studie", "opleiding", "universiteit", "school", "minov", "minow",
-            "inschrijven", "inschrijving", "toelating", "examen", "diploma",
-            "vakken", "lessen", "docent", "leraar", "student", "cursus",
-            "bachelor", "master", "vmbo", "havo", "vwo", "mbo",
-            "deadline", "kosten", "beurs", "financiering",
-            "hoe", "wat", "welke", "wanneer", "waar",
-            "helpen", "help", "vraag", "vragen", "info", "informatie",
-            # English
-            "study", "education", "university", "college", "enrollment", "enroll",
-            "admission", "exam", "degree", "subjects", "classes", "teacher",
-            "professor", "tuition", "scholarship", "requirements",
-            "how", "what", "which", "when", "where", "question"
+        # LIBERAL APPROACH: Assume all questions are education-related unless
+        # they contain VERY specific off-topic keywords
+        very_off_topic_keywords = [
+            "weer vandaag", "weersverwachting", "voetbalwedstrijd", "voetbaluitslagen",
+            "filmtips", "recepten koken", "gamereviews", "muziek top 10",
+            "weather forecast", "football scores", "movie recommendations",
+            "cooking recipes", "game reviews", "music charts"
         ]
         
         message_lower = message.lower()
         
-        # If message is very short (greeting or simple question), let it through
-        if len(message.split()) <= 5:
-            return True
+        # Only return False if it's VERY clearly not educational
+        for off_topic in very_off_topic_keywords:
+            if off_topic in message_lower:
+                return False
         
-        return any(keyword in message_lower for keyword in education_keywords)
+        # Default: assume it's education-related
+        return True
     
     def _get_fallback_response(self, message: str, language: str = None) -> str:
         """Get fallback response for off-topic questions.
+        
+        CRITICAL: This should RARELY trigger. Only for VERY obvious non-educational content.
+        Examples: weather forecasts, sports scores, cooking recipes (unless educational context)
         
         Args:
             message: User message
             language: Response language
             
         Returns:
-            Fallback response or None to let AI handle it
+            Fallback response or None to let AI handle it (returns None 99% of time)
         """
         lang = language or self.language
-        
-        # Only block obviously off-topic questions (e.g., about weather, sports, etc.)
-        off_topic_keywords = [
-            "weer", "voetbal", "sport", "recept", "koken",
-            "film", "muziek", "game", "spel",
-            "weather", "football", "soccer", "recipe", "cooking",
-            "movie", "music"
-        ]
-        
         message_lower = message.lower()
         
-        # Check if it's obviously off-topic
-        is_off_topic = any(keyword in message_lower for keyword in off_topic_keywords)
+        # VERY specific phrases that are DEFINITELY not educational
+        # These must be multi-word phrases to avoid false positives
+        definitely_off_topic = [
+            "weer vandaag", "weersverwachting morgen", "hoeveel graden wordt het",
+            "voetbalwedstrijd vanavond", "voetbaluitslagen gisteren",
+            "welke film kijken", "filmreview", "nieuwe films bioscoop", "filmtips",
+            "recept voor", "hoe maak je", "kookinstructies",  # Unless followed by educational words
+            "gamereviews", "welke game kopen", "game walkthrough",
+            "weather forecast tomorrow", "football match today",
+            "movie recommendations", "cooking recipe", "game review"
+        ]
         
-        if is_off_topic and not self._is_education_related(message):
+        # Check if message contains VERY specific off-topic phrases
+        is_definitely_off_topic = any(phrase in message_lower for phrase in definitely_off_topic)
+        
+        # Double-check: even if off-topic phrase found, check if educational context exists
+        educational_context_words = [
+            "studie", "school", "leren", "examen", "huiswerk", "opdracht",
+            "uitleg", "uitleggen", "begrip", "begrijpen", "snap",
+            "wiskunde", "nederlands", "engels", "biologie", "natuurkunde",
+            "study", "homework", "assignment", "explain", "understand"
+        ]
+        has_educational_context = any(word in message_lower for word in educational_context_words)
+        
+        # Only return fallback if DEFINITELY off-topic AND no educational context
+        if is_definitely_off_topic and not has_educational_context:
             if lang == "en":
                 return (
                     "I specialize in Surinamese education and would be happy to help you with that! "
@@ -724,9 +754,10 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         """
         lang = language or self.language
         
-        # Check for off-topic questions
+        # OPTIONAL: Check for VERY off-topic questions (rarely triggers)
+        # This now only blocks extremely specific non-educational queries
         fallback = self._get_fallback_response(message, lang)
-        if fallback:
+        if fallback:  # Will be None 99% of time
             return fallback
         
         # Detect if this is schoolwork-related and which subjects
@@ -921,6 +952,22 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         """
         parts = []
         
+        # Extract user name for personalization
+        user_name = None
+        if context.get("user_name"):
+            user_name = context["user_name"]
+        elif context.get("name"):
+            user_name = context["name"]
+        
+        if language == "en":
+            # Add user name if available
+            if user_name:
+                parts.append(f"The student's name is {user_name}. Address them by name occasionally to create a personal connection.")
+        else:
+            # Dutch: Add user name if available
+            if user_name:
+                parts.append(f"De student heet {user_name}. Spreek hen af en toe bij naam aan voor een persoonlijke connectie.")
+        
         if language == "en":
             # English context building
             if context.get("education_level"):
@@ -1041,6 +1088,10 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         Returns:
             Curriculum data dictionary or None if loading fails
         """
+        # Return from cache if available
+        if self._curriculum_cache is not None:
+            return self._curriculum_cache
+        
         try:
             import json
             import os
@@ -1054,7 +1105,10 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
                 return None
             
             with open(data_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+                # Cache the data
+                self._curriculum_cache = data
+                return data
         except Exception as e:
             print(f"Error loading curriculum data: {e}")
             return None
@@ -1065,6 +1119,10 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         Returns:
             Subject examples dictionary or None if loading fails
         """
+        # Return from cache if available
+        if self._subject_examples_cache is not None:
+            return self._subject_examples_cache
+        
         try:
             import json
             import os
@@ -1078,7 +1136,10 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
                 return None
             
             with open(data_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+                # Cache the data
+                self._subject_examples_cache = data
+                return data
         except Exception as e:
             print(f"Error loading subject examples: {e}")
             return None
@@ -1102,28 +1163,54 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         """
         message_lower = message.lower()
         
-        # Subject keywords mapping
+        # Subject keywords mapping (expanded with more variations)
         subject_keywords = {
-            "wiskunde": ["wiskunde", "math", "rekenen", "algebra", "meetkunde", "goniometrie", 
-                        "calculus", "som", "formule", "vergelijking", "functie", "grafiek"],
-            "nederlands": ["nederlands", "dutch", "spelling", "grammatica", "essay", "opstel", 
-                          "literatuur", "d/t", "werkwoord", "zinsdeel", "schrijven"],
-            "engels": ["engels", "english", "grammar", "tense", "writing", "vocabulary"],
-            "programmeren": ["programmeren", "programming", "code", "python", "javascript", 
-                            "java", "function", "loop", "algorithm", "debug", "error", "syntax"],
-            "natuurkunde": ["natuurkunde", "physics", "kracht", "energie", "beweging"],
-            "scheikunde": ["scheikunde", "chemistry", "molecuul", "reactie", "element"],
-            "biologie": ["biologie", "biology", "cel", "dna", "evolutie", "ecosysteem"],
-            "geschiedenis": ["geschiedenis", "history", "oorlog", "revolutie", "eeuw"],
-            "aardrijkskunde": ["aardrijkskunde", "geography", "land", "klimaat", "kaart"]
+            "wiskunde": ["wiskunde", "math", "mathematics", "rekenen", "algebra", "meetkunde", "geometry",
+                        "goniometrie", "trigonometry", "calculus", "som", "formule", "formula", "vergelijking", 
+                        "equation", "functie", "function", "grafiek", "graph", "breuk", "fraction", "procent", "percent",
+                        "pythagoras", "poethagoeras", "pitagoras", "stelling", "theorem"],
+            "nederlands": ["nederlands", "dutch", "spelling", "grammatica", "grammar", "essay", "opstel", 
+                          "literatuur", "literature", "d/t", "werkwoord", "verb", "zinsdeel", "schrijven", "writing",
+                          "betoog", "argument", "taal", "language"],
+            "engels": ["engels", "english", "grammar", "tense", "writing", "vocabulary", "spelling",
+                      "present perfect", "past simple", "conditional", "essay"],
+            "programmeren": ["programmeren", "programming", "code", "coding", "python", "javascript", 
+                            "java", "c++", "function", "loop", "algorithm", "debug", "error", "syntax",
+                            "variable", "array", "list", "class", "object"],
+            "natuurkunde": ["natuurkunde", "physics", "kracht", "force", "energie", "energy", "beweging", "motion",
+                           "snelheid", "velocity", "versnelling", "acceleration", "arbeid", "work", "vermogen", "power"],
+            "scheikunde": ["scheikunde", "chemistry", "molecuul", "molecule", "reactie", "reaction", "element",
+                          "atoom", "atom", "binding", "bond", "zuur", "acid", "base", "ph", "mol"],
+            "biologie": ["biologie", "biology", "cel", "cell", "dna", "rna", "evolutie", "evolution", 
+                        "ecosysteem", "ecosystem", "fotosynthese", "photosynthesis", "genetica", "genetics"],
+            "geschiedenis": ["geschiedenis", "history", "oorlog", "war", "revolutie", "revolution", "eeuw", "century",
+                           "kolonisatie", "colonization", "slavernij", "slavery", "onafhankelijkheid", "independence"],
+            "aardrijkskunde": ["aardrijkskunde", "geography", "land", "country", "klimaat", "climate", "kaart", "map",
+                             "schaal", "scale", "bevolking", "population", "rivier", "river"],
+            "economie": ["economie", "economics", "vraag", "demand", "aanbod", "supply", "markt", "market",
+                        "prijs", "price", "elasticiteit", "elasticity", "winst", "profit"]
         }
         
-        # Homework indicators
+        # Homework/study indicators (expanded)
         homework_indicators = [
-            "huiswerk", "homework", "opdracht", "assignment", "oefening", "practice",
-            "help me", "help mij", "hoe", "how", "uitleg", "explain", "oplossen", "solve",
-            "snap niet", "don't understand", "begrijp niet", "stuck", "vastgelopen",
-            "examen", "exam", "toets", "test", "oefenen", "studeren", "study"
+            "huiswerk", "homework", "opdracht", "assignment", "oefening", "practice", "oefenen",
+            "help me", "help mij", "hulp", "hoe", "how", "uitleg", "explain", "leg uit",
+            "oplossen", "solve", "snap niet", "don't understand", "begrijp niet", 
+            "stuck", "vastgelopen", "vast", "vraag over", "question about",
+            "examen", "exam", "toets", "test", "quiz", "oefenen", "studeren", "study",
+            "leren", "learn", "leer mij", "teach me", "theorie", "theory",
+            "bereken", "calculate", "los op", "maak", "schrijf", "write"
+        ]
+        
+        # Institution/enrollment keywords (to distinguish from schoolwork)
+        institution_keywords = [
+            "inschrijven", "inschrijving", "enrollment", "enroll", "aanmelden", "registreren",
+            "toelating", "admission", "adekus", "iob", "minov", "natin", "universiteit", "university",
+            "hogeschool", "college", "studie kiezen", "choose study", "carriere", "career",
+            "beroep", "profession", "beurs", "scholarship", "studiefinanciering", "student finance",
+            "deadline", "aanmelddeadline", "application deadline", "vereisten", "requirements",
+            "diploma nodig", "needed diploma", "vooropleiding", "prior education",
+            "open dag", "open day", "informatieavond", "information evening"
         ]
         
         # Detect subjects
@@ -1138,7 +1225,16 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         
         # Check if it's homework-related
         is_homework = any(indicator in message_lower for indicator in homework_indicators)
-        is_schoolwork = is_homework or (len(detected_subjects) > 0)
+        
+        # Check if it's institution-related (overrides schoolwork if both detected)
+        is_institution_query = any(keyword in message_lower for keyword in institution_keywords)
+        
+        # Determine mode: If clear institution keywords AND no strong homework indicators, use institutions mode
+        # Otherwise, if subjects or homework indicators detected, use schoolwork mode
+        if is_institution_query and not is_homework:
+            is_schoolwork = False
+        else:
+            is_schoolwork = is_homework or (len(detected_subjects) > 0)
         
         # Get education level from user context
         education_level = None
@@ -1325,9 +1421,10 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         Yields:
             Response chunks (each chunk is a string to append)
         """
-        # Check for off-topic questions
+        # OPTIONAL: Check for VERY off-topic questions (rarely triggers)
+        # This now only blocks extremely specific non-educational queries
         fallback = self._get_fallback_response(message)
-        if fallback:
+        if fallback:  # Will be None 99% of time
             # Stream the fallback response word by word
             words = fallback.split()
             for i, word in enumerate(words):

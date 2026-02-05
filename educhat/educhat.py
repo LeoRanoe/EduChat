@@ -5,6 +5,7 @@ from educhat.pages import index
 from educhat.pages.onboarding import onboarding
 from educhat.pages.landing import landing
 from educhat.pages.auth_callback import auth_callback
+from educhat.pages.reset_password import reset_password_page
 
 
 # Create the app instance with theme configuration
@@ -54,5 +55,11 @@ app.add_page(
     route="/auth/callback",
     title="Authenticating...",
     description="Processing OAuth authentication",
+)
+app.add_page(
+    reset_password_page,
+    route="/auth/reset-password",
+    title="Reset Password - EduChat",
+    description="Reset your EduChat password",
 )
 
