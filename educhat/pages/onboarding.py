@@ -644,8 +644,11 @@ def quiz_content(state: OnboardingState) -> rx.Component:
             left="0",
             right="0",
             bottom="0",
-            background=f"linear-gradient(135deg, {COLORS['gray_50']} 0%, {COLORS['primary_light']} 50%, {COLORS['gray_50']} 100%)",
-            opacity="0.4",
+            background=rx.color_mode_cond(
+                light=f"linear-gradient(135deg, #f0f4f8 0%, #e6f3f0 50%, #f0f4f8 100%)",
+                dark=f"linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%)"
+            ),
+            opacity="1",
             z_index="0",
         ),
         
@@ -773,10 +776,16 @@ def quiz_content(state: OnboardingState) -> rx.Component:
                     
                     width="100%",
                     padding=["2rem", "2.5rem", "3rem"],
-                    background=T.bg_card,
+                    background=rx.color_mode_cond(light=T.bg_card, dark="#1a1d24"),
                     border_radius="24px",
-                    box_shadow="0 12px 48px rgba(0,0,0,0.08)",
-                    border=f"1px solid {T.border_light}",
+                    box_shadow=rx.color_mode_cond(
+                        light="0 12px 48px rgba(0,0,0,0.08)",
+                        dark="0 12px 48px rgba(0,0,0,0.4)"
+                    ),
+                    border=rx.color_mode_cond(
+                        light=f"1px solid {T.border_light}",
+                        dark="1px solid #2d3039"
+                    ),
                     position="relative",
                     overflow="hidden",
                 ),
