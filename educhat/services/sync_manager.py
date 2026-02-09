@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 import traceback
 
 from educhat.services.google_calendar_service import GoogleCalendarService
+from educhat.services.supabase_client import SupabaseService
 
 
 class SyncResult:
@@ -37,6 +38,7 @@ class SyncManager:
         """
         self.user_id = user_id
         self.calendar_service = GoogleCalendarService(user_id=user_id)
+        self.db_service = SupabaseService()
         self._executor = ThreadPoolExecutor(max_workers=5)  # Concurrent API requests
         
     def authenticate(self) -> bool:
@@ -56,11 +58,26 @@ class SyncManager:
         Returns:
             SyncResult with success status and Google Calendar event ID
         """
+        reminder_id = reminder.get("id", "")
+        
         try:
+            # Update status to syncing
+            self.db_service.update_reminder_sync_status(
+                reminder_id=reminder_id,
+                sync_status="syncing",
+                sync_direction="to_google"
+            )
+            
             # Get datetime - prefer 'datetime' field, fallback to 'date'
             datetime_str = reminder.get("datetime", "") or reminder.get("date", "")
             if not datetime_str:
-                return SyncResult(False, reminder.get("id", ""), error="Missing date")
+                # Update to error status
+                self.db_service.update_reminder_sync_status(
+                    reminder_id=reminder_id,
+                    sync_status="error",
+                    sync_error="Missing date"
+                )
+                return SyncResult(False, reminder_id, error="Missing date")
             
             # Convert to datetime
             if "T" in datetime_str:
@@ -83,19 +100,49 @@ class SyncManager:
             )
             
             if event:
+                # Update to synced status with Google event details
+                google_event_id = event['id']
+                google_link = event.get('htmlLink', '')
+                
+                self.db_service.update_reminder_sync_status(
+                    reminder_id=reminder_id,
+                    sync_status="synced",
+                    google_calendar_event_id=google_event_id,
+                    sync_direction="to_google",
+                    google_link_url=google_link,
+                    sync_error=None
+                )
+                
                 return SyncResult(
                     success=True,
-                    item_id=reminder.get("id", ""),
-                    google_event_id=event['id'],
-                    sync_direction="local_to_google"
+                    item_id=reminder_id,
+                    google_event_id=google_event_id,
+                    sync_direction="to_google"
                 )
             else:
-                return SyncResult(False, reminder.get("id", ""), error="Failed to create event")
+                # Update to error status
+                self.db_service.update_reminder_sync_status(
+                    reminder_id=reminder_id,
+                    sync_status="error",
+                    sync_error="Failed to create event"
+                )
+                return SyncResult(False, reminder_id, error="Failed to create event")
                 
         except Exception as e:
             print(f"Error syncing reminder to Google: {e}")
             traceback.print_exc()
-            return SyncResult(False, reminder.get("id", ""), error=str(e))
+            
+            # Update to error status
+            try:
+                self.db_service.update_reminder_sync_status(
+                    reminder_id=reminder_id,
+                    sync_status="error",
+                    sync_error=str(e)
+                )
+            except Exception as db_error:
+                print(f"Error updating database sync status: {db_error}")
+            
+            return SyncResult(False, reminder_id, error=str(e))
     
     def _create_google_event(self, reminder: Dict[str, Any], event_time: datetime) -> Optional[Dict]:
         """Create Google Calendar event (runs in thread pool).

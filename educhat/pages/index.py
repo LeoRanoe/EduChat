@@ -5,6 +5,7 @@ from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
 from educhat.components.chat import sidebar, chat_container, calendar_sync_bar
 from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, settings_modal, calendar_view, google_events_import_modal
+from educhat.components.shared.calendar_view import create_event_modal, edit_event_modal
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
 from educhat.styles.theme import COLORS, T
@@ -55,6 +56,12 @@ def authenticated_chat() -> rx.Component:
         
         # Calendar view
         calendar_view(),
+        
+        # Create event modal
+        create_event_modal(),
+        
+        # Edit event modal
+        edit_event_modal(),
         
         # Toast notification
         toast_notification(

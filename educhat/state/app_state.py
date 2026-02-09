@@ -219,6 +219,11 @@ class AppState(AuthState):
         if self.is_authenticated:
             print("[INIT] Syncing Google Calendar events...")
             await self.sync_calendar_events()
+            
+            # Auto-scrape school events on startup (runs in background)
+            print("[INIT] Starting automatic event scraping...")
+            import asyncio
+            asyncio.create_task(self.auto_scrape_school_events_on_startup())
         
         # If no conversations exist (guest or new user), create initial conversation
         if not self.conversations:

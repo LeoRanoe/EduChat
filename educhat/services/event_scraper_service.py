@@ -401,6 +401,122 @@ JSON ARRAY:"""
             print(f"Error extracting events with AI: {e}")
             return []
     
+    async def categorize_and_enrich_events(
+        self,
+        events: List[Dict],
+        use_gemini: bool = True
+    ) -> List[Dict]:
+        """Use AI to categorize and enrich scraped events with confidence scores.
+        
+        Args:
+            events: List of event dictionaries to categorize
+            use_gemini: Whether to use Google Gemini (faster) or OpenAI
+        
+        Returns:
+            List of enriched event dictionaries with AI categorization
+        """
+        if not self.ai_service or not events:
+            return events
+        
+        # Prepare events for categorization
+        events_json = json.dumps(events, indent=2, ensure_ascii=False)
+        
+        prompt = f"""Je bent een AI-assistent die educatieve evenementen categoriseert en verrijkt.
+
+Analyseer de volgende evenementen en voeg voor elk evenement deze extra velden toe:
+- "ai_category": De beste categorie (deadline|exam|open_day|info_session|holiday|graduation|workshop|lecture|other)
+- "ai_importance": Belang niveau (high|medium|low) gebaseerd op impact op studenten
+- "ai_confidence": Betrouwbaarheidsscore (0.0-1.0) van de categorisatie
+- "ai_required_action": Of studenten actie moeten ondernemen (true|false)
+- "ai_tags": Array van relevante tags (bijv. ["inschrijving", "deadline", "bachelor"])
+- "ai_summary": Zeer korte samenvatting (max 100 karakters)
+
+CATEGORISATIE RICHTLIJNEN:
+- "deadline" = Inschrijvings-, aanmeldings- of inzenddeadlines (hoge prioriteit!)
+- "exam" = Tentamens, toetsen, assessments (hoge prioriteit voor studenten)
+- "open_day" = Open dagen, informatiedagen, rondleidingen
+- "info_session" = Voorlichtingssessies, webinars, Q&A sessies
+- "holiday" = Vakanties, feestdagen, vrije dagen
+- "graduation" = Graduaties, diploma-uitreikingen, ceremonies
+- "workshop" = Workshops, trainingen, skillsessies
+- "lecture" = Gastcolleges, lezingen, seminars
+- "other" = Alles wat niet past in bovenstaande categorieën
+
+IMPORTANCE RICHTLIJNEN:
+- "high" = Deadlines, examens, verplichte events, grote impact op studie
+- "medium" = Informatiesessies, optionele maar nuttige events
+- "low" = Sociale events, algemene aankondigingen
+
+CONFIDENCE RICHTLIJNEN:
+- 1.0 = Zeer duidelijke categorie en datum
+- 0.8-0.9 = Duidelijke categorie, datum redelijk zeker
+- 0.5-0.7 = Categorie waarschijnlijk, datum geschat
+- <0.5 = Onzeker over categorie of datum
+
+Retourneer ALLEEN een JSON array met de verrijkte evenementen, geen andere tekst.
+
+EVENEMENTEN:
+{events_json}
+
+VERRIJKTE JSON ARRAY:"""
+
+        try:
+            # Use Gemini for faster categorization if available
+            if use_gemini and hasattr(self.ai_service, 'use_gemini'):
+                # Temporarily switch to Gemini
+                original_provider = getattr(self.ai_service, 'provider', None)
+                self.ai_service.provider = 'gemini'
+            
+            messages = [{"role": "user", "content": prompt}]
+            response = await self.ai_service.get_chat_completion_async(
+                messages=messages,
+                temperature=0.1,  # Very low for consistent categorization
+                max_tokens=4000,
+            )
+            
+            # Restore original provider
+            if use_gemini and hasattr(self.ai_service, 'use_gemini'):
+                if original_provider:
+                    self.ai_service.provider = original_provider
+            
+            if not response:
+                return events
+            
+            # Extract JSON from response
+            response_text = response.strip()
+            json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+            
+            if json_match:
+                json_str = json_match.group(0)
+                enriched_events = json.loads(json_str)
+                
+                # Merge with original events (in case AI missed some fields)
+                result = []
+                for i, enriched in enumerate(enriched_events):
+                    if i < len(events):
+                        original = events[i].copy()
+                        original.update(enriched)
+                        
+                        # Ensure all AI fields exist
+                        original.setdefault('ai_category', original.get('type', 'other'))
+                        original.setdefault('ai_importance', original.get('importance', 'medium'))
+                        original.setdefault('ai_confidence', 0.7)
+                        original.setdefault('ai_required_action', original.get('type') in ['deadline', 'exam'])
+                        original.setdefault('ai_tags', [])
+                        original.setdefault('ai_summary', original.get('title', '')[:100])
+                        
+                        result.append(original)
+                
+                print(f"AI categorized {len(result)} events with average confidence: {sum(e.get('ai_confidence', 0.7) for e in result) / len(result):.2f}")
+                return result
+            else:
+                print("No JSON array found in AI categorization response")
+                return events
+                
+        except Exception as e:
+            print(f"Error categorizing events with AI: {e}")
+            return events
+    
     async def scrape_source(self, source: Dict) -> List[Dict]:
         """Scrape events from a single source.
         

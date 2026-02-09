@@ -46,6 +46,40 @@ class GoogleCalendarService:
         """Get the path to the OAuth credentials file."""
         return self._credentials_dir / "credentials.json"
     
+    def save_credentials_from_oauth(self, access_token: str, refresh_token: Optional[str] = None) -> bool:
+        """Save Google OAuth credentials from Supabase provider tokens.
+        
+        Args:
+            access_token: Google OAuth access token
+            refresh_token: Google OAuth refresh token (optional)
+            
+        Returns:
+            True if saved successfully
+        """
+        try:
+            from google.oauth2.credentials import Credentials
+            
+            # Create credentials object from tokens
+            creds = Credentials(
+                token=access_token,
+                refresh_token=refresh_token,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=None,  # Not needed for token-based auth
+                client_secret=None,
+                scopes=SCOPES
+            )
+            
+            # Save to pickle file
+            token_path = self._get_token_path()
+            with open(token_path, 'wb') as token:
+                pickle.dump(creds, token)
+            
+            print(f"[CALENDAR] Saved credentials to {token_path}")
+            return True
+        except Exception as e:
+            print(f"[CALENDAR] Error saving credentials: {e}")
+            return False
+    
     def authenticate(self) -> bool:
         """Authenticate with Google Calendar API.
         
@@ -60,63 +94,38 @@ class GoogleCalendarService:
             try:
                 with open(token_path, 'rb') as token:
                     creds = pickle.load(token)
+                print("[CALENDAR] Loaded existing credentials from file")
             except Exception as e:
-                print(f"Error loading token: {e}")
+                print(f"[CALENDAR] Error loading token: {e}")
         
         # Refresh or get new credentials
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 try:
+                    print("[CALENDAR] Refreshing expired credentials...")
                     creds.refresh(Request())
+                    # Save refreshed credentials
+                    with open(token_path, 'wb') as token:
+                        pickle.dump(creds, token)
+                    print("[CALENDAR] Credentials refreshed successfully")
                 except Exception as e:
-                    print(f"Error refreshing token: {e}")
+                    print(f"[CALENDAR] Error refreshing token: {e}")
                     creds = None
             
             if not creds:
-                credentials_path = self._get_credentials_path()
-                if not credentials_path.exists():
-                    print(f"OAuth credentials file not found: {credentials_path}")
-                    print("Please download credentials.json from Google Cloud Console")
-                    return False
-                
-                try:
-                    # Support both web and installed app credentials
-                    import json
-                    with open(credentials_path, 'r') as f:
-                        cred_data = json.load(f)
-                    
-                    # Check if it's web or installed app credentials
-                    if 'installed' in cred_data:
-                        # Desktop app credentials
-                        flow = InstalledAppFlow.from_client_secrets_file(
-                            str(credentials_path), SCOPES)
-                        creds = flow.run_local_server(port=0)
-                    elif 'web' in cred_data:
-                        # Web app credentials - use installed flow with web credentials
-                        flow = InstalledAppFlow.from_client_secrets_file(
-                            str(credentials_path), SCOPES)
-                        creds = flow.run_local_server(port=0)
-                    else:
-                        print("Invalid credentials format. Need 'web' or 'installed' key.")
-                        return False
-                except Exception as e:
-                    print(f"Error getting new credentials: {e}")
-                    return False
-            
-            # Save credentials for future use
-            try:
-                with open(token_path, 'wb') as token:
-                    pickle.dump(creds, token)
-            except Exception as e:
-                print(f"Error saving token: {e}")
+                # No saved credentials - user needs to authenticate via OAuth
+                print("[CALENDAR] No valid credentials found")
+                print("[CALENDAR] User should sign in with Google to grant calendar access")
+                return False
         
         self.credentials = creds
         
         try:
             self.service = build('calendar', 'v3', credentials=creds)
+            print("[CALENDAR] Calendar service built successfully")
             return True
         except Exception as e:
-            print(f"Error building calendar service: {e}")
+            print(f"[CALENDAR] Error building calendar service: {e}")
             return False
     
     def create_event(
@@ -507,6 +516,8 @@ class GoogleCalendarService:
                         'google_calendar_id': event.get('id'),
                         'synced_from_google': True,
                         'scraped_at': datetime.now().isoformat(),
+                        'user_id': self.user_id,  # Add user_id for personal event privacy
+                        'is_institutional': False,  # Personal calendar events are not institutional
                     }
                     
                     # Save to database

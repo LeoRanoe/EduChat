@@ -177,17 +177,40 @@ class SupabaseService:
     
     # === Event Methods ===
     
-    def get_upcoming_events(self, limit: int = 10) -> List[Dict[str, Any]]:
-        """Get upcoming events sorted by date."""
+    def get_upcoming_events(self, limit: int = 10, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Get upcoming events sorted by date.
+        
+        Shows:
+        - Institutional events (is_institutional=true) - visible to all users
+        - User's personal events (user_id matches) - only visible to owner
+        
+        Args:
+            limit: Maximum number of events to return
+            user_id: User ID to filter personal events. If None, only shows institutional events.
+        
+        Returns:
+            List of events visible to the user
+        """
         self._ensure_connected()
-        response = (
+        
+        # Build query
+        query = (
             self.client.table('events')
             .select('*, institutions(*)')
             .gte('date', datetime.now().isoformat())
             .order('date', desc=False)
             .limit(limit)
-            .execute()
         )
+        
+        # Filter: institutional events OR user's personal events
+        if user_id:
+            # User can see institutional events OR their own events
+            query = query.or_(f'is_institutional.eq.true,user_id.eq.{user_id}')
+        else:
+            # Not logged in - only show institutional events
+            query = query.eq('is_institutional', True)
+        
+        response = query.execute()
         return response.data
     
     def create_event(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -458,6 +481,98 @@ class SupabaseService:
         """Mark a reminder as sent."""
         self._ensure_connected()
         self.client.table('reminders').update({'sent': True}).eq('id', reminder_id).execute()
+    
+    def update_reminder_sync_status(
+        self,
+        reminder_id: str,
+        sync_status: str,
+        google_calendar_event_id: Optional[str] = None,
+        sync_error: Optional[str] = None,
+        sync_direction: Optional[str] = None,
+        google_link_url: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Update reminder sync status with Google Calendar.
+        
+        Args:
+            reminder_id: Reminder ID
+            sync_status: Sync status (not_synced, synced, syncing, error, deleted)
+            google_calendar_event_id: Google Calendar event ID
+            sync_error: Error message if sync failed
+            sync_direction: Direction of sync (to_google, from_google, bidirectional)
+            google_link_url: Direct link to event in Google Calendar
+            
+        Returns:
+            Updated reminder data
+        """
+        self._ensure_connected()
+        
+        update_data = {
+            'sync_status': sync_status,
+            'last_sync_at': datetime.now().isoformat()
+        }
+        
+        if google_calendar_event_id is not None:
+            update_data['google_calendar_event_id'] = google_calendar_event_id
+        
+        if sync_error is not None:
+            update_data['sync_error'] = sync_error
+        
+        if sync_direction is not None:
+            update_data['last_sync_direction'] = sync_direction
+        
+        if google_link_url is not None:
+            update_data['google_link_url'] = google_link_url
+        
+        response = self.client.table('reminders').update(update_data).eq('id', reminder_id).execute()
+        return response.data[0] if response.data else None
+    
+    def get_unsynced_reminders(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Get all reminders that need to be synced to Google Calendar.
+        
+        Args:
+            user_id: User ID
+            
+        Returns:
+            List of unsynced reminders
+        """
+        self._ensure_connected()
+        response = (
+            self.client.table('reminders')
+            .select('*')
+            .eq('user_id', user_id)
+            .in_('sync_status', ['not_synced', 'error'])
+            .eq('sent', False)
+            .order('date', desc=False)
+            .execute()
+        )
+        return response.data
+    
+    def get_reminders_by_google_event_id(
+        self, 
+        user_id: str, 
+        google_calendar_event_id: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Find reminder by Google Calendar event ID.
+        
+        Args:
+            user_id: User ID
+            google_calendar_event_id: Google Calendar event ID
+            
+        Returns:
+            Reminder data or None
+        """
+        self._ensure_connected()
+        response = (
+            self.client.table('reminders')
+            .select('*')
+            .eq('user_id', user_id)
+            .eq('google_calendar_event_id', google_calendar_event_id)
+            .execute()
+        )
+        return response.data[0] if response.data else None
     
     # === Chat History Methods ===
     

@@ -489,6 +489,7 @@ class AuthService:
             
             # Use OAuth with implicit flow (fragment-based) to avoid PKCE issues
             # The access token will be in the URL fragment instead of query params
+            # Request both auth AND calendar scopes so user only needs to login once
             response = await asyncio.to_thread(
                 lambda: self.client.auth.sign_in_with_oauth({
                     "provider": "google",
@@ -497,7 +498,8 @@ class AuthService:
                         "skip_browser_redirect": False,
                         "query_params": {
                             "access_type": "offline",
-                            "prompt": "consent"
+                            "prompt": "consent",
+                            "scope": "openid email profile https://www.googleapis.com/auth/calendar"
                         }
                     }
                 })
@@ -559,6 +561,55 @@ class AuthService:
                 
                 print(f"[AUTH SERVICE] User authenticated: {response.user.email}")
                 
+                # Extract Google provider tokens for Calendar API
+                provider_token = None
+                provider_refresh_token = None
+                
+                try:
+                    # Method 1: Check session object attributes
+                    if response.session:
+                        if hasattr(response.session, 'provider_token'):
+                            provider_token = response.session.provider_token
+                            print("[AUTH SERVICE] Provider token from session.provider_token")
+                        if hasattr(response.session, 'provider_refresh_token'):
+                            provider_refresh_token = response.session.provider_refresh_token
+                            print("[AUTH SERVICE] Provider refresh token from session")
+                    
+                    # Method 2: Check user identities (where Supabase stores provider data)
+                    if not provider_token and response.user and hasattr(response.user, 'identities'):
+                        identities = response.user.identities or []
+                        for identity in identities:
+                            if hasattr(identity, 'provider') and identity.provider == 'google':
+                                # Try to extract from identity_data
+                                if hasattr(identity, 'identity_data'):
+                                    identity_data = identity.identity_data or {}
+                                    provider_token = identity_data.get('provider_token')
+                                    provider_refresh_token = identity_data.get('provider_refresh_token')
+                                    if provider_token:
+                                        print("[AUTH SERVICE] Provider tokens from user.identities")
+                                        break
+                except Exception as e:
+                    print(f"[AUTH SERVICE] Could not extract provider tokens: {e}")
+                
+                # Save Google Calendar credentials for this user
+                if provider_token:
+                    try:
+                        from educhat.services.google_calendar_service import GoogleCalendarService
+                        calendar_service = GoogleCalendarService(user_id=response.user.id)
+                        await asyncio.to_thread(
+                            lambda: calendar_service.save_credentials_from_oauth(
+                                access_token=provider_token,
+                                refresh_token=provider_refresh_token
+                            )
+                        )
+                        print("[AUTH SERVICE] ✅ Google Calendar credentials saved - no second login needed!")
+                    except Exception as e:
+                        print(f"[AUTH SERVICE] Warning: Could not save calendar credentials: {e}")
+                        import traceback
+                        traceback.print_exc()
+                else:
+                    print("[AUTH SERVICE] ⚠️  No provider tokens found - Calendar may require separate auth")
+                
                 return {
                     "success": True,
                     "user": {
@@ -573,7 +624,8 @@ class AuthService:
                         "access_token": response.session.access_token if response.session else None,
                         "refresh_token": response.session.refresh_token if response.session else None,
                         "expires_at": response.session.expires_at if response.session else None
-                    }
+                    },
+                    "google_provider_token": provider_token
                 }
             else:
                 return {

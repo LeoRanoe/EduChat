@@ -103,6 +103,7 @@ def chat_input(
                                     border_radius=RADIUS["full"],
                                     cursor="pointer",
                                     on_click=on_submit,
+                                    id="chat-send-button",
                                     box_shadow=SHADOWS["primary_sm"],
                                     transition=TRANSITIONS["fast"],
                                     _hover={
@@ -184,6 +185,21 @@ def chat_input(
         background=f"linear-gradient(to top, {T.bg_card} 0%, {T.bg_primary} 100%)",
         border_top=f"1px solid {T.border_light}",
         flex_shrink="0",
+        # Add inline script to handle Enter key
+        on_mount=rx.call_script(
+            """
+            const textarea = document.getElementById('chat-textarea');
+            const sendButton = document.getElementById('chat-send-button');
+            if (textarea && sendButton) {
+                textarea.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendButton.click();
+                    }
+                });
+            }
+            """
+        ),
     )
 
 

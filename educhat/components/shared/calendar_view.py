@@ -150,23 +150,144 @@ def calendar_month_view() -> rx.Component:
     )
 
 
-def event_card_mini(event: dict) -> rx.Component:
-    """Mini event card for day view."""
+def sync_status_badge(status: str, last_sync_time: str = "", google_link: str = "") -> rx.Component:
+    """Badge showing sync status for reminders.
+    
+    Args:
+        status: Sync status (not_synced, synced, syncing, error, deleted)
+        last_sync_time: Last sync timestamp
+        google_link: Link to Google Calendar event
+    """
+    # Build badge with conditional styling based on status
+    badge_content = rx.badge(
+        rx.hstack(
+            # Icon based on status
+            rx.cond(
+                status == "not_synced",
+                rx.icon("cloud-off", size=12),
+                rx.cond(
+                    status == "synced",
+                    rx.icon("check-circle", size=12),
+                    rx.cond(
+                        status == "syncing",
+                        rx.icon("loader", size=12),
+                        rx.cond(
+                            status == "error",
+                            rx.icon("alert-circle", size=12),
+                            rx.icon("trash-2", size=12)  # deleted
+                        )
+                    )
+                )
+            ),
+            # Label based on status
+            rx.cond(
+                status == "not_synced",
+                "Niet gesync",
+                rx.cond(
+                    status == "synced",
+                    "Gesync",
+                    rx.cond(
+                        status == "syncing",
+                        "Bezig...",
+                        rx.cond(
+                            status == "error",
+                            "Fout",
+                            "Verwijderd"
+                        )
+                    )
+                )
+            ),
+            spacing="1",
+            align="center",
+        ),
+        size="1",
+        # Color based on status
+        color_scheme=rx.cond(
+            status == "not_synced",
+            "gray",
+            rx.cond(
+                status == "synced",
+                "green",
+                rx.cond(
+                    status == "syncing",
+                    "blue",
+                    rx.cond(
+                        status == "error",
+                        "red",
+                        "gray"
+                    )
+                )
+            )
+        ),
+    )
+    
+    # Conditionally wrap in link if synced and has google_link
+    return rx.cond(
+        (status == "synced") & (google_link != ""),
+        rx.link(
+            badge_content,
+            href=google_link,
+            is_external=True,
+            _hover={"opacity": 0.8},
+        ),
+        badge_content
+    )
+
+
+
+def event_card_unified(event: dict) -> rx.Component:
+    """Unified event card for reminders, personal events, and institutional events.
+    
+    Shows:
+    - Reminders (purple, 🔔) with sync status
+    - Personal events (green, 📌) with edit/delete
+    - Institutional events (blue, 📚) with AI metadata
+    """
     return rx.box(
         rx.hstack(
+            # Colored side bar - conditional color based on type
             rx.box(
                 width="4px",
                 height="100%",
-                background=COLORS["primary_green"],
+                background=rx.cond(
+                    event.get("type", "") == "reminder",
+                    "#9333EA",  # Purple for reminders
+                    rx.cond(
+                        event.get("is_institutional", False),
+                        "#3B82F6",  # Blue for institutional
+                        COLORS["primary_green"]  # Green for personal
+                    )
+                ),
                 border_radius="2px",
             ),
             rx.vstack(
+                # Header row with time, icon, title, and actions
                 rx.hstack(
                     rx.text(
-                        event.get("start_time", "00:00"),  # Display full time
+                        event.get("start_time", "00:00"),
                         font_size="0.75rem",
                         font_weight="600",
-                        color=COLORS["primary_green"],
+                        color=rx.cond(
+                            event.get("type", "") == "reminder",
+                            "#9333EA",
+                            rx.cond(
+                                event.get("is_institutional", False),
+                                "#3B82F6",
+                                COLORS["primary_green"]
+                            )
+                        ),
+                    ),
+                    rx.text(
+                        rx.cond(
+                            event.get("type", "") == "reminder",
+                            "🔔",
+                            rx.cond(
+                                event.get("is_institutional", False),
+                                "📚",
+                                "📌"
+                            )
+                        ),
+                        font_size="1rem",
                     ),
                     rx.text(
                         event["title"],
@@ -175,9 +296,204 @@ def event_card_mini(event: dict) -> rx.Component:
                         color=T.text_primary,
                         flex="1",
                     ),
+                    # Edit/Delete buttons (only for user's own events)
+                    rx.cond(
+                        rx.cond(
+                            event.get("user_id", "") == AuthState.user_id,
+                            rx.cond(
+                                event.get("is_institutional", False) == False,
+                                True,
+                                False
+                            ),
+                            False
+                        ),
+                        rx.hstack(
+                            rx.icon_button(
+                                rx.icon("pencil", size=14),
+                                on_click=lambda: AuthState.open_edit_event_modal(event["id"]),
+                                size="1",
+                                variant="ghost",
+                                color_scheme="gray",
+                                cursor="pointer",
+                            ),
+                            rx.icon_button(
+                                rx.icon("trash-2", size=14),
+                                on_click=lambda: AuthState.delete_event(event["id"]),
+                                size="1",
+                                variant="ghost",
+                                color_scheme="red",
+                                cursor="pointer",
+                            ),
+                            spacing="1",
+                        ),
+                        rx.fragment(),
+                    ),
                     spacing="2",
                     width="100%",
                     align="center",
+                ),
+                # Badges row
+                rx.hstack(
+                    # Type badge
+                    rx.badge(
+                        rx.cond(
+                            event.get("type", "") == "reminder",
+                            "Herinnering",
+                            rx.cond(
+                                event.get("is_institutional", False),
+                                "School",
+                                "Persoonlijk"
+                            )
+                        ),
+                        size="1",
+                        color_scheme=rx.cond(
+                            event.get("type", "") == "reminder",
+                            "purple",
+                            rx.cond(
+                                event.get("is_institutional", False),
+                                "blue",
+                                "green"
+                            )
+                        ),
+                    ),
+                    # Sync status badge for reminders
+                    rx.cond(
+                        event.get("type", "") == "reminder",
+                        sync_status_badge(
+                            status=event.get("sync_status", "not_synced"),
+                            last_sync_time=event.get("last_sync_at", ""),
+                            google_link=event.get("google_link_url", "")
+                        ),
+                        rx.fragment(),
+                    ),
+                    spacing="1",
+                    wrap="wrap",
+                ),
+                # Description
+                rx.cond(
+                    event.get("description", "") != "",
+                    rx.text(
+                        event.get("description", ""),
+                        font_size="0.75rem",
+                        color=T.text_secondary,
+                        white_space="nowrap",
+                        overflow="hidden",
+                        text_overflow="ellipsis",
+                    ),
+                    rx.fragment(),
+                ),
+                # Institution name
+                rx.cond(
+                    event.get("institution", "") != "",
+                    rx.text(
+                        event["institution"],
+                        font_size="0.75rem",
+                        color=T.text_tertiary,
+                    ),
+                    rx.fragment(),
+                ),
+                spacing="1",
+                align="start",
+                padding_left="0.5rem",
+                flex="1",
+            ),
+            spacing="2",
+            align="start",
+            height="auto",
+            min_height="3rem",
+        ),
+        padding="0.75rem",
+        border_radius="8px",
+        border=f"1px solid {T.border_subtle}",
+        background=T.bg_surface,
+        cursor="pointer",
+        _hover={
+            "background": T.bg_hover,
+            "box_shadow": "0 2px 8px rgba(0,0,0,0.1)",
+        },
+        transition="all 0.2s ease",
+        width="100%",
+    )
+
+
+def event_card_mini(event: dict) -> rx.Component:
+    """Mini event card for day view with edit/delete buttons for user's own events."""
+    return rx.box(
+        rx.hstack(
+            rx.box(
+                width="4px",
+                height="100%",
+                background=rx.cond(
+                    event.get("is_institutional", False),
+                    "#3B82F6",  # Blue for institutional events
+                    COLORS["primary_green"]  # Green for personal events
+                ),
+                border_radius="2px",
+            ),
+            rx.vstack(
+                rx.hstack(
+                    rx.text(
+                        event.get("start_time", "00:00"),
+                        font_size="0.75rem",
+                        font_weight="600",
+                        color=rx.cond(
+                            event.get("is_institutional", False),
+                            "#3B82F6",
+                            COLORS["primary_green"]
+                        ),
+                    ),
+                    rx.text(
+                        event["title"],
+                        font_size="0.875rem",
+                        font_weight="600",
+                        color=T.text_primary,
+                        flex="1",
+                    ),
+                    # Edit/Delete buttons (only for user's own events)
+                    rx.cond(
+                        rx.cond(
+                            event.get("user_id", "") == AuthState.user_id,
+                            rx.cond(
+                                event.get("is_institutional", False) == False,
+                                True,
+                                False
+                            ),
+                            False
+                        ),
+                        rx.hstack(
+                            rx.icon_button(
+                                rx.icon("pencil", size=14),
+                                on_click=lambda: AuthState.open_edit_event_modal(event["id"]),
+                                size="1",
+                                variant="ghost",
+                                color_scheme="gray",
+                                cursor="pointer",
+                            ),
+                            rx.icon_button(
+                                rx.icon("trash-2", size=14),
+                                on_click=lambda: AuthState.delete_event(event["id"]),
+                                size="1",
+                                variant="ghost",
+                                color_scheme="red",
+                                cursor="pointer",
+                            ),
+                            spacing="1",
+                        ),
+                        rx.fragment(),
+                    ),
+                    spacing="2",
+                    width="100%",
+                    align="center",
+                ),
+                # Show badge for institutional events
+                rx.cond(
+                    event.get("is_institutional", False),
+                    rx.badge(
+                        "School",
+                        size="1",
+                        color_scheme="blue",
+                    ),
+                    rx.fragment(),
                 ),
                 # Show sync status for reminders
                 rx.cond(
@@ -246,7 +562,7 @@ def calendar_day_events() -> rx.Component:
                 rx.vstack(
                     rx.foreach(
                         AuthState.selected_day_events,
-                        event_card_mini,
+                        event_card_unified,
                     ),
                     spacing="2",
                     width="100%",
@@ -276,6 +592,17 @@ def calendar_day_events() -> rx.Component:
                 variant="soft",
                 color_scheme="green",
                 loading=AuthState.is_syncing_calendar,
+                width="100%",
+            ),
+            
+            # Create event button
+            rx.button(
+                rx.icon("plus", size=16),
+                "Nieuw evenement",
+                on_click=AuthState.open_create_event_modal,
+                size="2",
+                variant="solid",
+                color_scheme="green",
                 width="100%",
             ),
             
@@ -421,7 +748,7 @@ def calendar_day_view() -> rx.Component:
                     rx.vstack(
                         rx.foreach(
                             AuthState.selected_day_events,
-                            event_card_mini,
+                            event_card_unified,
                         ),
                         spacing="2",
                         width="100%",
@@ -674,6 +1001,312 @@ def calendar_view() -> rx.Component:
             right="0",
             bottom="0",
             z_index="998",
+        ),
+        rx.fragment(),
+    )
+
+def create_event_modal() -> rx.Component:
+    """Modal for creating a new event."""
+    return rx.cond(
+        AuthState.show_create_event_modal,
+        rx.box(
+            # Overlay
+            rx.box(
+                position="fixed",
+                top="0",
+                left="0",
+                right="0",
+                bottom="0",
+                background=T.overlay,
+                z_index="1000",
+                on_click=AuthState.close_create_event_modal,
+            ),
+            # Modal
+            rx.box(
+                rx.vstack(
+                    # Header
+                    rx.hstack(
+                        rx.text(
+                            "Nieuw evenement",
+                            font_size="1.25rem",
+                            font_weight="700",
+                            color=T.text_primary,
+                        ),
+                        rx.icon(
+                            "x",
+                            size=24,
+                            color=T.text_secondary,
+                            on_click=AuthState.close_create_event_modal,
+                            cursor="pointer",
+                        ),
+                        justify="between",
+                        width="100%",
+                        padding_bottom="1rem",
+                        border_bottom=f"1px solid {T.border_light}",
+                    ),
+                    
+                    # Form
+                    rx.vstack(
+                        rx.vstack(
+                            rx.text("Titel", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                            rx.input(
+                                placeholder="Bijvoorbeeld: Tentamen Wiskunde",
+                                value=AuthState.new_event_title,
+                                on_change=AuthState.set_new_event_title,
+                                width="100%",
+                            ),
+                            spacing="1",
+                            width="100%",
+                        ),
+                        
+                        rx.hstack(
+                            rx.vstack(
+                                rx.text("Datum", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                                rx.input(
+                                    type="date",
+                                    value=AuthState.new_event_date,
+                                    on_change=AuthState.set_new_event_date,
+                                    width="100%",
+                                ),
+                                spacing="1",
+                                flex="1",
+                            ),
+                            rx.vstack(
+                                rx.text("Tijd", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                                rx.input(
+                                    type="time",
+                                    value=AuthState.new_event_time,
+                                    on_change=AuthState.set_new_event_time,
+                                    width="100%",
+                                ),
+                                spacing="1",
+                                flex="1",
+                            ),
+                            spacing="3",
+                            width="100%",
+                        ),
+                        
+                        rx.vstack(
+                            rx.text("Locatie (optioneel)", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                            rx.input(
+                                placeholder="Bijvoorbeeld: Lokaal 101",
+                                value=AuthState.new_event_location,
+                                on_change=AuthState.set_new_event_location,
+                                width="100%",
+                            ),
+                            spacing="1",
+                            width="100%",
+                        ),
+                        
+                        rx.vstack(
+                            rx.text("Beschrijving (optioneel)", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                            rx.text_area(
+                                placeholder="Extra details over dit evenement...",
+                                value=AuthState.new_event_description,
+                                on_change=AuthState.set_new_event_description,
+                                width="100%",
+                                rows="3",
+                            ),
+                            spacing="1",
+                            width="100%",
+                        ),
+                        
+                        spacing="4",
+                        width="100%",
+                    ),
+                    
+                    # Actions
+                    rx.hstack(
+                        rx.button(
+                            "Annuleren",
+                            on_click=AuthState.close_create_event_modal,
+                            size="3",
+                            variant="soft",
+                            color_scheme="gray",
+                            flex="1",
+                        ),
+                        rx.button(
+                            "Aanmaken",
+                            on_click=AuthState.create_event,
+                            size="3",
+                            variant="solid",
+                            color_scheme="green",
+                            loading=AuthState.is_creating_event,
+                            flex="1",
+                        ),
+                        spacing="2",
+                        width="100%",
+                    ),
+                    
+                    spacing="4",
+                    width="100%",
+                ),
+                background=rx.color_mode_cond(light="#FFFFFF", dark="#111217"),
+                border=f"1px solid {T.border_light}",
+                border_radius=RADIUS["lg"],
+                padding="2rem",
+                position="fixed",
+                top="50%",
+                left="50%",
+                transform="translate(-50%, -50%)",
+                width="min(90vw, 500px)",
+                max_height="90vh",
+                overflow_y="auto",
+                z_index="1001",
+                box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            ),
+        ),
+        rx.fragment(),
+    )
+
+
+def edit_event_modal() -> rx.Component:
+    """Modal for editing an existing event."""
+    return rx.cond(
+        AuthState.show_edit_event_modal,
+        rx.box(
+            # Overlay
+            rx.box(
+                position="fixed",
+                top="0",
+                left="0",
+                right="0",
+                bottom="0",
+                background=T.overlay,
+                z_index="1000",
+                on_click=AuthState.close_edit_event_modal,
+            ),
+            # Modal
+            rx.box(
+                rx.vstack(
+                    # Header
+                    rx.hstack(
+                        rx.text(
+                            "Evenement bewerken",
+                            font_size="1.25rem",
+                            font_weight="700",
+                            color=T.text_primary,
+                        ),
+                        rx.icon(
+                            "x",
+                            size=24,
+                            color=T.text_secondary,
+                            on_click=AuthState.close_edit_event_modal,
+                            cursor="pointer",
+                        ),
+                        justify="between",
+                        width="100%",
+                        padding_bottom="1rem",
+                        border_bottom=f"1px solid {T.border_light}",
+                    ),
+                    
+                    # Form
+                    rx.vstack(
+                        rx.vstack(
+                            rx.text("Titel", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                            rx.input(
+                                value=AuthState.edit_event_title,
+                                on_change=AuthState.set_edit_event_title,
+                                width="100%",
+                            ),
+                            spacing="1",
+                            width="100%",
+                        ),
+                        
+                        rx.hstack(
+                            rx.vstack(
+                                rx.text("Datum", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                                rx.input(
+                                    type="date",
+                                    value=AuthState.edit_event_date,
+                                    on_change=AuthState.set_edit_event_date,
+                                    width="100%",
+                                ),
+                                spacing="1",
+                                flex="1",
+                            ),
+                            rx.vstack(
+                                rx.text("Tijd", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                                rx.input(
+                                    type="time",
+                                    value=AuthState.edit_event_time,
+                                    on_change=AuthState.set_edit_event_time,
+                                    width="100%",
+                                ),
+                                spacing="1",
+                                flex="1",
+                            ),
+                            spacing="3",
+                            width="100%",
+                        ),
+                        
+                        rx.vstack(
+                            rx.text("Locatie", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                            rx.input(
+                                value=AuthState.edit_event_location,
+                                on_change=AuthState.set_edit_event_location,
+                                width="100%",
+                            ),
+                            spacing="1",
+                            width="100%",
+                        ),
+                        
+                        rx.vstack(
+                            rx.text("Beschrijving", font_size="0.875rem", font_weight="600", color=T.text_primary),
+                            rx.text_area(
+                                value=AuthState.edit_event_description,
+                                on_change=AuthState.set_edit_event_description,
+                                width="100%",
+                                rows="3",
+                            ),
+                            spacing="1",
+                            width="100%",
+                        ),
+                        
+                        spacing="4",
+                        width="100%",
+                    ),
+                    
+                    # Actions
+                    rx.hstack(
+                        rx.button(
+                            "Annuleren",
+                            on_click=AuthState.close_edit_event_modal,
+                            size="3",
+                            variant="soft",
+                            color_scheme="gray",
+                            flex="1",
+                        ),
+                        rx.button(
+                            "Opslaan",
+                            on_click=AuthState.update_event,
+                            size="3",
+                            variant="solid",
+                            color_scheme="green",
+                            loading=AuthState.is_updating_event,
+                            flex="1",
+                        ),
+                        spacing="2",
+                        width="100%",
+                    ),
+                    
+                    spacing="4",
+                    width="100%",
+                ),
+                background=rx.color_mode_cond(light="#FFFFFF", dark="#111217"),
+                border=f"1px solid {T.border_light}",
+                border_radius=RADIUS["lg"],
+                padding="2rem",
+                position="fixed",
+                top="50%",
+                left="50%",
+                transform="translate(-50%, -50%)",
+                width="min(90vw, 500px)",
+                max_height="90vh",
+                overflow_y="auto",
+                z_index="1001",
+                box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            ),
         ),
         rx.fragment(),
     )

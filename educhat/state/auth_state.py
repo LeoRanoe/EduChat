@@ -5,7 +5,7 @@ Handles all authentication state for EduChat.
 
 import reflex as rx
 from typing import Optional, Dict, List
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import re
 
@@ -124,6 +124,9 @@ class AuthState(rx.State):
     sync_in_progress: bool = False
     sync_progress_current: int = 0
     sync_progress_total: int = 0
+    
+    # === Auto-scraping ===
+    _last_auto_scrape_time: Optional[datetime] = None  # Track last auto-scrape time
     
     # ==========================================================================
     # Language Methods
@@ -673,6 +676,8 @@ class AuthState(rx.State):
             result = await auth_service.google_signin()
             
             if result["success"] and result.get("url"):
+                # Reset loading state before redirect to prevent stuck loading
+                self.google_auth_loading = False
                 # Redirect to Google OAuth URL (use window.open for external redirect)
                 yield rx.redirect(result["url"])
             else:
@@ -771,6 +776,8 @@ class AuthState(rx.State):
             self._clear_auth_state()
             # Also reset is_guest
             self.is_guest = False
+            # Reset Google OAuth loading state
+            self.google_auth_loading = False
             # Clear auth modal
             self.show_auth_modal = False
             # Clear any errors
@@ -827,6 +834,7 @@ class AuthState(rx.State):
         self.user_name = None
         self.access_token = None
         self.refresh_token = None
+        self.google_auth_loading = False
     
     async def _load_user_data(self):
         """Load user-specific data after login."""
@@ -1113,7 +1121,7 @@ class AuthState(rx.State):
         try:
             from educhat.services.supabase_client import get_service
             db = get_service()
-            events = db.get_upcoming_events(limit=10)
+            events = db.get_upcoming_events(limit=10, user_id=self.user_id)
             
             self.upcoming_events = [
                 {
@@ -1231,7 +1239,7 @@ class AuthState(rx.State):
             "location": self.reminder_location.strip(),
             "completed": "false",
             "created_at": datetime.now().isoformat(),
-            "sync_status": "pending",
+            "sync_status": "not_synced",
             "google_calendar_event_id": "",
             "google_link": ""
         }
@@ -1550,7 +1558,7 @@ class AuthState(rx.State):
                     "completed": "true" if r.get("sent", False) else "false",
                     "created_at": str(r.get("created_at", "")),
                     "google_calendar_event_id": r.get("google_calendar_event_id", ""),
-                    "sync_status": r.get("sync_status", "pending"),
+                    "sync_status": r.get("sync_status", "not_synced"),
                     "last_sync_at": str(r.get("last_sync_at", ""))[:16] if r.get("last_sync_at") else "",  # Format: YYYY-MM-DD HH:MM
                     "sync_error": r.get("sync_error", ""),
                     "google_link": f"https://calendar.google.com/calendar/event?eid={r.get('google_calendar_event_id', '')}" if r.get("google_calendar_event_id") else ""
@@ -1698,7 +1706,7 @@ class AuthState(rx.State):
             
             # STEP 1: Sync DATABASE events TO Google Calendar
             print("[CALENDAR SYNC] Step 1: Syncing database events to Google Calendar...")
-            db_events = db_service.get_upcoming_events(limit=100)
+            db_events = db_service.get_upcoming_events(limit=100, user_id=self.user_id)
             if db_events:
                 sync_to_calendar_result = await loop.run_in_executor(
                     None,
@@ -1822,24 +1830,201 @@ class AuthState(rx.State):
             import traceback
             traceback.print_exc()
     
+    async def auto_scrape_school_events_on_startup(self):
+        """Automatically scrape school events on app startup using AI.
+        
+        This method:
+        1. Checks if auto-scraping is enabled and last scrape was > 24h ago
+        2. Scrapes events from all configured sources for user's institutions
+        3. Uses Gemini AI for fast categorization and enrichment
+        4. Saves institutional events to database with AI metadata
+        5. Runs in background without blocking UI
+        """
+        try:
+            # Only scrape if authenticated
+            if not self.is_authenticated or not self.user_id:
+                return
+            
+            # Check last scrape time (avoid scraping too frequently)
+            from datetime import datetime, timedelta
+            
+            # Get last scrape time from state or database
+            last_scrape_key = f"last_auto_scrape_{self.user_id}"
+            from educhat.services.supabase_client import get_service
+            
+            # Simple in-memory check (can be enhanced with database storage)
+            if hasattr(self, '_last_auto_scrape_time'):
+                time_since_scrape = datetime.now() - self._last_auto_scrape_time
+                if time_since_scrape < timedelta(hours=24):
+                    print(f"[AUTO-SCRAPE] Skipping - last scrape was {time_since_scrape.total_seconds() / 3600:.1f}h ago")
+                    return
+            
+            print("[AUTO-SCRAPE] Starting automatic event scraping...")
+            self._last_auto_scrape_time = datetime.now()
+            
+            # Get user's institutions
+            user_institutions = []
+            if self.selected_institution_id and self.selected_institution_name:
+                user_institutions.append(self.selected_institution_name)
+            
+            # Initialize services
+            from educhat.services.event_scraper_service import EventScraperService
+            from educhat.services.ai_service import get_ai_service
+            
+            ai_service = get_ai_service()
+            scraper = EventScraperService(ai_service=ai_service, rate_limit=2.0)
+            
+            # Get sources - filter by user institutions if available
+            sources = EventScraperService.DEFAULT_SOURCES.copy()
+            if user_institutions:
+                sources = [
+                    s for s in sources 
+                    if any(inst.lower() in s.get('institution', '').lower() for inst in user_institutions)
+                ]
+            
+            # Limit to 3 sources for faster scraping
+            sources = sources[:3]
+            
+            print(f"[AUTO-SCRAPE] Scraping from {len(sources)} sources...")
+            
+            # Scrape events from all sources
+            all_events = await scraper.scrape_all_sources(
+                sources=sources,
+                user_institutions=user_institutions,
+                max_concurrent=2
+            )
+            
+            if not all_events:
+                print("[AUTO-SCRAPE] No events found")
+                await scraper.close()
+                return
+            
+            print(f"[AUTO-SCRAPE] Extracted {len(all_events)} raw events")
+            
+            # Categorize and enrich with AI (use Gemini for speed)
+            enriched_events = await scraper.categorize_and_enrich_events(
+                all_events,
+                use_gemini=True
+            )
+            
+            print(f"[AUTO-SCRAPE] Enriched {len(enriched_events)} events with AI")
+            
+            # Save to database as institutional events
+            db = get_service()
+            saved_count = 0
+            skipped_count = 0
+            
+            for event in enriched_events:
+                try:
+                    # Check if event already exists (by title and date)
+                    existing = db.client.table('events').select('id').eq('title', event['title']).eq('date', event['date']).execute()
+                    
+                    if existing.data:
+                        skipped_count += 1
+                        continue
+                    
+                    # Create institutional event
+                    event_data = {
+                        'title': event['title'],
+                        'description': event.get('ai_summary') or event.get('description', ''),
+                        'date': event['date'],
+                        'time': event.get('time', '00:00'),
+                        'location': event.get('location', ''),
+                        'type': event.get('ai_category') or event.get('type', 'other'),
+                        'is_institutional': True,  # Mark as institutional
+                        'user_id': None,  # Institutional events have no user_id
+                        'metadata': {
+                            'source': event.get('source', ''),
+                            'institution': event.get('institution', ''),
+                            'ai_importance': event.get('ai_importance', 'medium'),
+                            'ai_confidence': event.get('ai_confidence', 0.7),
+                            'ai_required_action': event.get('ai_required_action', False),
+                            'ai_tags': event.get('ai_tags', []),
+                            'scraped_at': event.get('scraped_at', datetime.now().isoformat())
+                        }
+                    }
+                    
+                    db.create_event(event_data)
+                    saved_count += 1
+                    
+                except Exception as e:
+                    print(f"[AUTO-SCRAPE] Error saving event: {e}")
+            
+            await scraper.close()
+            
+            print(f"[AUTO-SCRAPE] ✓ Saved {saved_count} new institutional events")
+            print(f"[AUTO-SCRAPE] ⊘ Skipped {skipped_count} duplicate events")
+            
+            # Reload calendar events to show new institutional events
+            await self.load_calendar_events()
+            
+        except Exception as e:
+            print(f"[AUTO-SCRAPE] Error during auto-scrape: {e}")
+            import traceback
+            traceback.print_exc()
+    
     async def load_calendar_events(self):
-        """Load events from Google Calendar and local reminders."""
+        """Load events from database (personal + institutional) and Google Calendar."""
         try:
             all_events = []
             
-            # Load from Google Calendar
+            # Load events from database (personal events + institutional events)
+            # This uses RLS policies to automatically filter by user_id + institutional
+            from educhat.services.supabase_client import get_service
+            db = get_service()
+            
+            # Get upcoming events (user's own + institutional) with proper filtering
+            db_events = db.get_upcoming_events(limit=100, user_id=self.user_id if self.is_authenticated else None)
+            
+            # Format database events for calendar display
+            for event in db_events:
+                date_value = event.get('date', '')
+                if 'T' in date_value:
+                    display_date = date_value.split('T')[0]
+                    start_time = date_value.split('T')[1][:5]
+                else:
+                    display_date = date_value
+                    start_time = "09:00"
+                
+                calendar_event = {
+                    "id": event.get('id', ''),
+                    "title": event.get('title', 'Geen titel'),
+                    "date": display_date,
+                    "datetime": date_value,
+                    "start_time": start_time,
+                    "description": event.get('description', ''),
+                    "institution": event.get('institution_id', ''),
+                    "type": event.get('type', 'event'),
+                    "is_institutional": event.get('is_institutional', False),
+                    "user_id": event.get('user_id', None),
+                    "google_calendar_id": event.get('google_calendar_id', ''),
+                }
+                all_events.append(calendar_event)
+            
+            # Load from Google Calendar (user's personal calendar)
             from educhat.services.google_calendar_service import get_calendar_service
             calendar_service = get_calendar_service(user_id=self.user_id)
             
             if calendar_service.authenticate():
                 google_events = calendar_service.get_upcoming_events(max_results=100)
-                all_events.extend(google_events)
+                
+                # Add Google events that aren't already in database
+                for g_event in google_events:
+                    # Check if this Google event is already synced to database
+                    google_id = g_event.get('id', '')
+                    already_synced = any(
+                        e.get('google_calendar_id') == google_id 
+                        for e in all_events
+                    )
+                    
+                    if not already_synced:
+                        all_events.append(g_event)
             
             # Load local reminders and add to calendar
             from educhat.services.database import get_client
-            db = get_client()
+            supabase = get_client()
             
-            reminders = db.table("reminders")\
+            reminders = supabase.table("reminders")\
                 .select("*")\
                 .eq("user_id", self.user_id)\
                 .execute()
@@ -1849,9 +2034,7 @@ class AuthState(rx.State):
                     # Extract date from timestamp for calendar display
                     date_value = reminder.get('date', '')
                     if 'T' in date_value:
-                        # Extract YYYY-MM-DD from YYYY-MM-DDTHH:MM:SS
                         display_date = date_value.split('T')[0]
-                        # Extract time HH:MM
                         start_time = date_value.split('T')[1][:5]
                     else:
                         display_date = date_value
@@ -1862,7 +2045,6 @@ class AuthState(rx.State):
                     if reminder.get('last_sync_at'):
                         try:
                             sync_time = str(reminder.get('last_sync_at', ''))
-                            # Extract time HH:MM from timestamp
                             if 'T' in sync_time:
                                 last_sync_display = sync_time.split('T')[1][:5]
                             elif ' ' in sync_time:
@@ -1874,13 +2056,13 @@ class AuthState(rx.State):
                     reminder_event = {
                         "id": f"reminder_{reminder['id']}",
                         "title": f"🔔 {reminder['title']}",
-                        "date": display_date,  # Use clean date for calendar matching
-                        "datetime": date_value,  # Keep full timestamp
-                        "start_time": start_time,  # Add start_time for display
+                        "date": display_date,
+                        "datetime": date_value,
+                        "start_time": start_time,
                         "description": reminder.get('description', ''),
                         "location": reminder.get('location', ''),
                         "type": "reminder",
-                        "sync_status": reminder.get('sync_status', 'pending'),
+                        "sync_status": reminder.get('sync_status', 'not_synced'),
                         "google_calendar_event_id": reminder.get('google_calendar_event_id', ''),
                         "last_sync_at": last_sync_display
                     }
@@ -2125,7 +2307,7 @@ class AuthState(rx.State):
             
             # Get local data
             db = get_service()
-            local_events = db.get_upcoming_events(limit=200)
+            local_events = db.get_upcoming_events(limit=200, user_id=self.user_id)
             
             # Compare and find new events
             comparison = sync_manager.compare_with_local(
@@ -2153,4 +2335,322 @@ class AuthState(rx.State):
             print(f"[AUTO-SYNC] Error during auto-sync: {e}")
             import traceback
             traceback.print_exc()
-
+    
+    # ==========================================================================
+    # EVENT CRUD OPERATIONS (Phase 5)
+    # ==========================================================================
+    
+    # Event creation state
+    show_create_event_modal: bool = False
+    new_event_title: str = ""
+    new_event_description: str = ""
+    new_event_date: str = ""
+    new_event_time: str = "09:00"
+    new_event_location: str = ""
+    is_creating_event: bool = False
+    
+    # Event editing state
+    show_edit_event_modal: bool = False
+    editing_event_id: str = ""
+    edit_event_title: str = ""
+    edit_event_description: str = ""
+    edit_event_date: str = ""
+    edit_event_time: str = "09:00"
+    edit_event_location: str = ""
+    is_updating_event: bool = False
+    
+    def open_create_event_modal(self):
+        """Open modal to create a new event."""
+        # Pre-fill with selected calendar day
+        if self.calendar_day:
+            self.new_event_date = f"{self.calendar_year}-{self.calendar_month:02d}-{self.calendar_day:02d}"
+        else:
+            self.new_event_date = datetime.now().strftime("%Y-%m-%d")
+        
+        self.new_event_time = "09:00"
+        self.new_event_title = ""
+        self.new_event_description = ""
+        self.new_event_location = ""
+        self.show_create_event_modal = True
+    
+    def close_create_event_modal(self):
+        """Close create event modal."""
+        self.show_create_event_modal = False
+        self.new_event_title = ""
+        self.new_event_description = ""
+        self.new_event_location = ""
+    
+    async def create_event(self):
+        """Create a new personal event in database and optionally sync to Google Calendar."""
+        if not self.is_authenticated or not self.user_id:
+            self.toast_message = "Log in om evenementen te maken"
+            self.toast_type = "warning"
+            self.show_toast = True
+            return
+        
+        if not self.new_event_title.strip():
+            self.toast_message = "Geef een titel op"
+            self.toast_type = "warning"
+            self.show_toast = True
+            return
+        
+        self.is_creating_event = True
+        yield
+        
+        try:
+            from educhat.services.supabase_client import get_service
+            db = get_service()
+            
+            # Combine date and time
+            datetime_str = f"{self.new_event_date}T{self.new_event_time}:00"
+            date_obj = datetime.fromisoformat(datetime_str)
+            
+            # Create event in database (will have user_id, is_institutional=false)
+            event_data = {
+                "title": self.new_event_title.strip(),
+                "description": self.new_event_description.strip(),
+                "date": date_obj.isoformat(),
+                "location": self.new_event_location.strip(),
+                "type": "personal",
+                "user_id": self.user_id,
+                "is_institutional": False,
+            }
+            
+            from educhat.services.database import get_client
+            supabase = get_client()
+            response = supabase.table("events").insert(event_data).execute()
+            
+            if response.data:
+                created_event = response.data[0]
+                
+                # Optionally sync to Google Calendar
+                try:
+                    from educhat.services.google_calendar_service import get_calendar_service
+                    calendar_service = get_calendar_service(user_id=self.user_id)
+                    
+                    if calendar_service.authenticate():
+                        google_event = calendar_service.create_event(
+                            title=self.new_event_title,
+                            start_time=date_obj,
+                            description=self.new_event_description,
+                            location=self.new_event_location,
+                        )
+                        
+                        if google_event:
+                            # Update event with Google Calendar ID
+                            supabase.table("events").update({
+                                "google_calendar_id": google_event.get("id"),
+                                "synced_from_google": True,
+                            }).eq("id", created_event["id"]).execute()
+                            
+                            print(f"[CREATE EVENT] Synced to Google Calendar: {google_event.get('id')}")
+                except Exception as sync_error:
+                    print(f"[CREATE EVENT] Warning: Could not sync to Google Calendar: {sync_error}")
+                
+                # Success!
+                self.toast_message = f"✓ Evenement '{self.new_event_title}' aangemaakt!"
+                self.toast_type = "success"
+                self.show_toast = True
+                
+                # Reload calendar events
+                await self.load_calendar_events()
+                
+                # Close modal
+                self.close_create_event_modal()
+            else:
+                self.toast_message = "Kon evenement niet aanmaken"
+                self.toast_type = "error"
+                self.show_toast = True
+                
+        except Exception as e:
+            print(f"Error creating event: {e}")
+            import traceback
+            traceback.print_exc()
+            self.toast_message = f"Fout bij aanmaken: {str(e)[:50]}"
+            self.toast_type = "error"
+            self.show_toast = True
+        finally:
+            self.is_creating_event = False
+            yield
+    
+    def open_edit_event_modal(self, event_id: str):
+        """Open modal to edit an existing event."""
+        # Find the event
+        event = None
+        for e in self.calendar_events:
+            if e.get("id") == event_id:
+                event = e
+                break
+        
+        if not event:
+            return
+        
+        # Check if user owns this event
+        if event.get("is_institutional", False) or event.get("user_id") != self.user_id:
+            self.toast_message = "Je kunt alleen je eigen evenementen bewerken"
+            self.toast_type = "warning"
+            self.show_toast = True
+            return
+        
+        self.editing_event_id = event_id
+        self.edit_event_title = event.get("title", "")
+        self.edit_event_description = event.get("description", "")
+        self.edit_event_location = event.get("location", "")
+        
+        # Extract date and time
+        datetime_str = event.get("datetime", event.get("date", ""))
+        if "T" in datetime_str:
+            self.edit_event_date = datetime_str.split("T")[0]
+            self.edit_event_time = datetime_str.split("T")[1][:5]
+        else:
+            self.edit_event_date = datetime_str
+            self.edit_event_time = "09:00"
+        
+        self.show_edit_event_modal = True
+    
+    def close_edit_event_modal(self):
+        """Close edit event modal."""
+        self.show_edit_event_modal = False
+        self.editing_event_id = ""
+    
+    async def update_event(self):
+        """Update an existing event."""
+        if not self.is_authenticated or not self.user_id:
+            return
+        
+        self.is_updating_event = True
+        yield
+        
+        try:
+            from educhat.services.database import get_client
+            supabase = get_client()
+            
+            # Combine date and time
+            datetime_str = f"{self.edit_event_date}T{self.edit_event_time}:00"
+            date_obj = datetime.fromisoformat(datetime_str)
+            
+            update_data = {
+                "title": self.edit_event_title.strip(),
+                "description": self.edit_event_description.strip(),
+                "date": date_obj.isoformat(),
+                "location": self.edit_event_location.strip(),
+            }
+            
+            # Update in database (RLS will ensure user owns it)
+            response = supabase.table("events")\
+                .update(update_data)\
+                .eq("id", self.editing_event_id)\
+                .eq("user_id", self.user_id)\
+                .execute()
+            
+            if response.data:
+                # Update in Google Calendar if it's synced
+                try:
+                    event = response.data[0]
+                    google_cal_id = event.get("google_calendar_id")
+                    
+                    if google_cal_id:
+                        from educhat.services.google_calendar_service import get_calendar_service
+                        calendar_service = get_calendar_service(user_id=self.user_id)
+                        
+                        if calendar_service.authenticate():
+                            calendar_service.update_event(
+                                event_id=google_cal_id,
+                                title=self.edit_event_title,
+                                start_time=date_obj,
+                                description=self.edit_event_description,
+                                location=self.edit_event_location,
+                            )
+                except Exception as sync_error:
+                    print(f"[UPDATE EVENT] Warning: Could not sync to Google Calendar: {sync_error}")
+                
+                # Success!
+                self.toast_message = f"✓ Evenement bijgewerkt!"
+                self.toast_type = "success"
+                self.show_toast = True
+                
+                # Reload calendar events
+                await self.load_calendar_events()
+                
+                # Close modal
+                self.close_edit_event_modal()
+            else:
+                self.toast_message = "Kon evenement niet bijwerken"
+                self.toast_type = "error"
+                self.show_toast = True
+                
+        except Exception as e:
+            print(f"Error updating event: {e}")
+            import traceback
+            traceback.print_exc()
+            self.toast_message = f"Fout bij bijwerken: {str(e)[:50]}"
+            self.toast_type = "error"
+            self.show_toast = True
+        finally:
+            self.is_updating_event = False
+            yield
+    
+    async def delete_event(self, event_id: str):
+        """Delete an event (only if user owns it)."""
+        if not self.is_authenticated or not self.user_id:
+            return
+        
+        try:
+            from educhat.services.database import get_client
+            supabase = get_client()
+            
+            # Get event details before deleting
+            event_response = supabase.table("events")\
+                .select("*")\
+                .eq("id", event_id)\
+                .eq("user_id", self.user_id)\
+                .execute()
+            
+            if not event_response.data:
+                self.toast_message = "Je kunt alleen je eigen evenementen verwijderen"
+                self.toast_type = "warning"
+                self.show_toast = True
+                return
+            
+            event = event_response.data[0]
+            google_cal_id = event.get("google_calendar_id")
+            
+            # Delete from database (RLS will ensure user owns it)
+            delete_response = supabase.table("events")\
+                .delete()\
+                .eq("id", event_id)\
+                .eq("user_id", self.user_id)\
+                .execute()
+            
+            if delete_response:
+                # Delete from Google Calendar if synced
+                if google_cal_id:
+                    try:
+                        from educhat.services.google_calendar_service import get_calendar_service
+                        calendar_service = get_calendar_service(user_id=self.user_id)
+                        
+                        if calendar_service.authenticate():
+                            calendar_service.delete_event(google_cal_id)
+                    except Exception as sync_error:
+                        print(f"[DELETE EVENT] Warning: Could not delete from Google Calendar: {sync_error}")
+                
+                # Success!
+                self.toast_message = "✓ Evenement verwijderd"
+                self.toast_type = "success"
+                self.show_toast = True
+                
+                # Reload calendar events
+                await self.load_calendar_events()
+            else:
+                self.toast_message = "Kon evenement niet verwijderen"
+                self.toast_type = "error"
+                self.show_toast = True
+                
+        except Exception as e:
+            print(f"Error deleting event: {e}")
+            import traceback
+            traceback.print_exc()
+            self.toast_message = f"Fout bij verwijderen: {str(e)[:50]}"
+            self.toast_type = "error"
+            self.show_toast = True
+            yield
