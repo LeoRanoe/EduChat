@@ -404,8 +404,8 @@ def event_card_unified(event: dict) -> rx.Component:
         ),
         padding="0.75rem",
         border_radius="8px",
-        border=f"1px solid {T.border_subtle}",
-        background=T.bg_surface,
+        border=f"1px solid {T.border_light}",
+        background=T.bg_card,
         cursor="pointer",
         _hover={
             "background": T.bg_hover,
