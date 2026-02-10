@@ -27,34 +27,36 @@ class ResetPasswordState(AuthState):
     new_password_error: str = ""
     confirm_new_password_error: str = ""
     
-    # Track if JavaScript has run
-    _js_initialized: bool = False
-    
     def set_token_from_hash(self, data: dict):
         """Set token or error from URL hash (extracted by JavaScript)."""
-        # Mark that JavaScript has initialized
-        self._js_initialized = True
-        
         # Extract the actual data string from the dict
         data_str = data.get("data", "") if isinstance(data, dict) else str(data)
         
-        print(f"[RESET PASSWORD] Received data from JS: {data_str[:50] if data_str else 'Empty'}...")
-        print(f"[RESET PASSWORD] Data type: {type(data)}, dict keys: {data.keys() if isinstance(data, dict) else 'N/A'}")
+        print(f"\n{'='*60}")
+        print(f"[RESET PASSWORD - TOKEN EXTRACTION] Received from JavaScript:")
+        print(f"  - Raw data type: {type(data)}")
+        print(f"  - Data string: {data_str[:100] if data_str else 'Empty/None'}...")
+        print(f"  - Data length: {len(data_str) if data_str else 0}")
+        print(f"{'='*60}\n")
         
-        # If no data received or empty string, don't show error yet
+        # If no data received or empty string, ignore it
         if not data_str or data_str == "None" or data_str.strip() == "":
-            print("[RESET PASSWORD] No data in hash - waiting for token extraction...")
-            # Clear any error that might have been set
-            self.reset_error = ""
+            print("[RESET PASSWORD] ⚠️  No data in hash - page opened directly or waiting for token")
             return
         
         # Parse the data (format: "token:xxx" or "error:xxx")
         if data_str.startswith("token:"):
             token = data_str[6:]  # Remove "token:" prefix
+            print(f"[RESET PASSWORD] 🔍 Extracted token from data:")
+            print(f"  - Token length: {len(token) if token else 0}")
+            print(f"  - Token prefix: {token[:30] if token else 'N/A'}...")
+            
             if token and len(token) > 20:  # Validate token length
                 self.reset_token = token
                 self.reset_error = ""
-                print(f"[RESET PASSWORD] ✅ Token set successfully, length: {len(token)}")
+                print(f"[RESET PASSWORD] ✅ Token set successfully!")
+                print(f"  - State token length: {len(self.reset_token)}")
+                print(f"  - State token prefix: {self.reset_token[:30]}...")
             else:
                 print(f"[RESET PASSWORD] ❌ Invalid token length: {len(token) if token else 0}")
                 self.reset_error = "Ongeldige reset link. Vraag een nieuwe aan."
@@ -62,15 +64,10 @@ class ResetPasswordState(AuthState):
             error_info = data_str[6:]  # Remove "error:" prefix
             print(f"[RESET PASSWORD] ❌ Error from Supabase: {error_info}")
             
-            # Don't show error if it's just "no_token_found" on initial page load
-            if "no_token_found" in error_info.lower() or "no_token" in error_info.lower():
-                print("[RESET PASSWORD] No token in URL - user may have accessed page directly")
-                # Only show error if JavaScript has actually run and found no token
-                if self._js_initialized:
-                    self.reset_error = "Geen reset token gevonden. Klik op de link in je e-mail."
-            elif "otp_expired" in error_info or "expired" in error_info.lower():
+            # Parse different error types
+            if "otp_expired" in error_info or "expired" in error_info.lower():
                 self.reset_error = "De reset link is verlopen. Vraag een nieuwe reset link aan."
-            elif "invalid" in error_info.lower():
+            elif "invalid" in error_info.lower() or "invalid_token_type" in error_info:
                 self.reset_error = "De reset link is ongeldig. Vraag een nieuwe reset link aan."
             else:
                 self.reset_error = "Er is een probleem met de reset link. Vraag een nieuwe aan."
@@ -114,31 +111,55 @@ class ResetPasswordState(AuthState):
         """Validate password reset form."""
         is_valid = True
         
+        print(f"\n{'='*60}")
+        print(f"[RESET PASSWORD - VALIDATION] Starting form validation:")
+        print(f"  - New password length: {len(self.new_password) if self.new_password else 0}")
+        print(f"  - Confirm password length: {len(self.confirm_new_password) if self.confirm_new_password else 0}")
+        print(f"  - Reset token length: {len(self.reset_token) if self.reset_token else 0}")
+        print(f"  - Reset token value: {self.reset_token[:30] if self.reset_token else 'EMPTY/NONE'}...")
+        print(f"{'='*60}\n")
+        
         # Validate new password
         if not self.new_password or not self.new_password.strip():
             self.new_password_error = "Wachtwoord is verplicht"
             is_valid = False
+            print("[VALIDATION] ❌ New password is empty")
         elif len(self.new_password) < 8:
             self.new_password_error = "Wachtwoord moet minimaal 8 tekens bevatten"
             is_valid = False
+            print("[VALIDATION] ❌ New password too short")
         
         # Validate confirm password
         if not self.confirm_new_password:
             self.confirm_new_password_error = "Bevestig je wachtwoord"
             is_valid = False
+            print("[VALIDATION] ❌ Confirm password is empty")
         elif self.new_password != self.confirm_new_password:
             self.confirm_new_password_error = "Wachtwoorden komen niet overeen"
             is_valid = False
+            print("[VALIDATION] ❌ Passwords don't match")
         
         # Check token
         if not self.reset_token:
             self.reset_error = "Geen reset token gevonden"
             is_valid = False
+            print("[VALIDATION] ❌ NO RESET TOKEN FOUND - This is the main issue!")
+            print(f"  - Token value: '{self.reset_token}'")
+            print(f"  - Token type: {type(self.reset_token)}")
+        else:
+            print(f"[VALIDATION] ✅ Reset token present: {len(self.reset_token)} chars")
         
+        print(f"\n[VALIDATION] Final result: {'✅ VALID' if is_valid else '❌ INVALID'}\n")
         return is_valid
     
     async def reset_password_with_token(self):
         """Reset password using the token from email."""
+        print(f"\n{'='*60}")
+        print(f"[RESET PASSWORD - SUBMIT] Form submitted!")
+        print(f"  - Current token: {self.reset_token[:30] if self.reset_token else 'NONE'}...")
+        print(f"  - Token length: {len(self.reset_token) if self.reset_token else 0}")
+        print(f"{'='*60}\n")
+        
         # Clear errors
         self.new_password_error = ""
         self.confirm_new_password_error = ""
@@ -146,6 +167,7 @@ class ResetPasswordState(AuthState):
         
         # Validate form
         if not self._validate_reset_form():
+            print("[RESET PASSWORD] ❌ Validation failed, aborting submission")
             return
         
         self.reset_loading = True
@@ -155,17 +177,22 @@ class ResetPasswordState(AuthState):
             from educhat.services.auth_service import get_auth_service
             auth_service = get_auth_service()
             
+            print(f"[RESET PASSWORD] 🚀 Calling auth service with token: {self.reset_token[:30]}...")
+            
             # Update password with token
             result = await auth_service.update_password_with_token(
                 self.reset_token,
                 self.new_password
             )
             
+            print(f"[RESET PASSWORD] 📥 Auth service result: {result}")
+            
             if result.get("success"):
                 self.reset_success = True
                 self.toast_message = "Wachtwoord succesvol gewijzigd! Je wordt doorgestuurd..."
                 self.toast_type = "success"
                 self.show_toast = True
+                print("[RESET PASSWORD] ✅ Password reset successful!")
                 
                 # Wait a moment then redirect to login
                 yield
@@ -173,10 +200,14 @@ class ResetPasswordState(AuthState):
                 await asyncio.sleep(2)
                 yield rx.redirect("/")
             else:
-                self.reset_error = result.get("error", "Kon wachtwoord niet wijzigen. Probeer opnieuw.")
+                error_msg = result.get("error", "Kon wachtwoord niet wijzigen. Probeer opnieuw.")
+                self.reset_error = error_msg
+                print(f"[RESET PASSWORD] ❌ Password reset failed: {error_msg}")
         
         except Exception as e:
-            print(f"Password reset error: {e}")
+            print(f"[RESET PASSWORD] 💥 Exception during password reset: {e}")
+            import traceback
+            traceback.print_exc()
             self.reset_error = "Er is een fout opgetreden. Probeer het opnieuw."
         
         finally:
@@ -232,8 +263,54 @@ def reset_password_page() -> rx.Component:
                     font_size="15px",
                     color=T.text_secondary,
                     text_align="center",
-                    margin_bottom="32px",
+                    margin_bottom="16px",
                     line_height="1.6",
+                ),
+                
+                # Debug token status indicator (helpful for troubleshooting)
+                rx.box(
+                    rx.box(
+                        rx.icon(
+                            rx.cond(
+                                ResetPasswordState.reset_token != "",
+                                "circle-check",
+                                "circle-x"
+                            ),
+                            size=16,
+                            color=rx.cond(
+                                ResetPasswordState.reset_token != "",
+                                "#10A37F",
+                                "#DC2626"
+                            ),
+                        ),
+                        rx.text(
+                            rx.cond(
+                                ResetPasswordState.reset_token != "",
+                                f"Reset token geladen ({rx.text(ResetPasswordState.reset_token.length())} tekens)",
+                                "Wachten op reset token..."
+                            ),
+                            font_size="13px",
+                            color=T.text_tertiary,
+                            font_weight="500",
+                        ),
+                        display="flex",
+                        align_items="center",
+                        gap="8px",
+                    ),
+                    padding="12px 16px",
+                    background=rx.cond(
+                        ResetPasswordState.reset_token != "",
+                        "rgba(16, 163, 127, 0.08)",
+                        "rgba(220, 38, 38, 0.08)"
+                    ),
+                    border=rx.cond(
+                        ResetPasswordState.reset_token != "",
+                        "1px solid rgba(16, 163, 127, 0.2)",
+                        "1px solid rgba(220, 38, 38, 0.2)"
+                    ),
+                    border_radius="10px",
+                    margin_bottom="24px",
+                    text_align="center",
                 ),
                 
                 # Success message with animation
@@ -524,48 +601,106 @@ def reset_password_page() -> rx.Component:
         ),
         rx.script(
             """
-            window.addEventListener('DOMContentLoaded', function() {
-                console.log('[RESET PASSWORD JS] DOM loaded, extracting token...');
-                const hash = window.location.hash;
-                console.log('[RESET PASSWORD JS] Hash:', hash);
+            (function() {
+                var separator = '============================================================';
+                console.log(separator);
+                console.log('[RESET PASSWORD JS] Script loaded and executing');
+                console.log(separator);
                 
-                // If no hash at all, don't send anything (user may have accessed page directly)
-                if (!hash || hash.length <= 1) {
-                    console.log('[RESET PASSWORD JS] No hash in URL - waiting for token from email link');
-                    return;
-                }
+                var attemptCount = 0;
+                var maxAttempts = 5;
                 
-                const params = new URLSearchParams(hash.slice(1));
-                let data = '';
-                const error = params.get('error');
-                const errorCode = params.get('error_code');
-                const errorDesc = params.get('error_description');
-                
-                if (error) {
-                    // There's an explicit error from Supabase
-                    data = 'error:' + (errorCode || error) + ':' + (errorDesc || '');
-                } else {
-                    const accessToken = params.get('access_token');
-                    if (accessToken) {
-                        // Token found!
+                function extractAndSendToken() {
+                    attemptCount++;
+                    console.log('[RESET PASSWORD JS] Extraction attempt ' + attemptCount + '/' + maxAttempts);
+                    
+                    var hash = window.location.hash;
+                    console.log('[RESET PASSWORD JS] Current URL: ' + window.location.href);
+                    console.log('[RESET PASSWORD JS] Hash value: ' + (hash || '(empty)'));
+                    console.log('[RESET PASSWORD JS] Hash length: ' + (hash ? hash.length : 0));
+                    
+                    if (!hash || hash.length <= 1) {
+                        console.log('[RESET PASSWORD JS] WARNING - No hash in URL - page accessed directly');
+                        if (attemptCount < maxAttempts) {
+                            console.log('[RESET PASSWORD JS] Retrying in 300ms...');
+                            setTimeout(extractAndSendToken, 300);
+                        }
+                        return;
+                    }
+                    
+                    console.log('[RESET PASSWORD JS] Parsing hash parameters...');
+                    var params = new URLSearchParams(hash.slice(1));
+                    var error = params.get('error');
+                    var errorCode = params.get('error_code');
+                    var errorDesc = params.get('error_description');
+                    var accessToken = params.get('access_token');
+                    var type = params.get('type');
+                    
+                    console.log('[RESET PASSWORD JS] Extracted parameters:');
+                    console.log('  - error: ' + (error || '(none)'));
+                    console.log('  - error_code: ' + (errorCode || '(none)'));
+                    console.log('  - access_token: ' + (accessToken ? accessToken.substring(0, 30) + '...' : '(none)'));
+                    console.log('  - type: ' + (type || '(none)'));
+                    
+                    var data = null;
+                    
+                    if (error) {
+                        console.log('[RESET PASSWORD JS] ERROR - Supabase error found: ' + error);
+                        data = 'error:' + (errorCode || error) + ':' + (errorDesc || '');
+                    } else if (accessToken && type === 'recovery') {
+                        console.log('[RESET PASSWORD JS] SUCCESS - Valid reset token found!');
+                        console.log('  - Token length: ' + accessToken.length);
                         data = 'token:' + accessToken;
+                    } else if (accessToken) {
+                        console.log('[RESET PASSWORD JS] WARNING - Token found but wrong type: ' + type);
+                        data = 'error:invalid_token_type';
                     } else {
-                        // Hash exists but no token - this is an error
-                        data = 'error:no_token_found';
+                        console.log('[RESET PASSWORD JS] WARNING - Hash exists but no reset token');
+                        if (attemptCount < maxAttempts) {
+                            console.log('[RESET PASSWORD JS] Retrying in 300ms...');
+                            setTimeout(extractAndSendToken, 300);
+                        }
+                        return;
+                    }
+                    
+                    if (data) {
+                        console.log('[RESET PASSWORD JS] Sending data to backend: ' + data.substring(0, 50) + '...');
+                        console.log('[RESET PASSWORD JS] Checking for _backend_event: ' + typeof window._backend_event);
+                        
+                        function sendData() {
+                            if (window._backend_event) {
+                                console.log('[RESET PASSWORD JS] Calling _backend_event...');
+                                try {
+                                    window._backend_event('reset_password_state.set_token_from_hash', {data: data});
+                                    console.log('[RESET PASSWORD JS] SUCCESS - Data sent successfully!');
+                                } catch (e) {
+                                    console.error('[RESET PASSWORD JS] ERROR calling _backend_event: ' + e);
+                                }
+                            } else {
+                                console.log('[RESET PASSWORD JS] WARNING - _backend_event not available yet, retrying in 200ms...');
+                                setTimeout(sendData, 200);
+                            }
+                        }
+                        
+                        sendData();
                     }
                 }
                 
-                // Send to backend
-                if (window._backend_event) {
-                    window._backend_event('reset_password_state.set_token_from_hash', {data: data});
+                if (document.readyState === 'loading') {
+                    console.log('[RESET PASSWORD JS] Document still loading, waiting for DOMContentLoaded...');
+                    document.addEventListener('DOMContentLoaded', extractAndSendToken);
                 } else {
-                    setTimeout(function() {
-                        if (window._backend_event) {
-                            window._backend_event('reset_password_state.set_token_from_hash', {data: data});
-                        }
-                    }, 500);
+                    console.log('[RESET PASSWORD JS] Document already loaded, extracting immediately');
+                    extractAndSendToken();
                 }
-            });
+                
+                window.addEventListener('load', function() {
+                    console.log('[RESET PASSWORD JS] Window load event fired');
+                    if (attemptCount === 0) {
+                        extractAndSendToken();
+                    }
+                });
+            })();
             """
         ),
     )

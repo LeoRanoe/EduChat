@@ -482,29 +482,50 @@ class AuthService:
         Returns:
             Dict with success status
         """
+        print(f"\n{'='*60}")
+        print(f"[AUTH SERVICE - UPDATE PASSWORD] Starting password update:")
+        print(f"  - Token received: {access_token[:30] if access_token else 'NONE'}...")
+        print(f"  - Token length: {len(access_token) if access_token else 0}")
+        print(f"  - Password length: {len(new_password) if new_password else 0}")
+        print(f"{'='*60}\n")
+        
         try:
             # Validate password
             if not new_password or len(new_password) < 8:
+                print("[AUTH SERVICE] ❌ Password validation failed: too short")
                 return {"success": False, "error": "Wachtwoord moet minimaal 8 tekens bevatten"}
             
+            print("[AUTH SERVICE] 🚀 Calling Supabase auth.update_user()...")
+            
             # Update user password with the access token
-            await asyncio.to_thread(
+            result = await asyncio.to_thread(
                 lambda: self.client.auth.update_user({
                     "password": new_password
                 }, access_token)
             )
+            
+            print(f"[AUTH SERVICE] 📥 Supabase response received: {result}")
+            print("[AUTH SERVICE] ✅ Password updated successfully!")
             
             return {
                 "success": True,
                 "message": "Wachtwoord succesvol gewijzigd"
             }
         except Exception as e:
-            print(f"Update password error: {e}")
+            print(f"[AUTH SERVICE] 💥 Exception during password update:")
+            print(f"  - Exception type: {type(e).__name__}")
+            print(f"  - Exception message: {e}")
+            
+            import traceback
+            traceback.print_exc()
+            
             error_msg = str(e).lower()
             
             if "invalid" in error_msg or "expired" in error_msg:
+                print("[AUTH SERVICE] ❌ Token invalid or expired")
                 return {"success": False, "error": "Reset link is verlopen of ongeldig. Vraag een nieuwe aan."}
             
+            print("[AUTH SERVICE] ❌ Unknown error")
             return {"success": False, "error": "Kon wachtwoord niet wijzigen. Probeer opnieuw."}
     
     async def resend_confirmation(self, email: str) -> Dict:
