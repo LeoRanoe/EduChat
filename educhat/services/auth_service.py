@@ -133,6 +133,12 @@ class AuthService:
             firstname = firstname.strip() if firstname else ""
             lastname = lastname.strip() if lastname else ""
             
+            # Get the site URL from environment
+            site_url = os.getenv("SITE_URL", "http://localhost:3000")
+            
+            print(f"[AUTH SERVICE] 📧 Starting signup for: {email}")
+            print(f"[AUTH SERVICE] Confirmation redirect URL: {site_url}")
+            
             # Sign up with Supabase Auth
             response = await asyncio.to_thread(
                 lambda: self.client.auth.sign_up({
@@ -144,14 +150,24 @@ class AuthService:
                             "display_name": name,
                             "firstname": firstname,
                             "lastname": lastname
-                        }
+                        },
+                        "email_redirect_to": site_url
                     }
                 })
             )
             
+            print(f"[AUTH SERVICE] ✅ Signup response received for: {email}")
+            print(f"[AUTH SERVICE] User created: {response.user is not None}")
+            print(f"[AUTH SERVICE] Email confirmed: {response.user.email_confirmed_at if response.user else 'N/A'}")
+            print(f"[AUTH SERVICE] Session created: {response.session is not None}")
+            
             if response.user:
                 # Check if email confirmation is required
                 if response.user.email_confirmed_at is None and response.session is None:
+                    print(f"[AUTH SERVICE] 📬 Email confirmation required for: {email}")
+                    print(f"[AUTH SERVICE] ✅ CORRECT: Supabase 'Confirm email' is ENABLED")
+                    print(f"[AUTH SERVICE] ⏳ User should receive confirmation email within 30 seconds")
+                    print(f"[AUTH SERVICE] 📧 Check inbox (and SPAM folder!) for: {email}")
                     return {
                         "success": True,
                         "requires_confirmation": True,
@@ -162,6 +178,12 @@ class AuthService:
                             "name": name
                         }
                     }
+                
+                # If we reach here, email was auto-confirmed
+                print(f"[AUTH SERVICE] 🔓 Email auto-confirmed (requires_confirmation = False)")
+                print(f"[AUTH SERVICE] ⚠️ WARNING: This means 'Confirm email' is DISABLED in Supabase!")
+                print(f"[AUTH SERVICE] 💡 TO FIX: Enable 'Confirm email' in Supabase Dashboard:")
+                print(f"[AUTH SERVICE]    → Authentication → Providers → Email → Toggle 'Confirm email' ON")
                 
                 return {
                     "success": True,
@@ -199,6 +221,34 @@ class AuthService:
                 print(f"Signup error: {e}")
                 return {"success": False, "error": "Er is een fout opgetreden. Probeer het opnieuw."}
     
+    async def check_email_exists(self, email: str) -> bool:
+        """Check if an email is registered in the database.
+        
+        Args:
+            email: Email address to check
+            
+        Returns:
+            True if email exists, False otherwise
+        """
+        try:
+            email = email.strip().lower()
+            
+            print(f"[AUTH SERVICE] Checking if email exists: {email}")
+            
+            # Query the profiles table to check if user exists
+            result = await asyncio.to_thread(
+                lambda: self.client.table('profiles').select('id').eq('email', email).limit(1).execute()
+            )
+            
+            exists = len(result.data) > 0
+            print(f"[AUTH SERVICE] Email exists in database: {exists}")
+            return exists
+            
+        except Exception as e:
+            print(f"[AUTH SERVICE] Error checking email existence: {e}")
+            # If check fails, return True to proceed with normal login (fail gracefully)
+            return True
+    
     async def login(self, email: str, password: str) -> Dict:
         """
         Log in an existing user.
@@ -220,6 +270,15 @@ class AuthService:
             
             # Clean email
             email = email.strip().lower()
+            
+            # Check if email exists in database first
+            email_exists = await self.check_email_exists(email)
+            if not email_exists:
+                print(f"[AUTH SERVICE] Email not found in database: {email}")
+                return {
+                    "success": False,
+                    "error": "Dit e-mailadres is niet geregistreerd"
+                }
             
             # Sign in with Supabase Auth
             response = await asyncio.to_thread(
@@ -386,8 +445,19 @@ class AuthService:
             
             email = email.strip().lower()
             
+            # Get the site URL from environment or use default
+            import os
+            site_url = os.getenv("SITE_URL", "http://localhost:3000")
+            redirect_url = f"{site_url}/auth/reset-password"
+            
+            print(f"[AUTH SERVICE] Sending password reset email to {email}")
+            print(f"[AUTH SERVICE] Redirect URL: {redirect_url}")
+            
             await asyncio.to_thread(
-                lambda: self.client.auth.reset_password_email(email)
+                lambda: self.client.auth.reset_password_email(
+                    email,
+                    options={"redirect_to": redirect_url}
+                )
             )
             
             return {
@@ -455,13 +525,24 @@ class AuthService:
             
             email = email.strip().lower()
             
-            # Resend confirmation email using Supabase
-            await asyncio.to_thread(
+            # Get the site URL from environment
+            site_url = os.getenv("SITE_URL", "http://localhost:3000")
+            
+            print(f"[AUTH SERVICE] 📧 Resending confirmation email to: {email}")
+            print(f"[AUTH SERVICE] Redirect URL: {site_url}")
+            
+            # Resend confirmation email using Supabase with redirect URL
+            result = await asyncio.to_thread(
                 lambda: self.client.auth.resend(
                     type="signup",
-                    email=email
+                    email=email,
+                    options={"email_redirect_to": site_url}
                 )
             )
+            
+            print(f"[AUTH SERVICE] ✅ Resend request completed")
+            print(f"[AUTH SERVICE] ⚠️ NOTE: If no email arrives, check Supabase settings!")
+            print(f"[AUTH SERVICE] → Authentication → Providers → Email → Enable 'Confirm email'")
             
             return {
                 "success": True,
@@ -554,6 +635,26 @@ class AuthService:
                 user_metadata = response.user.user_metadata or {}
                 full_name = user_metadata.get('full_name') or user_metadata.get('name') or ''
                 
+                # Extract profile picture with multiple fallbacks
+                profile_picture = None
+                if user_metadata.get('picture'):
+                    profile_picture = user_metadata.get('picture')
+                elif user_metadata.get('avatar_url'):
+                    profile_picture = user_metadata.get('avatar_url')
+                elif user_metadata.get('avatar'):
+                    profile_picture = user_metadata.get('avatar')
+                
+                # Also check identities for profile picture
+                if not profile_picture and response.user.identities:
+                    for identity in response.user.identities:
+                        if identity.provider == 'google':
+                            identity_data = identity.identity_data or {}
+                            if identity_data.get('picture'):
+                                profile_picture = identity_data.get('picture')
+                                break
+                
+                print(f"[AUTH SERVICE] Profile picture extracted: {profile_picture[:50] if profile_picture else 'None'}")
+                
                 # Try to split name into first and last
                 name_parts = full_name.split(' ', 1)
                 firstname = name_parts[0] if name_parts else ''
@@ -625,7 +726,8 @@ class AuthService:
                         "refresh_token": response.session.refresh_token if response.session else None,
                         "expires_at": response.session.expires_at if response.session else None
                     },
-                    "google_provider_token": provider_token
+                    "google_provider_token": provider_token,
+                    "profile_picture": profile_picture
                 }
             else:
                 return {

@@ -4,7 +4,7 @@ import reflex as rx
 from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
 from educhat.components.chat import sidebar, chat_container, calendar_sync_bar
-from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, settings_modal, calendar_view, google_events_import_modal
+from educhat.components.shared import mobile_header, sidebar_overlay, reminders_modal, events_panel, calendar_view, google_events_import_modal
 from educhat.components.shared.calendar_view import create_event_modal, edit_event_modal
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
@@ -41,9 +41,6 @@ def authenticated_chat() -> rx.Component:
     return rx.box(
         # Auth modal (for login/signup)
         auth_modal(),
-        
-        # Settings modal
-        settings_modal(),
         
         # Reminders modal
         reminders_modal(),
@@ -90,6 +87,7 @@ def authenticated_chat() -> rx.Component:
             on_new_conversation=AppState.create_new_conversation,
             user_name=rx.cond(AppState.user_name, AppState.user_name, "User"),
             user_email=rx.cond(AppState.user_email, AppState.user_email, ""),
+            user_profile_picture=AppState.user_profile_picture,
             is_open=AppState.sidebar_open,
             is_collapsed=AppState.sidebar_collapsed,
             on_toggle_collapse=AppState.toggle_sidebar_collapse,

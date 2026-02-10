@@ -217,10 +217,20 @@ def google_events_import_modal() -> rx.Component:
                 width=["90%", "500px", "600px"],
                 max_width="90vw",
                 max_height="85vh",
-                background=T.modal_bg,
+                background=rx.color_mode_cond(
+                    light="#FFFFFF",
+                    dark="#111217"
+                ),
+                border=rx.color_mode_cond(
+                    light="1px solid #E5E7EB",
+                    dark="1px solid #2d3039"
+                ),
                 border_radius=RADIUS["xl"],
                 padding="1.5rem",
-                box_shadow=T.shadow_xl,
+                box_shadow=rx.color_mode_cond(
+                    light="0 20px 60px rgba(0, 0, 0, 0.15)",
+                    dark="0 20px 60px rgba(0, 0, 0, 0.5)"
+                ),
                 z_index="1201",
                 overflow_y="auto",
             ),

@@ -40,7 +40,6 @@ from educhat.components.shared.follow_up_suggestions import (
 )
 from educhat.components.shared.reminders_modal import reminders_modal
 from educhat.components.shared.events_panel import events_panel
-from educhat.components.shared.settings_modal import settings_modal
 from educhat.components.shared.calendar_view import calendar_view
 from educhat.components.shared.sync_status import (
     sync_status_badge,
@@ -83,7 +82,6 @@ __all__ = [
     "generate_contextual_suggestions",
     "reminders_modal",
     "events_panel",
-    "settings_modal",
     "calendar_view",
     "sync_status_badge",
     "sync_retry_button",

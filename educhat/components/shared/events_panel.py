@@ -102,7 +102,7 @@ def events_panel() -> rx.Component:
                 z_index="1000",
                 on_click=AuthState.toggle_events_panel,
             ),
-            # Panel content
+            # Panel content with explicit background
             rx.box(
                 rx.box(
                     rx.vstack(

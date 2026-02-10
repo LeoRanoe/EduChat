@@ -74,6 +74,11 @@ class AuthState(rx.State):
     resending_confirmation: bool = False
     show_email_confirmation_modal: bool = False
     
+    # === Rate Limiting ===
+    rate_limit_hit: bool = False
+    rate_limit_message: str = ""
+    rate_limit_retry_after: int = 60  # seconds
+    
     # === Toast Notifications ===
     show_toast: bool = False
     toast_message: str = ""
@@ -81,7 +86,7 @@ class AuthState(rx.State):
     
     # === User Settings ===
     dark_mode: bool = False
-    show_settings_modal: bool = False
+    user_profile_picture: Optional[str] = None  # Profile picture URL (Google OAuth)
     
     # === Reminders ===
     reminders: List[Dict[str, str]] = []
@@ -150,6 +155,15 @@ class AuthState(rx.State):
     def is_english(self) -> bool:
         """Check if current language is English."""
         return self.language == "en"
+    
+    @rx.var
+    def has_google_calendar(self) -> bool:
+        """Check if user has Google Calendar connected."""
+        if not self.user_id:
+            return False
+        from pathlib import Path
+        token_path = Path("credentials") / f"token_{self.user_id}.pickle"
+        return token_path.exists()
     
     @rx.var
     def current_calendar_month_year(self) -> str:
@@ -358,13 +372,33 @@ class AuthState(rx.State):
     # ==========================================================================
     
     def _validate_email(self, email: str) -> tuple[bool, str]:
-        """Validate email format."""
+        """Validate email format with common typo detection."""
         if not email or not email.strip():
             return False, "E-mailadres is verplicht"
         
+        email = email.strip().lower()
+        
+        # First check basic format
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(pattern, email.strip()):
+        if not re.match(pattern, email):
             return False, "Ongeldig e-mailadres"
+        
+        # Extract domain from email (everything after @)
+        domain = email.split('@')[1] if '@' in email else ''
+        
+        # Check for common Gmail typos ONLY
+        gmail_typos = {
+            'gmial.com': 'gmail.com',
+            'gmai.com': 'gmail.com',
+            'gmil.com': 'gmail.com',
+            'gmaill.com': 'gmail.com',
+            'gnail.com': 'gmail.com',
+            'gimail.com': 'gmail.com',
+        }
+        
+        # Only suggest correction if domain is a known typo
+        if domain in gmail_typos:
+            return False, f"Bedoel je misschien @{gmail_typos[domain]}?"
         
         return True, ""
     
@@ -613,8 +647,13 @@ class AuthState(rx.State):
             )
             
             if result["success"]:
+                # DEBUG: Log which path we're taking
+                print(f"[AUTH STATE] ✅ Signup successful!")
+                print(f"[AUTH STATE] Requires confirmation: {result.get('requires_confirmation')}")
+                
                 # Check if email confirmation is required
                 if result.get("requires_confirmation"):
+                    print("[AUTH STATE] 📧 Taking EMAIL CONFIRMATION path")
                     # Show email confirmation prompt
                     self.email_needs_confirmation = True
                     self.pending_confirmation_email = self.signup_email.strip()
@@ -624,7 +663,19 @@ class AuthState(rx.State):
                     # Pre-fill login email for convenience
                     self.login_email = self.signup_email.strip()
                     self._clear_form()
+                    
+                    print(f"[AUTH STATE] ✅ Success message set: {self.auth_success}")
+                    print(f"[AUTH STATE] ✅ Switched to login mode, pre-filled email: {self.login_email}")
+                    # Yield to update UI before showing message
+                    yield
                 else:
+                    print("[AUTH STATE] 🔓 Taking AUTO-LOGIN path (email confirmation NOT required)")
+                    print("[AUTH STATE] ⚠️ WARNING: This means 'Confirm email' is DISABLED in Supabase!")
+                    
+                    # Show success message BEFORE redirecting so user sees feedback
+                    self.auth_success = f"Account aangemaakt! Welkom, {result['user']['name']}!"
+                    yield  # Update UI to show message
+                    
                     # SECURITY: Reset chat state FIRST to prevent conversation leakage
                     if hasattr(self, '_reset_chat_state_for_user_switch'):
                         self._reset_chat_state_for_user_switch()
@@ -647,19 +698,35 @@ class AuthState(rx.State):
                     self.show_auth_modal = False
                     self._clear_form()
                     
-                    # Show success toast
+                    # Show success toast as backup
                     self.toast_message = f"Account aangemaakt! Welkom, {self.user_name}!"
                     self.toast_type = "success"
                     self.show_toast = True
                     
+                    print(f"[AUTH STATE] ✅ User authenticated: {self.user_email}")
+                    print(f"[AUTH STATE] ➡️ Redirecting to /onboarding")
+                    
                     # Redirect to onboarding for new users
                     yield rx.redirect("/onboarding")
             else:
-                self.auth_error = result.get("error", "Registratie mislukt")
+                error_msg = result.get("error", "Registratie mislukt")
+                self.auth_error = error_msg
+                
+                # Check if it's a rate limit error
+                if "te veel pogingen" in error_msg.lower() or "too many" in error_msg.lower() or "rate limit" in error_msg.lower():
+                    self.rate_limit_hit = True
+                    self.rate_limit_message = f"Te veel registratiepogingen. Wacht {self.rate_limit_retry_after} seconden voordat je het opnieuw probeert."
+                    self.auth_error = self.rate_limit_message
         
         except Exception as e:
             print(f"Signup error: {e}")
-            self.auth_error = "Er is een fout opgetreden. Probeer het opnieuw."
+            error_msg = str(e).lower()
+            if "rate limit" in error_msg or "too many" in error_msg:
+                self.rate_limit_hit = True
+                self.rate_limit_message = f"Te veel registratiepogingen. Wacht {self.rate_limit_retry_after} seconden voordat je het opnieuw probeert."
+                self.auth_error = self.rate_limit_message
+            else:
+                self.auth_error = "Er is een fout opgetreden. Probeer het opnieuw."
         
         finally:
             self.auth_loading = False
@@ -730,6 +797,7 @@ class AuthState(rx.State):
                 self.user_id = user["id"]
                 self.user_email = user["email"]
                 self.user_name = user["name"]
+                self.user_profile_picture = result.get("profile_picture")  # Store Google profile picture
                 self.access_token = session.get("access_token")
                 self.refresh_token = session.get("refresh_token")
                 self.token_expires_at = session.get("expires_at")
@@ -1098,10 +1166,6 @@ class AuthState(rx.State):
     # Note: dark_mode state var is kept for backward compatibility but the actual
     # theming is handled by Reflex's rx.toggle_color_mode which uses next-themes.
     # To toggle dark mode, use rx.toggle_color_mode event directly in on_click handlers.
-    
-    def toggle_settings_modal(self):
-        """Toggle settings modal."""
-        self.show_settings_modal = not self.show_settings_modal
     
     # ==========================================================================
     # Events Panel

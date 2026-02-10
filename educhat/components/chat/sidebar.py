@@ -177,6 +177,7 @@ def sidebar(
     on_conversation_click=None,
     user_name: str = "John Doe",
     user_email: str = "johndoe@email.com",
+    user_profile_picture: str = None,
     is_open: bool = False,
     is_collapsed: bool = False,
     on_toggle_collapse=None,
@@ -198,6 +199,7 @@ def sidebar(
         on_search: Handler for search input
         on_conversation_click: Handler for conversation click
         user_name: User's display name
+        user_profile_picture: User's profile picture URL (optional, from Google OAuth)
         user_email: User's email
         is_open: Whether sidebar is open (mobile)
         is_collapsed: Whether sidebar is collapsed (desktop)
@@ -567,7 +569,7 @@ def sidebar(
                     rx.vstack(
                         # Avatar with better styling
                         rx.box(
-                            avatar(name=user_name, size="md"),
+                            avatar(name=user_name, image_url=user_profile_picture, size="md"),
                             margin_bottom="0.5rem",
                         ),
                         # Logout button - modern
@@ -601,7 +603,7 @@ def sidebar(
                     rx.vstack(
                         # User info row
                         rx.hstack(
-                            avatar(name=user_name, size="md"),
+                            avatar(name=user_name, image_url=user_profile_picture, size="md"),
                             rx.vstack(
                                 rx.text(
                                     user_name,
@@ -648,11 +650,6 @@ def sidebar(
                         ),
                         # Action buttons row 1
                         rx.hstack(
-                            sidebar_action_button(
-                                icon="settings",
-                                label="Instellingen",
-                                on_click=AuthState.toggle_settings_modal,
-                            ),
                             sidebar_action_button(
                                 icon="bell",
                                 label="Reminders",
@@ -721,6 +718,44 @@ def sidebar(
                             ),
                             spacing="2",
                             width="100%",
+                        ),
+                        # Google Calendar Connect button row (only show when not connected)
+                        rx.cond(
+                            ~AuthState.has_google_calendar,
+                            rx.hstack(
+                                rx.box(
+                                    rx.hstack(
+                                        rx.icon("calendar-plus", size=16, color="#10A37F"),
+                                        rx.text(
+                                            "Sync Kalender",
+                                            font_size="0.8125rem",
+                                            color=T.text_primary,
+                                            font_weight="500",
+                                        ),
+                                        spacing="2",
+                                        align="center",
+                                        justify="center",
+                                    ),
+                                    on_click=AuthState.google_signin,
+                                    cursor="pointer",
+                                    padding="0.625rem 0.875rem",
+                                    border_radius=RADIUS["lg"],
+                                    width="100%",
+                                    background=rx.color_mode_cond(
+                                        light="transparent",
+                                        dark="rgba(255, 255, 255, 0.03)"
+                                    ),
+                                    border=f"1px solid {T.border}",
+                                    transition=TRANSITIONS["fast"],
+                                    _hover={
+                                        "background": "rgba(16, 163, 127, 0.1)",
+                                        "border_color": "#10A37F",
+                                    },
+                                ),
+                                spacing="2",
+                                width="100%",
+                            ),
+                            rx.fragment(),
                         ),
                         # Logout button
                         rx.box(
