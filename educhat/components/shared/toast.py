@@ -18,7 +18,7 @@ TOAST_CONFIG = {
         "background": T.success_light,
         "border": T.success,
         "text": T.text_primary,
-        "icon": "check-circle",
+        "icon": "check-check",
     },
     "error": {
         "background": T.error_light,

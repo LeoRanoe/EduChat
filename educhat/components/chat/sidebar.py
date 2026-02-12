@@ -15,6 +15,7 @@ from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
 from educhat.components.shared import logo, secondary_button, search_input, avatar
 from educhat.state.app_state import AppState
 from educhat.state.auth_state import AuthState
+from educhat.utils.translations import tx
 
 
 # ============================================================================
@@ -322,7 +323,7 @@ def sidebar(
                                     "box_shadow": "0 4px 12px rgba(16, 163, 127, 0.3)",
                                 },
                             ),
-                            content="Nieuw gesprek",
+                            content=tx("new_conversation"),
                         ),
                         width="100%",
                     ),
@@ -331,7 +332,7 @@ def sidebar(
                         rx.hstack(
                             rx.icon("plus", size=16, color=COLORS["primary_green"]),
                             rx.text(
-                                "Nieuw gesprek",
+                                tx("new_conversation"),
                                 font_size="0.875rem",
                                 font_weight="500",
                                 color=COLORS["primary_green"],
@@ -366,7 +367,7 @@ def sidebar(
                 rx.box(
                     rx.hstack(
                         rx.text(
-                            "Gesprekken",
+                            tx("conversations"),
                             font_size="0.6875rem",
                             color=T.text_tertiary,
                             text_transform="uppercase",
@@ -462,13 +463,13 @@ def sidebar(
                                     border_radius=RADIUS["full"],
                                 ),
                                 rx.text(
-                                    "Nog geen gesprekken",
+                                    tx("no_conversations_yet"),
                                     font_size="0.875rem",
                                     color=T.text_secondary,
                                     font_weight="500",
                                 ),
                                 rx.text(
-                                    "Start je eerste gesprek hierboven",
+                                    tx("start_first_conversation"),
                                     font_size="0.75rem",
                                     color=T.text_tertiary,
                                     text_align="center",
@@ -516,7 +517,7 @@ def sidebar(
                             ),
                             href="/onboarding",
                         ),
-                        content="Voorkeuren",
+                        content=tx("preferences"),
                     ),
                     padding="0.75rem 0.5rem",
                 border_top=f"1px solid {T.border_light}",
@@ -529,7 +530,7 @@ def sidebar(
                         rx.hstack(
                             rx.icon("graduation-cap", size=18, color="white"),
                             rx.text(
-                                "Start Onboarding",
+                                tx("start_onboarding"),
                                 font_size="0.875rem",
                                 font_weight="600",
                                 color="white",
@@ -628,7 +629,7 @@ def sidebar(
                                     ),
                                     rx.box(
                                         rx.text(
-                                            "GAST",
+                                            tx("guest"),
                                             font_size="0.625rem",
                                             color=COLORS["primary_green"],
                                             font_weight="700",
@@ -652,10 +653,17 @@ def sidebar(
                         rx.hstack(
                             sidebar_action_button(
                                 icon="bell",
-                                label="Reminders",
+                                label=tx("reminders"),
                                 on_click=AuthState.toggle_reminder_modal,
                                 icon_color=COLORS["primary_green"],
                                 hover_bg=COLORS["light_green"],
+                            ),
+                            sidebar_action_button(
+                                icon="languages",
+                                label=rx.cond(AuthState.is_dutch, "EN", "NL"),
+                                on_click=AuthState.toggle_language,
+                                icon_color="#3B82F6",
+                                hover_bg="rgba(59, 130, 246, 0.1)",
                             ),
                             spacing="2",
                             width="100%",
@@ -664,7 +672,7 @@ def sidebar(
                         rx.hstack(
                             sidebar_action_button(
                                 icon="calendar",
-                                label="Events",
+                                label=tx("events"),
                                 on_click=AuthState.toggle_events_panel,
                                 icon_color="#3B82F6",
                                 hover_bg="rgba(59, 130, 246, 0.1)",
@@ -677,7 +685,7 @@ def sidebar(
                                         dark=rx.icon("sun", size=16, color="#F59E0B"),
                                     ),
                                     rx.text(
-                                        rx.color_mode_cond(light="Donker", dark="Licht"),
+                                        rx.color_mode_cond(light=tx("dark"), dark=tx("light")),
                                         font_size="0.8125rem",
                                         color="var(--text-secondary)",
                                     ),
@@ -688,12 +696,12 @@ def sidebar(
                                 role="switch",
                                 aria_checked=rx.color_mode_cond(light="false", dark="true"),
                                 aria_label=rx.color_mode_cond(
-                                    light="Schakel naar donkere modus",
-                                    dark="Schakel naar lichte modus",
+                                    light=tx("switch_to_dark_mode"),
+                                    dark=tx("switch_to_light_mode"),
                                 ),
                                 title=rx.color_mode_cond(
-                                    light="Donkere modus - vermindert vermoeidheid van de ogen",
-                                    dark="Lichte modus - vermindert vermoeidheid van de ogen",
+                                    light=tx("dark_mode_desc"),
+                                    dark=tx("light_mode_desc"),
                                 ),
                                 cursor="pointer",
                                 padding="0.625rem 0.75rem",
@@ -727,7 +735,7 @@ def sidebar(
                                     rx.hstack(
                                         rx.icon("calendar-plus", size=16, color="#10A37F"),
                                         rx.text(
-                                            "Sync Kalender",
+                                            tx("sync_calendar"),
                                             font_size="0.8125rem",
                                             color=T.text_primary,
                                             font_weight="500",
@@ -762,7 +770,7 @@ def sidebar(
                             rx.hstack(
                                 rx.icon("log-out", size=16, color=T.error),
                                 rx.text(
-                                    "Uitloggen",
+                                    tx("logout"),
                                     font_size="0.8125rem",
                                     color=T.error,
                                     font_weight="500",

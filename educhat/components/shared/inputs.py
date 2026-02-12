@@ -26,6 +26,7 @@ def form_field(
     input_type: str = "text",
     error: str = "",
     helper_text: str = "",
+    is_valid: bool = False,
     required: bool = False,
     disabled: bool = False,
     icon_left: Optional[str] = None,
@@ -45,6 +46,7 @@ def form_field(
         input_type: Input type (text, email, password, etc.)
         error: Error message (shows red state if present)
         helper_text: Helper text below input
+        is_valid: Show success/valid state (green border + icon)
         required: Show required indicator
         disabled: Disabled state
         icon_left: Icon on left side of input
@@ -60,6 +62,11 @@ def form_field(
     }
     config = size_config.get(size, size_config["md"])
     has_error = error != ""
+    show_success = is_valid and not has_error and value != ""
+    
+    # Determine border color based on state
+    border_color = COLORS["error"] if has_error else (COLORS["success"] if show_success else COLORS["border"])
+    focus_shadow = SHADOWS["focus_error"] if has_error else SHADOWS["focus"]
     
     return rx.box(
         # Label
@@ -106,23 +113,19 @@ def form_field(
                 type=input_type,
                 placeholder=placeholder,
                 value=value,
-                on_change=on_change,
-                on_blur=on_blur,
-                disabled=disabled,
-                background=COLORS["white"],
-                border=f"1px solid {COLORS['error'] if has_error else COLORS['border']}",
+                border_color=border_color,
                 border_radius=RADIUS["lg"],
                 padding=config["padding"],
                 padding_left=config["icon_padding"] if icon_left else config["padding"].split()[1],
-                padding_right=config["icon_padding"] if icon_right else config["padding"].split()[1],
+                padding_right=config["icon_padding"] if (icon_right or show_success) else config["padding"].split()[1],
                 width="100%",
                 font_size=config["font_size"],
                 min_height=config["min_height"],
                 color=COLORS["text_primary"],
                 _focus={
                     "outline": "none",
-                    "border_color": COLORS["error"] if has_error else COLORS["primary"],
-                    "box_shadow": SHADOWS["focus_error"] if has_error else SHADOWS["focus"],
+                    "border_color": COLORS["error"] if has_error else (COLORS["success"] if show_success else COLORS["primary"]),
+                    "box_shadow": focus_shadow,
                 },
                 _placeholder={
                     "color": COLORS["text_muted"],
@@ -136,18 +139,30 @@ def form_field(
                 class_name="input-error" if has_error else "",
             ),
             
-            # Right icon
+            # Right icon or success indicator
             rx.cond(
-                icon_right,
+                show_success,
                 rx.box(
-                    rx.icon(icon_right, size=18, color=COLORS["text_muted"]),
+                    rx.icon("check-check", size=18, color=COLORS["success"]),
                     position="absolute",
                     right="12px",
                     top="50%",
                     transform="translateY(-50%)",
                     z_index="1",
+                    animation="fadeIn 0.3s ease-out",
                 ),
-                rx.fragment(),
+                rx.cond(
+                    icon_right,
+                    rx.box(
+                        rx.icon(icon_right, size=18, color=COLORS["text_muted"]),
+                        position="absolute",
+                        right="12px",
+                        top="50%",
+                        transform="translateY(-50%)",
+                        z_index="1",
+                    ),
+                    rx.fragment(),
+                ),
             ),
             
             position="relative",
@@ -158,7 +173,7 @@ def form_field(
         rx.cond(
             has_error,
             rx.box(
-                rx.icon("alert-circle", size=14, color=COLORS["error"]),
+                rx.icon("triangle-alert", size=14, color=COLORS["error"]),
                 rx.text(
                     error,
                     font_size="0.75rem",
@@ -293,7 +308,7 @@ def password_input(
         rx.cond(
             has_error,
             rx.box(
-                rx.icon("alert-circle", size=14, color=COLORS["error"]),
+                rx.icon("triangle-alert", size=14, color=COLORS["error"]),
                 rx.text(
                     error,
                     font_size="0.75rem",
@@ -546,7 +561,7 @@ def textarea_field(
             rx.cond(
                 has_error,
                 rx.box(
-                    rx.icon("alert-circle", size=14, color=COLORS["error"]),
+                    rx.icon("triangle-alert", size=14, color=COLORS["error"]),
                     rx.text(error, font_size="0.75rem", color=COLORS["error"], margin_left="0.25rem"),
                     display="flex",
                     align_items="center",

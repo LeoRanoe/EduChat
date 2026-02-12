@@ -19,6 +19,8 @@ class AppState(AuthState):
     conversations: List[Dict] = []
     user_input: str = ""
     is_loading: bool = False
+    is_loading_messages: bool = False  # Loading state for message history
+    is_loading_more: bool = False  # Loading state for "load more" pagination
     
     # Pagination state
     messages_page_size: int = 30
@@ -331,7 +333,7 @@ class AppState(AuthState):
                     db = get_service()
                     scraper = get_event_scraper()
                     
-                    # Check cache first (24-hour cache)
+                    # Check cache first (24-hour cache) - FAST, non-blocking
                     cached_events = await loop.run_in_executor(
                         None,
                         lambda: db.get_cached_scraped_events(hours=24)
@@ -341,24 +343,31 @@ class AppState(AuthState):
                         print(f"[SCRAPING] Using {len(cached_events)} cached events from database")
                         scraped_data = cached_events
                     else:
-                        # No cache or empty - scrape fresh data
-                        print("[SCRAPING] No cache found, scraping fresh data...")
-                        scraped_data = await loop.run_in_executor(
-                            None,
-                            lambda: scraper.scrape_all_sources()
-                        )
+                        # No cache - trigger background scraping for future use, but DON'T WAIT
+                        print("[SCRAPING] No cache found, triggering background scraping for future queries...")
                         
-                        # Save to cache for future requests
-                        if scraped_data and self.can_save_conversations():
-                            print(f"[SCRAPING] Saving {len(scraped_data)} events to cache...")
-                            await loop.run_in_executor(
-                                None,
-                                lambda: db.save_scraped_events(scraped_data, source="chat_triggered")
-                            )
+                        async def background_scrape():
+                            """Background task to scrape and cache data without blocking."""
+                            try:
+                                data = await loop.run_in_executor(
+                                    None,
+                                    lambda: scraper.scrape_all_sources()
+                                )
+                                if data and self.can_save_conversations():
+                                    await loop.run_in_executor(
+                                        None,
+                                        lambda: db.save_scraped_events(data, source="chat_triggered_background")
+                                    )
+                                    print(f"[SCRAPING] Background: Cached {len(data)} events for future use")
+                            except Exception as e:
+                                print(f"[SCRAPING] Background error: {e}")
+                        
+                        # Start background task without waiting
+                        asyncio.create_task(background_scrape())
+                        print("[SCRAPING] Continuing without scraped data to avoid delay")
                     
-                    # Run scraper in executor to avoid blocking
+                    # Format scraped events for context if available
                     if scraping_analysis["scrape_type"] == "events" and scraped_data:
-                        # Format scraped events for context
                         events_context = "\n\n=== RECENTE GEGEVENS VAN WEBSITES ===\n"
                         events_context += f"Gevonden {len(scraped_data)} actuele evenementen:\n"
                         for event in scraped_data[:10]:  # Limit to top 10 most relevant
@@ -384,13 +393,16 @@ class AppState(AuthState):
             full_response = ""
             loop = asyncio.get_event_loop()
             
+            # Get AI service
+            ai_service = get_ai_service()
+            
             # Run streaming in executor
             stream_generator = await loop.run_in_executor(
                 None,
                 lambda: ai_service.chat_stream(
                     message=user_input_text,
                     conversation_history=conversation_history,
-                    context=enhanced_context
+                    context=enhanced_context,
                 )
             )
             
@@ -564,7 +576,8 @@ class AppState(AuthState):
         # Load messages from database if logged-in user
         if self.can_access_history():
             print(f"[LOAD] Loading messages from database...")
-            await self.load_conversation_messages(conversation_id)
+            async for _ in self.load_conversation_messages(conversation_id):
+                pass
         else:
             # Guest users: load from memory
             for conv in self.conversations:
@@ -1179,45 +1192,82 @@ class AppState(AuthState):
             traceback.print_exc()
             self.conversations = []
     
-    async def load_conversation_messages(self, conversation_id: str):
-        """Load messages for a specific conversation from database."""
+    async def load_conversation_messages(self, conversation_id: str, append: bool = False):
+        """Load messages for a specific conversation from database with pagination.
+        
+        Args:
+            conversation_id: ID of the conversation to load
+            append: If True, append to existing messages (for "Load More"). If False, replace messages.
+        """
         if not self.can_access_history():
             print(f"[LOAD_MSGS] Cannot access history")
             return
+        
+        # Set loading state
+        if append:
+            self.is_loading_more = True
+        else:
+            self.is_loading_messages = True
+        yield
         
         from educhat.services.supabase_client import get_service
         
         try:
             db = get_service()
-            print(f"[LOAD_MSGS] Fetching messages for conversation {conversation_id}")
-            messages_data = db.get_conversation_messages(conversation_id)
+            
+            # Calculate offset for pagination
+            if append:
+                offset = len(self.messages)
+                print(f"[LOAD_MSGS] Loading more messages (offset: {offset})")
+            else:
+                offset = 0
+                self.messages_current_page = 1
+                print(f"[LOAD_MSGS] Loading initial messages for conversation {conversation_id}")
+            
+            # Fetch with pagination (load 50 messages at a time)
+            messages_data = db.get_conversation_messages(
+                conversation_id, 
+                limit=50, 
+                offset=offset
+            )
             
             if not messages_data:
-                print(f"[LOAD_MSGS] No messages found for conversation {conversation_id}")
-                self.messages = []
+                if not append:
+                    print(f"[LOAD_MSGS] No messages found for conversation {conversation_id}")
+                    self.messages = []
+                else:
+                    print(f"[LOAD_MSGS] No more messages to load")
+                self.has_more_messages = False
                 return
             
             print(f"[LOAD_MSGS] Found {len(messages_data)} messages")
             
+            # Check if there are more messages
+            self.has_more_messages = len(messages_data) == 50
+            
             # Convert to our message format
-            self.messages = []
+            new_messages = []
             for msg in messages_data:
                 try:
-                    # Handle timestamp parsing
+                    # Handle timestamp parsing with improved error handling
                     timestamp_str = msg.get("timestamp", "")
                     if timestamp_str:
-                        # Handle different timestamp formats
-                        if "+" in timestamp_str or "Z" in timestamp_str:
-                            # ISO format with timezone
-                            timestamp_str = timestamp_str.replace("Z", "+00:00")
-                            dt = datetime.fromisoformat(timestamp_str)
-                        else:
-                            dt = datetime.fromisoformat(timestamp_str)
-                        formatted_time = dt.strftime("%H:%M")
+                        try:
+                            # Handle different timestamp formats
+                            if "+" in timestamp_str or "Z" in timestamp_str:
+                                # ISO format with timezone
+                                timestamp_str = timestamp_str.replace("Z", "+00:00")
+                                dt = datetime.fromisoformat(timestamp_str)
+                            else:
+                                dt = datetime.fromisoformat(timestamp_str)
+                            formatted_time = dt.strftime("%H:%M")
+                        except (ValueError, AttributeError) as ts_error:
+                            print(f"[LOAD_MSGS] Timestamp parse error: {ts_error}")
+                            formatted_time = datetime.now().strftime("%H:%M")
                     else:
                         formatted_time = datetime.now().strftime("%H:%M")
                     
-                    self.messages.append({
+                    new_messages.append({
                         "content": msg.get("content", ""),
                         "is_user": msg.get("role") == "user",
                         "timestamp": formatted_time,
@@ -1228,7 +1278,7 @@ class AppState(AuthState):
                 except Exception as parse_error:
                     print(f"[LOAD_MSGS] Error parsing message: {parse_error}")
                     # Still add the message with current time
-                    self.messages.append({
+                    new_messages.append({
                         "content": msg.get("content", ""),
                         "is_user": msg.get("role") == "user",
                         "timestamp": datetime.now().strftime("%H:%M"),
@@ -1237,13 +1287,38 @@ class AppState(AuthState):
                         "is_error": msg.get("is_error", False)
                     })
             
-            print(f"[LOAD_MSGS] Loaded {len(self.messages)} messages successfully")
+            # Append or replace messages based on mode
+            if append:
+                self.messages.extend(new_messages)
+                self.messages_current_page += 1
+                print(f"[LOAD_MSGS] Appended {len(new_messages)} messages. Total: {len(self.messages)}")
+            else:
+                self.messages = new_messages
+                print(f"[LOAD_MSGS] Loaded {len(self.messages)} messages successfully")
         
         except Exception as e:
             import traceback
             print(f"[LOAD_MSGS] Error loading messages: {e}")
             traceback.print_exc()
-            self.messages = []
+            # Don't clear existing messages on error if appending
+            if not append:
+                self.messages = []
+            self.has_more_messages = False
+        finally:
+            # Clear loading states
+            self.is_loading_messages = False
+            self.is_loading_more = False
+            yield
+    
+    async def load_more_messages(self):
+        """Load more messages for the current conversation (pagination)."""
+        if not self.current_conversation_id or not self.has_more_messages:
+            return
+        
+        print(f"[LOAD_MORE] Loading more messages for conversation {self.current_conversation_id}")
+        async for _ in self.load_conversation_messages(self.current_conversation_id, append=True):
+            pass
+        yield
     
     # ==========================================================================
     # Progress Tracking Methods

@@ -135,7 +135,7 @@ def password_strength_indicator() -> rx.Component:
                     rx.icon(
                         rx.cond(
                             PasswordStrengthState.password_strength["requirements"]["length"],
-                            "check-circle",
+                            "check-check",
                             "circle"
                         ),
                         size=14,
@@ -164,7 +164,7 @@ def password_strength_indicator() -> rx.Component:
                     rx.icon(
                         rx.cond(
                             PasswordStrengthState.password_strength["requirements"]["uppercase"],
-                            "check-circle",
+                            "check-check",
                             "circle"
                         ),
                         size=14,
@@ -193,7 +193,7 @@ def password_strength_indicator() -> rx.Component:
                     rx.icon(
                         rx.cond(
                             PasswordStrengthState.password_strength["requirements"]["lowercase"],
-                            "check-circle",
+                            "check-check",
                             "circle"
                         ),
                         size=14,
@@ -222,7 +222,7 @@ def password_strength_indicator() -> rx.Component:
                     rx.icon(
                         rx.cond(
                             PasswordStrengthState.password_strength["requirements"]["number"],
-                            "check-circle",
+                            "check-check",
                             "circle"
                         ),
                         size=14,
@@ -251,7 +251,7 @@ def password_strength_indicator() -> rx.Component:
                     rx.icon(
                         rx.cond(
                             PasswordStrengthState.password_strength["requirements"]["special"],
-                            "check-circle",
+                            "check-check",
                             "circle"
                         ),
                         size=14,

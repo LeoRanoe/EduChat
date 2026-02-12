@@ -79,8 +79,14 @@
   --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #10A37F 0%, #0D8F6F 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #0D8F6F 0%, #0A7B5F 100%);
+  --gradient-hero: linear-gradient(135deg, #10A37F 0%, #0D8F6F 50%, #3B82F6 100%);
+  --gradient-card: linear-gradient(180deg, rgba(16, 163, 127, 0.05) 0%, transparent 100%);
+  
   /* Message styling */
-  --message-user-bg: linear-gradient(135deg, #10A37F 0%, #0D8F6F 100%);
+  --message-user-bg: var(--gradient-primary);
   --message-bot-bg: #FFFFFF;
   --message-bot-border: #E5E7EB;
   
@@ -176,6 +182,12 @@ html.dark {
   --color-warning-light: rgba(251, 191, 36, 0.15);
   --color-info: #60A5FA;
   --color-info-light: rgba(96, 165, 250, 0.15);
+  
+  /* Gradients - Slightly brighter for dark mode */
+  --gradient-primary: linear-gradient(135deg, #10A37F 0%, #34D399 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%);
+  --gradient-hero: linear-gradient(135deg, #10A37F 0%, #34D399 50%, #60A5FA 100%);
+  --gradient-card: linear-gradient(180deg, rgba(16, 163, 127, 0.1) 0%, transparent 100%);
   
   /* Message styling */
   --message-bot-bg: #111217;
@@ -517,7 +529,7 @@ select:focus {
 
 /* =============================================================================
    COMPONENT STYLES - MODALS & PANELS (SOLID BACKGROUNDS)
-   Fix transparency issues by using solid color values, not just CSS variables
+   Using proper specificity instead of !important
    ============================================================================= */
 
 /* Modal overlay - standard blur backdrop */
@@ -527,65 +539,64 @@ select:focus {
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Modal content - ensure solid backgrounds with maximum specificity */
+/* Modal content - Light mode */
+[class*="modal"] {
+  background-color: var(--modal-bg);
+  border: 1px solid var(--border-color);
+  opacity: 1;
+  background-image: none;
+}
+
+/* Specific modal types - Light mode */
 .modal-content,
 .auth-modal-box,
 .settings-modal,
 .reminder-modal,
-.calendar-modal,
-div.reminder-modal,
-div.calendar-modal,
-[class*="reminder-modal"],
-[class*="calendar-modal"] {
-  background-color: #FFFFFF !important;
-  border: 1px solid var(--border-color) !important;
-  opacity: 1 !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+.calendar-modal {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-color);
 }
 
+/* Modal content - Dark mode with proper selector hierarchy */
+.dark [class*="modal"],
+.radix-themes.dark [class*="modal"],
+html.dark [class*="modal"] {
+  background-color: var(--modal-bg);
+  border-color: var(--border-dark);
+}
+
+/* Specific modal types - Dark mode */
 .dark .modal-content,
 .dark .auth-modal-box,
 .dark .settings-modal,
 .dark .reminder-modal,
 .dark .calendar-modal,
-.dark div.reminder-modal,
-.dark div.calendar-modal,
-.dark [class*="reminder-modal"],
-.dark [class*="calendar-modal"],
 .radix-themes.dark .modal-content,
 .radix-themes.dark .auth-modal-box,
 .radix-themes.dark .settings-modal,
 .radix-themes.dark .reminder-modal,
-.radix-themes.dark .calendar-modal,
-.radix-themes.dark div.reminder-modal,
-.radix-themes.dark div.calendar-modal,
-.radix-themes.dark [class*="reminder-modal"],
-.radix-themes.dark [class*="calendar-modal"],
-html.dark .reminder-modal,
-html.dark .calendar-modal,
-body.dark .reminder-modal,
-body.dark .calendar-modal {
-  background-color: #111217 !important;
-  border-color: #2d3039 !important;
-  opacity: 1 !important;
-  background-image: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+.radix-themes.dark .calendar-modal {
+  background-color: #111217;
+  border-color: #2d3039;
 }
 
-/* Z-index hierarchy for overlapping modals */
-/* Base: reminder-modal and calendar-modal z-index: 1001 */
-/* Calendar overlay: z-index: 1002 */
-/* Calendar modal: z-index: 1003 */
+/* Z-index hierarchy for overlapping elements (aligned with theme.py Z_INDEX) */
+.modal-overlay {
+  z-index: 999;
+}
 
-.reminder-modal {
+.modal-content, .auth-modal-box {
+  z-index: 1000;
+}
+
+.reminder-modal,
+.calendar-modal {
   z-index: 1001;
 }
 
-.calendar-modal {
-  z-index: 1003;
+.popover-content,
+[data-radix-popper-content-wrapper] {
+  z-index: 1002;
 }
 
 /* Auth form panel - right side of auth modal */
@@ -824,7 +835,7 @@ body.dark .calendar-modal {
    BUTTON & QUICK ACTION STYLES
    ============================================================================= */
 .btn-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  background: var(--gradient-primary);
   color: var(--text-on-primary);
   transition: all var(--transition-normal);
 }
@@ -835,73 +846,69 @@ body.dark .calendar-modal {
 }
 
 .btn-secondary {
-  background: var(--bg-card) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border-color) !important;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-  background: var(--bg-hover) !important;
+  background: var(--bg-hover);
 }
 
 .btn-ghost {
-  background: transparent !important;
-  color: var(--text-secondary) !important;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
 }
 
 .btn-ghost:hover {
-  background: var(--bg-hover) !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
-/* Quick action buttons - ensure text is visible */
-button[class*="action"] {
-  color: var(--text-primary) !important;
+/* Quick action and button text visibility */
+button {
+  color: var(--text-primary);
 }
 
-button[class*="action"] > * {
-  color: var(--text-primary) !important;
+button p,
+button span,
+button div {
+  color: inherit;
 }
 
-button[class*="action"] p,
-button[class*="action"] span,
-button[class*="action"] div:has(> p) {
-  color: var(--text-primary) !important;
+/* Template buttons inherit color from parent */
+button[class*="action"],
+button[class*="template"] {
+  color: var(--text-primary);
 }
 
-/* Conversation template buttons - ensure all text is visible */
-button:has([class*="template"]) {
-  color: var(--text-primary) !important;
-}
-
-button:has([class*="template"]) p,
-button:has([class*="template"]) span {
-  color: var(--text-primary) !important;
-}
-
-button:has(> *:nth-child(2)) > *:nth-child(2) {
-  color: var(--text-primary) !important;
+/* Dark mode adjustments for better contrast */
+.dark button,
+.radix-themes.dark button {
+  color: var(--text-primary);
 }
 
 /* =============================================================================
    COMPONENT STYLES - MARKDOWN/BOT MESSAGES
+   Improved readability and contrast without !important hacks
    ============================================================================= */
 .bot-message-content {
-  font-size: 0.9375rem !important;
-  color: var(--text-primary) !important;
-  line-height: 1.75 !important;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  line-height: 1.75;
   -webkit-font-smoothing: antialiased;
 }
 
 @media (min-width: 768px) {
   .bot-message-content {
-    font-size: 1rem !important;
+    font-size: 1rem;
   }
 }
 
 .bot-message-content p {
   margin-bottom: 1rem;
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
 }
 
 .bot-message-content p:last-child {
@@ -909,17 +916,17 @@ button:has(> *:nth-child(2)) > *:nth-child(2) {
 }
 
 .bot-message-content a {
-  color: var(--color-primary) !important;
-  text-decoration: underline !important;
-  text-decoration-color: rgba(16, 163, 127, 0.4) !important;
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-color: rgba(16, 163, 127, 0.4);
   text-underline-offset: 2px;
   transition: all 0.2s ease;
   font-weight: 500;
 }
 
 .bot-message-content a:hover {
-  color: var(--color-primary-hover) !important;
-  text-decoration-color: var(--color-primary) !important;
+  color: var(--color-primary-hover);
+  text-decoration-color: var(--color-primary);
 }
 
 .bot-message-content ul,
@@ -928,7 +935,7 @@ button:has(> *:nth-child(2)) > *:nth-child(2) {
   margin-bottom: 1rem;
   margin-top: 0.5rem;
   padding-left: 0;
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
 }
 
 .bot-message-content ul { list-style-type: disc; }
@@ -937,18 +944,18 @@ button:has(> *:nth-child(2)) > *:nth-child(2) {
 .bot-message-content li {
   margin-bottom: 0.5rem;
   padding-left: 0.5rem;
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
   line-height: 1.6;
 }
 
 .bot-message-content strong {
-  font-weight: 700 !important;
-  color: var(--text-primary) !important;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .bot-message-content em {
   font-style: italic;
-  color: var(--text-secondary) !important;
+  color: var(--text-secondary);
 }
 
 .bot-message-content h1,
@@ -957,8 +964,8 @@ button:has(> *:nth-child(2)) > *:nth-child(2) {
 .bot-message-content h4,
 .bot-message-content h5,
 .bot-message-content h6 {
-  font-weight: 700 !important;
-  color: var(--text-primary) !important;
+  font-weight: 700;
+  color: var(--text-primary);
   margin-top: 1rem;
   margin-bottom: 0.75rem;
   line-height: 1.3;

@@ -434,6 +434,71 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         except Exception as e:
             print(f"Warning: Could not preload teaching data: {e}")
     
+    def detect_query_language(self, message: str, current_language: str = None) -> tuple[str, int, int]:
+        """Detect the language of a user query using keyword matching.
+        
+        Args:
+            message: User message to analyze
+            current_language: Current UI language setting (optional)
+            
+        Returns:
+            Tuple of (language, dutch_count, english_count)
+        """
+        message_lower = message.lower()
+        
+        # Common Dutch words that don't appear in English
+        dutch_indicators = [
+            # Question words
+            "wat", "waar", "wanneer", "waarom", "wie", "hoe", "welke", "welk",
+            # Common verbs
+            "ben", "bent", "zijn", "heeft", "hebben", "kan", "kunnen", "wil", "willen",
+            "moet", "moeten", "mag", "mogen", "zou", "zouden", "word", "wordt", "worden",
+            # Articles & pronouns
+            "de", "het", "een", "deze", "die", "dit", "dat", "mijn", "jouw", "zijn",
+            # Common words
+            "maar", "voor", "naar", "bij", "van", "met", "zonder", "tussen", "over",
+            "omdat", "terwijl", "hoewel", "als", "dan", "nog", "niet", "geen", "ook",
+            # Common phrases specific to Dutch
+            "kun je", "kan je", "wil je", "weet je", "is er", "zijn er",
+            "ik heb", "ik wil", "ik zou", "wat is", "hoe werkt", "vertel me",
+        ]
+        
+        # Common English words that don't appear in Dutch
+        english_indicators = [
+            # Question words
+            "what", "where", "when", "why", "who", "how", "which",
+            # Common verbs & auxiliary verbs
+            "is", "are", "was", "were", "have", "has", "had", "can", "could",
+            "will", "would", "should", "must", "may", "might", "do", "does", "did",
+            "am", "been", "being", "get", "got",
+            # Articles & pronouns
+            "the", "a", "an", "this", "that", "these", "those", "my", "your", "our",
+            "i", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
+            # Prepositions & conjunctions
+            "but", "for", "to", "at", "from", "with", "without", "between", "about",
+            "because", "while", "though", "if", "then", "or", "and",
+            # Negatives & modifiers
+            "not", "no", "never", "very", "more", "most", "some", "any",
+            # Common phrases specific to English
+            "can you", "could you", "would you", "do you", "i have", "i want",
+            "i would", "what is", "how does", "tell me", "how do", "what are",
+        ]
+        
+        # Count indicators
+        dutch_count = sum(1 for word in dutch_indicators if f" {word} " in f" {message_lower} " or message_lower.startswith(word + " ") or message_lower.endswith(" " + word))
+        english_count = sum(1 for word in english_indicators if f" {word} " in f" {message_lower} " or message_lower.startswith(word + " ") or message_lower.endswith(" " + word))
+        
+        # Decide based on counts
+        if english_count > dutch_count:
+            detected = "en"
+        elif dutch_count > english_count:
+            detected = "nl"
+        else:
+            # If equal or both zero, use current language or default to English
+            detected = current_language if current_language else "en"
+        
+        return (detected, dutch_count, english_count)
+    
     def _is_education_related(self, message: str) -> bool:
         """Check if message is related to education.
         
@@ -1409,7 +1474,8 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         self,
         message: str,
         conversation_history: Optional[List[Dict[str, str]]] = None,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
+        language: Optional[str] = None
     ):
         """Get AI response as a stream for real-time typing animation.
         
@@ -1417,10 +1483,15 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
             message: User message
             conversation_history: Previous messages
             context: Additional context
+            language: Response language "nl" (Dutch) or "en" (English). Defaults to instance language.
             
         Yields:
             Response chunks (each chunk is a string to append)
         """
+        # Use provided language or fall back to instance language
+        if language is None:
+            language = self.language
+        
         # OPTIONAL: Check for VERY off-topic questions (rarely triggers)
         # This now only blocks extremely specific non-educational queries
         fallback = self._get_fallback_response(message)
@@ -1439,14 +1510,14 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         mode = subject_detection.get("mode", "institutions")
         
         # Select appropriate system prompt based on mode
-        system_prompt = self.get_system_prompt(self.language, mode)
+        system_prompt = self.get_system_prompt(language, mode)
         
         # Build messages array
         messages = [{"role": "system", "content": system_prompt}]
         
         # Add context if available
         if context:
-            context_prompt = self._build_context_prompt(context)
+            context_prompt = self._build_context_prompt(context, language)
             if context_prompt:
                 messages.append({"role": "system", "content": context_prompt})
         
@@ -1533,8 +1604,8 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
                 for chunk in response:
                     if chunk.text:
                         buffer += chunk.text
-                        # Batch chunks for smoother visual updates (every 3-5 chars)
-                        if len(buffer) >= 3:
+                        # Batch chunks for smoother visual updates (every 12 chars for better performance)
+                        if len(buffer) >= 12:
                             yield buffer
                             buffer = ""
                 
@@ -1561,8 +1632,8 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
                 for chunk in response:
                     if chunk.choices[0].delta.content:
                         buffer += chunk.choices[0].delta.content
-                        # Batch chunks for smoother animation (every 3-5 chars)
-                        if len(buffer) >= 3:
+                        # Batch chunks for smoother animation (every 12 chars for better performance)
+                        if len(buffer) >= 12:
                             yield buffer
                             buffer = ""
                 

@@ -2,6 +2,7 @@
 
 import reflex as rx
 from educhat.styles.theme import COLORS, RADIUS, T
+from educhat.state.auth_state import AuthState
 
 
 def hamburger_button(
@@ -88,7 +89,7 @@ def mobile_header(
     on_menu_click=None,
     is_sidebar_open: bool = False,
 ) -> rx.Component:
-    """Mobile header with hamburger menu.
+    """Mobile header with hamburger menu and language toggle.
     
     Args:
         on_menu_click: Click handler for menu button
@@ -106,8 +107,30 @@ def mobile_header(
                 font_weight="600",
                 color=T.text_primary,
             ),
+            rx.spacer(),
+            # Language toggle button
+            rx.button(
+                rx.cond(
+                    AuthState.is_dutch,
+                    rx.text("EN", font_weight="600", font_size="0.875rem"),
+                    rx.text("NL", font_weight="600", font_size="0.875rem"),
+                ),
+                background="transparent",
+                color=T.text_primary,
+                border="none",
+                cursor="pointer",
+                padding="8px 12px",
+                border_radius="8px",
+                transition="all 0.3s ease",
+                title="Switch language / Taal wisselen",
+                _hover={
+                    "background": f"rgba(16, 163, 127, 0.08)",
+                },
+                on_click=AuthState.toggle_language,
+            ),
             spacing="3",
             align="center",
+            width="100%",
         ),
         padding="1rem",
         border_bottom=f"1px solid {T.border}",

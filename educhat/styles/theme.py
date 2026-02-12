@@ -94,8 +94,12 @@ class ThemeTokens:
     
     # Sidebar specific
     sidebar_bg = "var(--sidebar-bg)"
-    sidebar_border = "var(--sidebar-border)"
-
+    sidebar_border = "var(--sidebar-border)"    
+    # Gradients
+    gradient_primary = "var(--gradient-primary)"
+    gradient_primary_hover = "var(--gradient-primary-hover)"
+    gradient_hero = "var(--gradient-hero)"
+    gradient_card = "var(--gradient-card)"
 
 # Alias for easier imports
 T = ThemeTokens
@@ -120,6 +124,12 @@ COLORS = {
     # Static neutrals (for gradients that need actual values)
     "white": "#FFFFFF",
     "black": "#030712",
+    
+    # Gradient CSS Variables (theme-aware)
+    "gradient_primary": "var(--gradient-primary)",
+    "gradient_primary_hover": "var(--gradient-primary-hover)",
+    "gradient_hero": "var(--gradient-hero)",
+    "gradient_card": "var(--gradient-card)",
     
     # Light mode text (use ThemeTokens.text_* instead in components!)
     "text_primary": "var(--text-primary)",
@@ -354,17 +364,20 @@ TRANSITIONS = {
 }
 
 # =============================================================================
-# Z-INDEX SCALE
+# Z-INDEX SCALE (for layering management)
+# Use these constants instead of hardcoded z-index values
 # =============================================================================
 Z_INDEX = {
+    "base": "0",
     "dropdown": "100",
     "sticky": "200",
     "fixed": "300",
-    "modal_backdrop": "400",
-    "modal": "500",
-    "popover": "600",
-    "tooltip": "700",
-    "toast": "800",
+    "overlay": "999",          # Modal/dialog backdrops
+    "modal": "1000",           # Main modals
+    "modal_nested": "1001",    # Nested modals (reminders, etc.)
+    "popover": "1002",         # Popovers and dropdowns in modals
+    "tooltip": "1050",         # Tooltips (should be above everything)
+    "toast": "1100",           # Toast notifications (highest priority)
 }
 
 # =============================================================================
@@ -383,21 +396,109 @@ BREAKPOINTS = {
 }
 
 # =============================================================================
+# COMMON ICONS (Lucide icon names)
+# Use these constants for consistent icon usage across components
+# =============================================================================
+ICONS = {
+    # Navigation
+    "menu": "menu",
+    "close": "x",
+    "arrow_left": "arrow-left",
+    "arrow_right": "arrow-right",
+    "chevron_left": "chevron-left",
+    "chevron_right": "chevron-right",
+    "chevron_down": "chevron-down",
+    "chevron_up": "chevron-up",
+    
+    # Actions
+    "plus": "plus",
+    "minus": "minus",
+    "edit": "edit",
+    "trash": "trash-2",
+    "copy": "copy",
+    "check": "check",
+    "save": "save",
+    "download": "download",
+    "upload": "upload",
+    "share": "share-2",
+    "search": "search",
+    "filter": "filter",
+    "refresh": "refresh-cw",
+    
+    # Status
+    "info": "info",
+    "alert": "triangle-alert",
+    "warning": "alert-triangle",
+    "error": "x-circle",
+    "success": "check-check",
+    "loader": "loader",
+    
+    # User & Auth
+    "user": "user",
+    "users": "users",
+    "login": "log-in",
+    "logout": "log-out",
+    "lock": "lock",
+    "unlock": "unlock",
+    "eye": "eye",
+    "eye_off": "eye-off",
+    "mail": "mail",
+    
+    # Chat & Communication
+    "message": "message-circle",
+    "send": "send",
+    "mic": "mic",
+    "heart": "heart",
+    "thumbs_up": "thumbs-up",
+    "thumbs_down": "thumbs-down",
+    "smile": "smile",
+    
+    # Files & Documents
+    "file": "file",
+    "folder": "folder",
+    "book": "book",
+    "bookmark": "bookmark",
+    
+    # Calendar & Time
+    "calendar": "calendar",
+    "clock": "clock",
+    "bell": "bell",
+    
+    # Settings & Configuration
+    "settings": "settings",
+    "sliders": "sliders",
+    "toggle_left": "toggle-left",
+    "toggle_right": "toggle-right",
+    
+    # Miscellaneous
+    "home": "home",
+    "star": "star",
+    "help": "help-circle",
+    "external_link": "external-link",
+    "link": "link",
+    "image": "image",
+    "video": "video",
+    "graduation_cap": "graduation-cap",
+    "lightbulb": "lightbulb",
+    "zap": "zap",
+}
+
+# =============================================================================
 # COMPONENT STYLE PRESETS (using CSS variables)
 # =============================================================================
 BUTTON_STYLES = {
     "primary": {
-        "background": "linear-gradient(135deg, #10A37F 0%, #0D8F6F 100%)",
-        "color": "#FFFFFF",
+        "background": T.gradient_primary,
+        "color": T.text_on_primary,
         "border": "none",
         "border_radius": RADIUS["lg"],
-        "padding": "0.75rem 1.5rem",
+        "padding": f"{SPACING['3']} {SPACING['6']}",
         "font_weight": FONT_WEIGHTS["semibold"],
         "transition": TRANSITIONS["normal"],
-        "box_shadow": "0 2px 8px rgba(16, 163, 127, 0.2)",
+        "box_shadow": SHADOWS["primary_sm"],
         "_hover": {
             "transform": "translateY(-2px)",
-            "box_shadow": "0 4px 14px rgba(16, 163, 127, 0.25)",
+            "box_shadow": SHADOWS["primary_md"],
         },
         "_active": {
             "transform": "translateY(0)",

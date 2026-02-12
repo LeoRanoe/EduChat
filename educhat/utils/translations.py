@@ -257,6 +257,78 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "nl": "Begin Chat",
         "en": "Start Chat",
     },
+    "popular_questions": {
+        "nl": "Populaire vragen:",
+        "en": "Popular Questions:",
+    },
+    "step_by_step_guide": {
+        "nl": "Of start met een stap-voor-stap gids:",
+        "en": "Or start with a step-by-step guide:",
+    },
+    "enrollment_process_title": {
+        "nl": "Inschrijvingsproces",
+        "en": "Enrollment Process",
+    },
+    "enrollment_process_desc": {
+        "nl": "Leer stap voor stap hoe je je inschrijft voor een opleiding",
+        "en": "Learn step by step how to enroll in a program",
+    },
+    "enrollment_process_prompt": {
+        "nl": "Hoe schrijf ik me in voor een opleiding? Kun je me stap voor stap door het proces leiden?",
+        "en": "How do I enroll in a program? Can you guide me through the process step by step?",
+    },
+    "required_documents_title": {
+        "nl": "Benodigde documenten",
+        "en": "Required Documents",
+    },
+    "required_documents_desc": {
+        "nl": "Ontdek welke documenten je nodig hebt voor je inschrijving",
+        "en": "Discover which documents you need for your enrollment",
+    },
+    "required_documents_prompt": {
+        "nl": "Welke documenten heb ik nodig om me in te schrijven? Kun je een volledige lijst geven?",
+        "en": "Which documents do I need to enroll? Can you provide a complete list?",
+    },
+    "admission_requirements_title": {
+        "nl": "Toelatingseisen",
+        "en": "Admission Requirements",
+    },
+    "admission_requirements_desc": {
+        "nl": "Bekijk de vereisten en voorwaarden voor toelating",
+        "en": "View the requirements and conditions for admission",
+    },
+    "admission_requirements_prompt": {
+        "nl": "Wat zijn de toelatingseisen voor studies in Suriname? Welke voorwaarden moet ik vervullen?",
+        "en": "What are the admission requirements for studies in Suriname? Which conditions must I fulfill?",
+    },
+    "ai_study_guide": {
+        "nl": "Jouw AI Studiegids",
+        "en": "Your AI Study Guide",
+    },
+    "welcome_to": {
+        "nl": "Welkom bij",
+        "en": "Welcome to",
+    },
+    "welcome_description_1": {
+        "nl": "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
+        "en": "EduChat helps you easily find information about the Ministry of Education (MINOV) and everything related to education in Suriname.",
+    },
+    "welcome_description_2": {
+        "nl": "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
+        "en": "Whether you want to compare study choices, find school information, or are just curious – it's here to explain it simply, your way.",
+    },
+    "chat_placeholder": {
+        "nl": "Vraag mij van alles over onderwijs...",
+        "en": "Ask me anything about education...",
+    },
+    "type_message": {
+        "nl": "Typ je bericht",
+        "en": "Type your message",
+    },
+    "send_message": {
+        "nl": "Verstuur bericht",
+        "en": "Send message",
+    },
     "try_as_guest": {
         "nl": "Probeer als Gast",
         "en": "Try as Guest",
@@ -1003,6 +1075,78 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     },
     
     # =========================================================================
+    # SIDEBAR 
+    # =========================================================================
+    "new_conversation": {
+        "nl": "Nieuw gesprek",
+        "en": "New conversation",
+    },
+    "conversations": {
+        "nl": "Gesprekken",
+        "en": "Conversations",
+    },
+    "no_conversations_yet": {
+        "nl": "Nog geen gesprekken",
+        "en": "No conversations yet",
+    },
+    "start_first_conversation": {
+        "nl": "Start je eerste gesprek hierboven",
+        "en": "Start your first conversation above",
+    },
+    "preferences": {
+        "nl": "Voorkeuren",
+        "en": "Preferences",
+    },
+    "start_onboarding": {
+        "nl": "Start Onboarding",
+        "en": "Start Onboarding",
+    },
+    "guest": {
+        "nl": "GAST",
+        "en": "GUEST",
+    },
+    "reminders": {
+        "nl": "Reminders",
+        "en": "Reminders",
+    },
+    "events": {
+        "nl": "Events",
+        "en": "Events",
+    },
+    "dark": {
+        "nl": "Donker",
+        "en": "Dark",
+    },
+    "light": {
+        "nl": "Licht",
+        "en": "Light",
+    },
+    "switch_to_dark_mode": {
+        "nl": "Schakel naar donkere modus",
+        "en": "Switch to dark mode",
+    },
+    "switch_to_light_mode": {
+        "nl": "Schakel naar lichte modus",
+        "en": "Switch to light mode",
+    },
+    "dark_mode_desc": {
+        "nl": "Donkere modus - vermindert vermoeidheid van de ogen",
+        "en": "Dark mode - reduces eye strain",
+    },
+    "light_mode_desc": {
+        "nl": "Lichte modus - vermindert vermoeidheid van de ogen",  
+        "en": "Light mode - reduces eye strain",
+    },
+    "sync_calendar": {
+        "nl": "Sync Kalender",
+        "en": "Sync Calendar",
+    },
+    "logout": {
+        "nl": "Uitloggen",
+        "en": "Logout",
+    },
+    
+    # =========================================================================
     # SETTINGS
     # =========================================================================
     "settings_title": {
@@ -1121,6 +1265,38 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     "age_group_label": {
         "nl": "Leeftijdsgroep",
         "en": "Age Group",
+    },
+    
+    # =========================================================================
+    # PERSONALIZATION INDICATOR
+    # =========================================================================
+    "personalized": {
+        "nl": "Gepersonaliseerd",
+        "en": "Personalized",
+    },
+    "personalization_info": {
+        "nl": "EduChat past antwoorden aan op basis van:",
+        "en": "EduChat adapts answers based on:",
+    },
+    "personalization_education_level": {
+        "nl": "Je onderwijsniveau",
+        "en": "Your education level",
+    },
+    "personalization_subjects": {
+        "nl": "Je favoriete vakken",
+        "en": "Your favorite subjects",
+    },
+    "personalization_interests": {
+        "nl": "Je interessegebieden",
+        "en": "Your areas of interest",
+    },
+    "personalization_style": {
+        "nl": "Je communicatiestijl",
+        "en": "Your communication style",
+    },
+    "personalization_preferences": {
+        "nl": "Je voorkeuren",
+        "en": "Your preferences",
     },
 }
 
@@ -1320,6 +1496,29 @@ def t(key: str, lang: str = "nl") -> str:
     if key in TRANSLATIONS:
         return TRANSLATIONS[key].get(lang, TRANSLATIONS[key].get("nl", key))
     return key
+
+
+def tx(key: str):
+    """
+    Get reactive translation for a key that updates with language changes.
+    
+    For use in Reflex components. Returns a conditional component that
+    shows the correct translation based on AuthState.language.
+    
+    Args:
+        key: Translation key (e.g., "auth_login_title")
+        
+    Returns:
+        Reflex component with translation
+    """
+    import reflex as rx
+    from educhat.state.auth_state import AuthState
+    
+    return rx.cond(
+        AuthState.is_dutch,
+        TRANSLATIONS.get(key, {}).get("nl", key),
+        TRANSLATIONS.get(key, {}).get("en", key),
+    )
 
 
 def get_education_levels(lang: str = "nl") -> list:

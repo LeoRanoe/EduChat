@@ -2,10 +2,24 @@
 
 import reflex as rx
 from typing import List, Dict
-from educhat.styles.theme import COLORS, T
+from educhat.styles.theme import COLORS, T, RADIUS, SHADOWS
 from educhat.components.shared import logo, quick_actions_grid, conversation_templates
 from educhat.components.chat.message_bubble import message_bubble
 from educhat.components.chat.chat_input import chat_input
+from educhat.utils.translations import t
+from educhat.state.auth_state import AuthState
+
+
+def tx(key: str) -> rx.Var:
+    """Reactive translation helper for chat container.
+    
+    Returns a reactive var that updates when language changes.
+    """
+    return rx.cond(
+        AuthState.is_dutch,
+        t(key, "nl"),
+        t(key, "en"),
+    )
 
 
 def welcome_screen(on_quick_action=None) -> rx.Component:
@@ -54,7 +68,12 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                     # Badge above logo
                     rx.box(
                         rx.icon("sparkles", size=14, color=COLORS["primary_green"]),
-                        rx.text("Jouw AI Studiegids", font_size="12px", font_weight="700", color=COLORS["primary_green"]),
+                        rx.text(
+                            tx("ai_study_guide"),
+                            font_size="12px",
+                            font_weight="700",
+                            color=COLORS["primary_green"]
+                        ),
                         display="flex",
                         align_items="center",
                         gap="6px",
@@ -67,7 +86,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                     ),
                     
                     rx.heading(
-                        "Welkom bij",
+                        tx("welcome_to"),
                         font_size=["1.5rem", "1.75rem", "2rem"],
                         font_weight="600",
                         color=T.text_secondary,
@@ -99,7 +118,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                 # Description with enhanced styling
                 rx.box(
                     rx.text(
-                        "EduChat helpt je makkelijk informatie te vinden over het Ministerie van Onderwijs (MINOV) en alles wat met onderwijs in Suriname te maken heeft.",
+                        tx("welcome_description_1"),
                         font_size=["1rem", "1.0625rem", "1.125rem"],
                         color=T.text_primary,
                         text_align="center",
@@ -108,7 +127,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                         margin_bottom="16px",
                     ),
                     rx.text(
-                        "Of je nu studiekeuzes wilt vergelijken, schoolinfo zoekt, of gewoon nieuwsgierig bent – het is er om het jou simpel uit te leggen, op jouw manier.",
+                        tx("welcome_description_2"),
                         font_size=["0.9375rem", "1rem", "1.0625rem"],
                         color=T.text_secondary,
                         text_align="center",
@@ -118,8 +137,8 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                     width="100%",
                     padding="24px 32px",
                     background=T.bg_card,
-                    border_radius="20px",
-                    box_shadow="0 4px 20px rgba(0, 0, 0, 0.06)",
+                    border_radius=RADIUS["2xl"],
+                    box_shadow=SHADOWS["md"],
                     border=f"1px solid {T.border}",
                     margin_bottom="40px",
                     animation="fadeInUp 0.8s ease-out 0.4s backwards",
@@ -128,7 +147,7 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                 # Section header for popular questions
                 rx.box(
                     rx.text(
-                        "Populaire vragen:",
+                        tx("popular_questions"),
                         font_size=["0.9375rem", "1rem", "1.0625rem"],
                         color=T.text_primary,
                         font_weight="700",
@@ -148,13 +167,23 @@ def welcome_screen(on_quick_action=None) -> rx.Component:
                     animation="fadeInUp 0.8s ease-out 0.6s backwards",
                 ),
                 
+                # Visual divider
+                rx.box(
+                    width="64px",
+                    height="4px",
+                    background=f"linear-gradient(90deg, transparent, {T.border}, transparent)",
+                    border_radius=RADIUS["full"],
+                    margin="32px 0",
+                    animation="fadeIn 0.8s ease-out 0.65s backwards",
+                ),
+                
                 # Conversation templates section
                 rx.box(
                     rx.vstack(
                         rx.text(
-                            "Of start met een stap-voor-stap gids:",
+                            tx("step_by_step_guide"),
                             font_size=["0.9375rem", "1rem", "1.0625rem"],
-                            color=rx.cond(rx.color_mode == "dark", "#FFFFFF", "#111827"),
+                            color=T.text_primary,
                             font_weight="700",
                             text_align="center",
                             margin_bottom="20px",

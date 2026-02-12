@@ -10,6 +10,20 @@ Professional chat input with:
 
 import reflex as rx
 from educhat.styles.theme import COLORS, RADIUS, SHADOWS, TRANSITIONS, T
+from educhat.utils.translations import t
+from educhat.state.auth_state import AuthState
+
+
+def tx(key: str) -> rx.Var:
+    """Reactive translation helper for chat input.
+    
+    Returns a reactive var that updates when language changes.
+    """
+    return rx.cond(
+        AuthState.is_dutch,
+        t(key, "nl"),
+        t(key, "en"),
+    )
 
 
 def chat_input(
@@ -18,7 +32,7 @@ def chat_input(
     on_submit=None,
     on_prompts_click=None,
     is_loading: bool = False,
-    placeholder: str = "Vraag mij van alles over onderwijs...",
+    placeholder: rx.Var = None,
     max_chars: int = 2000,
 ) -> rx.Component:
     """Professional chat input component with send button.
@@ -36,9 +50,13 @@ def chat_input(
         on_submit: Handler for submit/send
         on_prompts_click: Handler for prompts button
         is_loading: Loading state (disables input and shows spinner)
-        placeholder: Placeholder text
+        placeholder: Placeholder text (reactive)
         max_chars: Maximum character limit
     """
+    # Use default placeholder if none provided
+    if placeholder is None:
+        placeholder = tx("chat_placeholder")
+    
     # Calculate if we should show the character counter
     char_count_visible = f"(({value}.length() / {max_chars}) > 0.8)"
     
@@ -57,7 +75,7 @@ def chat_input(
                             max_length=max_chars,
                             rows=1,
                             id="chat-textarea",
-                            aria_label="Typ je bericht",
+                            aria_label=tx("type_message"),
                             style={
                                 "width": "100%",
                                 "min_height": "24px",
@@ -113,7 +131,7 @@ def chat_input(
                                     _active={
                                         "transform": "scale(0.95)",
                                     },
-                                    aria_label="Verstuur bericht",
+                                    aria_label=tx("send_message"),
                                 ),
                             ),
                             align_self="flex-end",

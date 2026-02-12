@@ -1917,7 +1917,7 @@ class AuthState(rx.State):
             from educhat.services.supabase_client import get_service
             
             # Simple in-memory check (can be enhanced with database storage)
-            if hasattr(self, '_last_auto_scrape_time'):
+            if self._last_auto_scrape_time is not None:
                 time_since_scrape = datetime.now() - self._last_auto_scrape_time
                 if time_since_scrape < timedelta(hours=24):
                     print(f"[AUTO-SCRAPE] Skipping - last scrape was {time_since_scrape.total_seconds() / 3600:.1f}h ago")
@@ -2422,6 +2422,47 @@ class AuthState(rx.State):
     edit_event_time: str = "09:00"
     edit_event_location: str = ""
     is_updating_event: bool = False
+    
+    # Explicit setters for event fields (required in Reflex 0.9.0+)
+    def set_new_event_title(self, value: str):
+        """Set new event title."""
+        self.new_event_title = value
+    
+    def set_new_event_date(self, value: str):
+        """Set new event date."""
+        self.new_event_date = value
+    
+    def set_new_event_time(self, value: str):
+        """Set new event time."""
+        self.new_event_time = value
+    
+    def set_new_event_location(self, value: str):
+        """Set new event location."""
+        self.new_event_location = value
+    
+    def set_new_event_description(self, value: str):
+        """Set new event description."""
+        self.new_event_description = value
+    
+    def set_edit_event_title(self, value: str):
+        """Set edit event title."""
+        self.edit_event_title = value
+    
+    def set_edit_event_date(self, value: str):
+        """Set edit event date."""
+        self.edit_event_date = value
+    
+    def set_edit_event_time(self, value: str):
+        """Set edit event time."""
+        self.edit_event_time = value
+    
+    def set_edit_event_location(self, value: str):
+        """Set edit event location."""
+        self.edit_event_location = value
+    
+    def set_edit_event_description(self, value: str):
+        """Set edit event description."""
+        self.edit_event_description = value
     
     def open_create_event_modal(self):
         """Open modal to create a new event."""

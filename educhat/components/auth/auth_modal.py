@@ -32,7 +32,7 @@ def tx(key: str) -> rx.Var:
 # ============================================================================
 
 MODAL_CONFIG = {
-    "width": ["95vw", "90vw", "1000px"],
+    "width": ["95vw", "90vw", "900px"],
     "max_height": ["95vh", "90vh", "680px"],
     "left_panel_width": "42%",
     "right_panel_width": "58%",
@@ -91,7 +91,7 @@ def auth_modal() -> rx.Component:
                         dark="rgba(30, 30, 35, 0.9)"
                     ),
                     border=f"1px solid {T.border_light}",
-                    box_shadow="0 2px 8px rgba(0, 0, 0, 0.1)",
+                    box_shadow=SHADOWS["sm"],
                     z_index="10",
                     on_click=AuthState.close_auth_modal,
                     transition=TRANSITIONS["fast"],
@@ -120,7 +120,7 @@ def auth_modal() -> rx.Component:
                 left="50%",
                 transform="translate(-50%, -50%) translateZ(0)",
                 width=MODAL_CONFIG["width"],
-                max_width="1000px",
+                max_width="900px",
                 max_height=["95vh", "90vh", "800px"],
                 background=rx.color_mode_cond(
                     light="white",
@@ -128,7 +128,7 @@ def auth_modal() -> rx.Component:
                 ),
                 border=f"1px solid {T.border}",
                 border_radius=RADIUS["xl"],
-                box_shadow="0 10px 25px rgba(0, 0, 0, 0.15)",
+                box_shadow=SHADOWS["lg"],
                 overflow="hidden",
                 display="flex",
                 z_index="1000",
@@ -522,7 +522,7 @@ def _right_panel() -> rx.Component:
             margin="20px 0",
         ),
         
-        # Enhanced Guest Button
+        # Enhanced Guest Button with improved visibility
         rx.button(
             rx.box(
                 rx.icon(tag="user-round", size=18),
@@ -535,21 +535,18 @@ def _right_panel() -> rx.Component:
             padding="15px",
             min_height="52px",
             background="transparent",
-            color=COLORS["primary_green"],
-            border=f"2px solid {COLORS['primary_green']}",
+            color=T.primary,
+            border=f"2px solid {T.primary}",
             border_radius=RADIUS["xl"],
             cursor="pointer",
             font_size="15px",
             on_click=AuthState.continue_as_guest,
             transition=TRANSITIONS["normal"],
             _hover={
-                "background": rx.color_mode_cond(
-                    light=COLORS["primary_light"],
-                    dark="rgba(16, 163, 127, 0.12)"
-                ),
-                "border_color": COLORS["dark_green"],
-                "transform": "translateY(-2px)",
-                "box_shadow": "0 4px 12px rgba(16, 163, 127, 0.2)",
+                "background": T.primary_muted,
+                "border_color": T.primary_hover,
+                "transform": "translateY(-1px)",
+                "box_shadow": T.shadow_sm,
             },
             _active={
                 "transform": "translateY(0)",

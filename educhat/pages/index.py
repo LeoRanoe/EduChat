@@ -9,6 +9,7 @@ from educhat.components.shared.calendar_view import create_event_modal, edit_eve
 from educhat.components.auth import auth_modal
 from educhat.components.shared.toast import toast_notification
 from educhat.styles.theme import COLORS, T
+from educhat.utils.translations import t
 
 
 def index() -> rx.Component:
@@ -102,6 +103,44 @@ def authenticated_chat() -> rx.Component:
             rx.cond(
                 AppState.is_guest & ~AuthState.guest_banner_dismissed,
                 rx.box(height="64px"),  # Spacer to prevent content being hidden
+                rx.fragment(),
+            ),
+            
+            # Personalization indicator (shown when onboarding data is loaded)
+            rx.cond(
+                AppState.onboarding_loaded & (AppState.user_context != None),
+                rx.box(
+                    rx.hstack(
+                        rx.icon("user-check", size=16, color=COLORS["primary_green"]),
+                        rx.text(
+                            t("personalized"),
+                            font_size="0.75rem",
+                            font_weight="600",
+                            color=T.text_primary,
+                        ),
+                        rx.tooltip(
+                            rx.icon("info", size=14, color=T.text_tertiary),
+                            content=f"{t('personalization_info')}: {t('personalization_education_level')}, {t('personalization_subjects')}/{t('personalization_interests')}, {t('personalization_style')}",
+                        ),
+                        spacing="2",
+                        align="center",
+                        padding="8px 14px",
+                        background=f"linear-gradient(135deg, rgba(16, 163, 127, 0.08) 0%, rgba(13, 138, 107, 0.12) 100%)",
+                        border=f"1px solid rgba(16, 163, 127, 0.2)",
+                        border_radius="10px",
+                        box_shadow="0 2px 8px rgba(16, 163, 127, 0.1)",
+                        animation="fadeIn 0.5s ease-out",
+                    ),
+                    position="fixed",
+                    top=rx.cond(
+                        AppState.is_guest & ~AuthState.guest_banner_dismissed,
+                        "76px",  # Below guest banner
+                        "12px",
+                    ),
+                    right="16px",
+                    z_index="850",
+                    display=["none", "none", "block"],  # Only show on desktop
+                ),
                 rx.fragment(),
             ),
             

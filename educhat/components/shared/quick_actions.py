@@ -1,7 +1,9 @@
 """Quick action buttons for common education queries."""
 
 import reflex as rx
-from educhat.styles.theme import COLORS, RADIUS, T
+from educhat.styles.theme import COLORS, RADIUS, T, SHADOWS
+from educhat.state.auth_state import AuthState
+from educhat.utils.translations import t
 
 
 def quick_action_button(
@@ -84,19 +86,19 @@ def quick_action_button(
         border_radius=RADIUS["xl"],
         padding=["0.5rem 0.75rem", "0.5rem 0.75rem", "0.625rem 0.875rem"],
         cursor="pointer",
-        box_shadow="0 2px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)",
+        box_shadow=SHADOWS["sm"],
         position="relative",
         overflow="hidden",
         _hover={
             "border_color": COLORS["primary_green"],
             "background": T.bg_hover,
             "transform": "translateY(-3px) scale(1.01)",
-            "box_shadow": "0 12px 32px rgba(16, 163, 127, 0.15), 0 6px 12px rgba(0,0,0,0.1)",
+            "box_shadow": SHADOWS["primary_md"],
             ".action-indicator": {"opacity": "1"},
             ".action-icon": {
-                "background": f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
+                "background": T.gradient_primary,
                 "transform": "scale(1.1) rotate(-5deg)",
-                "box_shadow": f"0 4px 12px rgba(16, 163, 127, 0.3)",
+                "box_shadow": SHADOWS["primary_lg"],
             },
             ".action-arrow": {"opacity": "1", "transform": "translateX(6px)"},
         },
@@ -119,7 +121,8 @@ def quick_actions_grid(on_action_click) -> rx.Component:
     Args:
         on_action_click: Function that takes prompt text as argument
     """
-    actions = [
+    # Language-aware action buttons
+    actions_nl = [
         "Vertel me over MINOV",
         "Welke opleidingen zijn er?",
         "Hoe schrijf ik me in?",
@@ -128,21 +131,34 @@ def quick_actions_grid(on_action_click) -> rx.Component:
         "Wat zijn de toelatingseisen?",
     ]
     
-    # Create buttons with proper event handlers
-    buttons = []
-    for action_text in actions:
-        button = quick_action_button(
-            text=action_text,
-            on_click=on_action_click(action_text),
+    actions_en = [
+        "Tell me about MINOV",
+        "What programs are available?",
+        "How do I enroll?",
+        "What are the deadlines?",
+        "What documents do I need?",
+        "What are the admission requirements?",
+    ]
+    
+    # Use rx.cond to switch between languages
+    def create_action_button(nl_text: str, en_text: str):
+        return quick_action_button(
+            text=rx.cond(AuthState.is_dutch, nl_text, en_text),
+            on_click=on_action_click(rx.cond(AuthState.is_dutch, nl_text, en_text)),
         )
-        buttons.append(button)
+    
+    # Create buttons with proper event handlers
+    buttons = [
+        create_action_button(nl, en) 
+        for nl, en in zip(actions_nl, actions_en)
+    ]
     
     return rx.vstack(
         rx.text(
-            "Populaire vragen:",
+            t("popular_questions"),
             font_size=["0.8125rem", "0.875rem", "0.9375rem"],
             font_weight="600",
-            color=rx.cond(rx.color_mode == "dark", "#FFFFFF", "#111827"),
+            color=T.text_primary,
             margin_bottom="0.375rem",
             text_align="left",
             width="100%",
@@ -187,7 +203,7 @@ def conversation_template_button(
                 border_radius="12px",
                 padding="0.75rem",
                 flex_shrink="0",
-                box_shadow="0 2px 8px rgba(16, 163, 127, 0.15)",
+                box_shadow=SHADOWS["primary_sm"],
             ),
             # Text content
             rx.vstack(
@@ -237,12 +253,12 @@ def conversation_template_button(
         border_radius=RADIUS["lg"],
         padding=["1rem", "1rem", "1.125rem"],
         cursor="pointer",
-        box_shadow="0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)",
+        box_shadow=SHADOWS["xs"],
         _hover={
             "border_color": COLORS["primary_green"],
             "background": T.bg_hover,
             "transform": "translateY(-2px)",
-            "box_shadow": "0 8px 24px rgba(16, 163, 127, 0.12), 0 4px 8px rgba(0,0,0,0.06)",
+            "box_shadow": SHADOWS["md"],
             ".template-arrow": {"transform": "translateX(4px)"},
         },
         _active={
@@ -262,35 +278,58 @@ def conversation_templates(on_template_click) -> rx.Component:
     Args:
         on_template_click: Function that takes template text as argument
     """
-    templates = [
+    templates_nl = [
         {
-            "title": "Inschrijvingsproces",
-            "description": "Leer stap voor stap hoe je je inschrijft voor een opleiding",
-            "prompt": "Hoe schrijf ik me in voor een opleiding? Kun je me stap voor stap door het proces leiden?",
+            "title": t("enrollment_process_title", "nl"),
+            "description": t("enrollment_process_desc", "nl"),
+            "prompt": t("enrollment_process_prompt", "nl"),
         },
         {
-            "title": "Benodigde documenten",
-            "description": "Ontdek welke documenten je nodig hebt voor je inschrijving",
-            "prompt": "Welke documenten heb ik nodig om me in te schrijven? Kun je een volledige lijst geven?",
+            "title": t("required_documents_title", "nl"),
+            "description": t("required_documents_desc", "nl"),
+            "prompt": t("required_documents_prompt", "nl"),
         },
         {
-            "title": "Toelatingseisen",
-            "description": "Bekijk de vereisten en voorwaarden voor toelating",
-            "prompt": "Wat zijn de toelatingseisen voor studies in Suriname? Welke voorwaarden moet ik vervullen?",
+            "title": t("admission_requirements_title", "nl"),
+            "description": t("admission_requirements_desc", "nl"),
+            "prompt": t("admission_requirements_prompt", "nl"),
         },
     ]
     
-    # Create buttons with proper event handlers
-    buttons = []
-    for template in templates:
-        prompt_text = template["prompt"]
-        button = conversation_template_button(
-            title=template["title"],
-            description=template["description"],
+    templates_en = [
+        {
+            "title": t("enrollment_process_title", "en"),
+            "description": t("enrollment_process_desc", "en"),
+            "prompt": t("enrollment_process_prompt", "en"),
+        },
+        {
+            "title": t("required_documents_title", "en"),
+            "description": t("required_documents_desc", "en"),
+            "prompt": t("required_documents_prompt", "en"),
+        },
+        {
+            "title": t("admission_requirements_title", "en"),
+            "description": t("admission_requirements_desc", "en"),
+            "prompt": t("admission_requirements_prompt", "en"),
+        },
+    ]
+    
+    # Helper function to create a single template button with conditional content
+    def create_template_button(idx: int) -> rx.Component:
+        nl_template = templates_nl[idx]
+        en_template = templates_en[idx]
+        
+        return conversation_template_button(
+            title=rx.cond(AuthState.is_dutch, nl_template["title"], en_template["title"]),
+            description=rx.cond(AuthState.is_dutch, nl_template["description"], en_template["description"]),
             icon="",
-            on_click=on_template_click(prompt_text),
+            on_click=on_template_click(
+                rx.cond(AuthState.is_dutch, nl_template["prompt"], en_template["prompt"])
+            ),
         )
-        buttons.append(button)
+    
+    # Create buttons for all templates
+    buttons = [create_template_button(i) for i in range(len(templates_nl))]
     
     return rx.vstack(
         *buttons,

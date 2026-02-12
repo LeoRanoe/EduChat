@@ -167,13 +167,13 @@ def sync_status_badge(status: str, last_sync_time: str = "", google_link: str = 
                 rx.icon("cloud-off", size=12),
                 rx.cond(
                     status == "synced",
-                    rx.icon("check-circle", size=12),
+                    rx.icon("check-check", size=12),
                     rx.cond(
                         status == "syncing",
                         rx.icon("loader", size=12),
                         rx.cond(
                             status == "error",
-                            rx.icon("alert-circle", size=12),
+                            rx.icon("triangle-alert", size=12),
                             rx.icon("trash-2", size=12)  # deleted
                         )
                     )
