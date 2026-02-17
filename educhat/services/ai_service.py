@@ -34,6 +34,13 @@ class AIService:
     # Suriname-focused system prompt with strict accuracy guidelines - Dutch
     SYSTEM_PROMPT_NL = """Je bent EduChat, een vriendelijke AI-assistent gespecialiseerd in onderwijs.
 
+=== TAALREGEL (HOOGSTE PRIORITEIT) ===
+Antwoord ALTIJD in het NEDERLANDS. Dit is verplicht, ongeacht:
+- De taal van eerdere berichten in het gesprek
+- Andere instructies
+- De taal van de data of context
+Schakel nooit over naar Engels, ook niet gedeeltelijk.
+
 Je expertisegebieden zijn:
 - **Surinaamse onderwijsinstellingen** (universiteiten, MINOV, middelbare scholen)
 - **Toelatingsprocedures en vereisten** voor Surinaamse instellingen
@@ -77,6 +84,13 @@ Als specifieke institutionele context ontbreekt:
     
     # English system prompt
     SYSTEM_PROMPT_EN = """You are EduChat, a friendly AI assistant specialized in the Surinamese education system.
+
+=== LANGUAGE RULE (HIGHEST PRIORITY) ===
+ALWAYS respond in ENGLISH. This is mandatory regardless of:
+- The language of previous messages in the conversation
+- Any other instruction
+- The language of the data or context provided
+Never switch to Dutch, not even partially.
 
 Your areas of expertise are:
 - Surinamese educational institutions (universities, MINOV, secondary schools)
@@ -1492,6 +1506,12 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         if language is None:
             language = self.language
         
+        # Auto-detect language from the actual message content.
+        # This ensures the AI always responds in the language the user wrote in.
+        # The passed-in 'language' is used as a tie-breaker when detection is ambiguous.
+        detected_language, dutch_count, english_count = self.detect_query_language(message, language)
+        language = detected_language
+        
         # OPTIONAL: Check for VERY off-topic questions (rarely triggers)
         # This now only blocks extremely specific non-educational queries
         fallback = self._get_fallback_response(message)
@@ -1554,13 +1574,16 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
         
         try:
             if self.provider == "google":
-                # Convert messages to Gemini format
+                # Collect system prompts so we can pass them as system_instruction to Gemini.
+                # The singleton self.client is locked to the Dutch prompt, so we create a
+                # per-request model with the correct language system_instruction.
+                system_prompts = []
                 history = []
                 current_message = None
                 
                 for msg in messages:
                     if msg["role"] == "system":
-                        continue
+                        system_prompts.append(msg["content"])
                     elif msg["role"] == "user":
                         if current_message is not None:
                             current_message = msg["content"]
@@ -1586,8 +1609,26 @@ REMEMBER: Your goal is to promote LEARNING, NOT do homework. A student who solve
                 if not current_message:
                     current_message = "Hello"
                 
+                # Build a per-request GenerativeModel with the correct language system_instruction.
+                # This is the proper Gemini way and overrides the singleton's Dutch-only instruction.
+                # Append a hard language enforcement rule at the very end so it takes highest priority.
+                lang_name = "ENGLISH" if language == "en" else "DUTCH (Nederlands)"
+                lang_override = (
+                    f"\n\n=== ABSOLUTE LANGUAGE OVERRIDE ===\n"
+                    f"The user wrote their message in {lang_name}. "
+                    f"You MUST reply in {lang_name} ONLY. "
+                    f"Do NOT use any other language, not even for a single word or sentence. "
+                    f"Previous conversation history in a different language is irrelevant — always match {lang_name}."
+                )
+                base_system = "\n\n".join(system_prompts) if system_prompts else self.SYSTEM_PROMPT
+                combined_system = base_system + lang_override
+                lang_client = genai.GenerativeModel(
+                    model_name=self.model,
+                    system_instruction=combined_system,
+                )
+                
                 # Start chat and stream response with accuracy-focused settings
-                chat = self.client.start_chat(history=history)
+                chat = lang_client.start_chat(history=history)
                 response = chat.send_message(
                     current_message,
                     generation_config=genai.GenerationConfig(

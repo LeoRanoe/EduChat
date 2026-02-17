@@ -403,6 +403,7 @@ class AppState(AuthState):
                     message=user_input_text,
                     conversation_history=conversation_history,
                     context=enhanced_context,
+                    language=self.language,
                 )
             )
             
@@ -893,7 +894,8 @@ class AppState(AuthState):
                         lambda: ai_service.chat_stream(
                             message=user_message_content,
                             conversation_history=conversation_history[-10:],
-                            context=self.user_context
+                            context=self.user_context,
+                            language=self.language,
                         )
                     )
                     
