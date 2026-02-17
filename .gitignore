@@ -67,3 +67,19 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+.coverage.xml
+coverage.xml
+
+# Python __pycache__
+__pycache__/
+
+# IDE settings
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Archive (optional - can be included for reference)
+# archive/
