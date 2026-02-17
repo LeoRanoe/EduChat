@@ -3,6 +3,8 @@
 import reflex as rx
 from educhat.styles.theme import COLORS, RADIUS, TRANSITIONS, T
 from educhat.state.auth_state import AuthState
+from educhat.state.app_state import AppState
+from educhat.utils.translations import t
 
 
 def calendar_sync_bar() -> rx.Component:
@@ -49,6 +51,28 @@ def calendar_sync_bar() -> rx.Component:
             
             # Spacer
             rx.spacer(),
+            
+            # Personalization indicator (shown when onboarding data is loaded)
+            rx.cond(
+                AppState.onboarding_loaded & (AppState.user_context != None),
+                rx.hstack(
+                    rx.icon("user-check", size=14, color=COLORS["primary_green"]),
+                    rx.text(
+                        t("personalized"),
+                        font_size="0.7rem",
+                        font_weight="600",
+                        color=T.text_secondary,
+                    ),
+                    spacing="1",
+                    align="center",
+                    padding="6px 10px",
+                    background=f"linear-gradient(135deg, rgba(16, 163, 127, 0.06) 0%, rgba(13, 138, 107, 0.1) 100%)",
+                    border=f"1px solid rgba(16, 163, 127, 0.15)",
+                    border_radius="8px",
+                    display=["none", "none", "flex"],  # Only show on desktop
+                ),
+                rx.fragment(),
+            ),
             
             # Minimal sync button (icon only on desktop, icon + text on hover)
             rx.box(
