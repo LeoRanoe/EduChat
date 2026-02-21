@@ -473,12 +473,14 @@ class AuthService:
     
     async def update_password_with_token(self, access_token: str, new_password: str) -> Dict:
         """
-        Update user password using a reset token from email.
-        
+        Update user password using a recovery token from email.
+        Flow: verify_otp (creates session) -> update_user (uses that session)
+        Both steps run in the same thread so the internal session persists.
+
         Args:
-            access_token: The access token from the reset email link
+            access_token: The token_hash from the reset email link
             new_password: The new password
-            
+
         Returns:
             Dict with success status
         """
@@ -488,25 +490,42 @@ class AuthService:
         print(f"  - Token length: {len(access_token) if access_token else 0}")
         print(f"  - Password length: {len(new_password) if new_password else 0}")
         print(f"{'='*60}\n")
-        
+
         try:
             # Validate password
             if not new_password or len(new_password) < 8:
                 print("[AUTH SERVICE] ❌ Password validation failed: too short")
                 return {"success": False, "error": "Wachtwoord moet minimaal 8 tekens bevatten"}
-            
-            print("[AUTH SERVICE] 🚀 Calling Supabase auth.update_user()...")
-            
-            # Update user password with the access token
-            result = await asyncio.to_thread(
-                lambda: self.client.auth.update_user({
-                    "password": new_password
-                }, access_token)
+
+            # Short tokens (< 20 chars) are raw OTP codes that need email + token,
+            # not token_hash. Guide the user to request a new link via the app.
+            if len(access_token) < 20:
+                print(f"[AUTH SERVICE] ⚠️  Short token detected ({len(access_token)} chars) - likely raw OTP from email template")
+                return {
+                    "success": False,
+                    "error": "Deze reset link gebruikt een oud formaat. Vraag via de inlogpagina een nieuwe reset link aan."
+                }
+
+            def _verify_and_update(client, token_hash, password):
+                """Run verify_otp and update_user in the same thread so the session persists."""
+                print("[AUTH SERVICE] 🚀 Step 1: Verifying token to create session...")
+                verify_result = client.auth.verify_otp({
+                    "token_hash": token_hash,
+                    "type": "recovery",
+                })
+                if not verify_result or not verify_result.session:
+                    raise ValueError("verify_otp did not return a valid session")
+                print(f"[AUTH SERVICE] ✅ Session created (JWT length: {len(verify_result.session.access_token)})")
+
+                print("[AUTH SERVICE] 🚀 Step 2: Updating password with session...")
+                update_result = client.auth.update_user({"password": password})
+                print(f"[AUTH SERVICE] ✅ Password updated for: {update_result.user.email if update_result.user else 'OK'}")
+                return update_result
+
+            await asyncio.to_thread(
+                lambda: _verify_and_update(self.client, access_token, new_password)
             )
-            
-            print(f"[AUTH SERVICE] 📥 Supabase response received: {result}")
-            print("[AUTH SERVICE] ✅ Password updated successfully!")
-            
+
             return {
                 "success": True,
                 "message": "Wachtwoord succesvol gewijzigd"
@@ -515,16 +534,16 @@ class AuthService:
             print(f"[AUTH SERVICE] 💥 Exception during password update:")
             print(f"  - Exception type: {type(e).__name__}")
             print(f"  - Exception message: {e}")
-            
+
             import traceback
             traceback.print_exc()
-            
+
             error_msg = str(e).lower()
-            
-            if "invalid" in error_msg or "expired" in error_msg:
-                print("[AUTH SERVICE] ❌ Token invalid or expired")
-                return {"success": False, "error": "Reset link is verlopen of ongeldig. Vraag een nieuwe aan."}
-            
+
+            if any(k in error_msg for k in ("otp", "expired", "invalid", "token", "not found", "session")):
+                print("[AUTH SERVICE] ❌ Token invalid, expired, or session missing")
+                return {"success": False, "error": "Reset link is verlopen of ongeldig. Vraag een nieuwe reset link aan."}
+
             print("[AUTH SERVICE] ❌ Unknown error")
             return {"success": False, "error": "Kon wachtwoord niet wijzigen. Probeer opnieuw."}
     
