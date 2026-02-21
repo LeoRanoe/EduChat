@@ -670,12 +670,16 @@ def sidebar(
                         ),
                         # Action buttons row 2
                         rx.hstack(
-                            sidebar_action_button(
-                                icon="calendar",
-                                label=tx("events"),
-                                on_click=AuthState.toggle_events_panel,
-                                icon_color="#3B82F6",
-                                hover_bg="rgba(59, 130, 246, 0.1)",
+                            rx.cond(
+                                AppState.is_authenticated,
+                                sidebar_action_button(
+                                    icon="calendar",
+                                    label=tx("events"),
+                                    on_click=AuthState.toggle_events_panel,
+                                    icon_color="#3B82F6",
+                                    hover_bg="rgba(59, 130, 246, 0.1)",
+                                ),
+                                rx.fragment(),
                             ),
                             # Reliable dark mode toggle with proper state management
                             rx.el.button(
@@ -727,9 +731,9 @@ def sidebar(
                             spacing="2",
                             width="100%",
                         ),
-                        # Google Calendar Connect button row (only show when not connected)
+                        # Google Calendar Connect button row (only show when authenticated and not connected)
                         rx.cond(
-                            ~AuthState.has_google_calendar,
+                            AppState.is_authenticated & ~AuthState.has_google_calendar,
                             rx.hstack(
                                 rx.box(
                                     rx.hstack(
