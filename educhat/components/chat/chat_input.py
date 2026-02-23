@@ -73,13 +73,12 @@ def chat_input(
                             on_change=on_change,
                             disabled=is_loading,
                             max_length=max_chars,
-                            rows=1,
                             id="chat-textarea",
                             aria_label=tx("type_message"),
                             style={
                                 "width": "100%",
                                 "min_height": "24px",
-                                "max_height": "150px",
+                                "max_height": "200px",
                                 "padding": "0",
                                 "border": "none",
                                 "outline": "none",
@@ -90,6 +89,7 @@ def chat_input(
                                 "line_height": "1.6",
                                 "color": T.text_primary,
                                 "overflow_y": "auto",
+                                "overflow_x": "hidden",
                             },
                             class_name="chat-textarea",
                         ),
@@ -138,7 +138,7 @@ def chat_input(
                             flex_shrink="0",
                         ),
                         spacing="3",
-                        align="end",
+                        align="center",
                         width="100%",
                     ),
                     background=T.bg_input,
@@ -157,9 +157,10 @@ def chat_input(
                 
                 # Bottom row: hint text and character counter
                 rx.hstack(
+                    rx.spacer(),
                     # Keyboard hint (desktop only)
                     rx.text(
-                        "EduChat is AI kan fouten maken.",
+                        "EduChat is AI en kan fouten maken.",
                         font_size="0.6875rem",
                         color=T.text_tertiary,
                         display=["none", "none", "block"],
@@ -203,12 +204,33 @@ def chat_input(
         background=f"linear-gradient(to top, {T.bg_card} 0%, {T.bg_primary} 100%)",
         border_top=f"1px solid {T.border_light}",
         flex_shrink="0",
-        # Add inline script to handle Enter key
+        # Add inline script to handle Enter key and auto-expand textarea
         on_mount=rx.call_script(
             """
             const textarea = document.getElementById('chat-textarea');
             const sendButton = document.getElementById('chat-send-button');
+            
+            if (textarea) {
+                // Auto-resize textarea on input
+                const autoResize = () => {
+                    textarea.style.height = 'auto';
+                    const newHeight = Math.min(textarea.scrollHeight, 200);
+                    textarea.style.height = newHeight + 'px';
+                };
+                
+                // Trigger resize on input
+                textarea.addEventListener('input', autoResize);
+                
+                // Initial resize
+                autoResize();
+                
+                // Also auto-resize when value changes programmatically
+                const observer = new MutationObserver(autoResize);
+                observer.observe(textarea, { attributes: true, attributeFilter: ['value'] });
+            }
+            
             if (textarea && sendButton) {
+                // Handle Enter key to send message
                 textarea.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
