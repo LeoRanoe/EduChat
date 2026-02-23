@@ -142,8 +142,8 @@ def events_panel() -> rx.Component:
                     rx.hstack(
                         rx.button(
                             rx.hstack(
-                                rx.icon("calendar", size=16),
-                                rx.text("Kalender Weergave"),
+                                rx.icon("calendar", size=16, color="White"),
+                                rx.text("Kalender Weergave", color="White"),
                                 spacing="2",
                                 align="center",
                             ),
@@ -151,7 +151,7 @@ def events_panel() -> rx.Component:
                             width="100%",
                             padding="0.875rem 1rem",
                             background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
-                            color=T.text_on_primary,
+                            color="White",
                             font_weight="600",
                             border_radius=RADIUS["md"],
                             cursor="pointer",

@@ -253,8 +253,8 @@ def reminders_modal() -> rx.Component:
                             ),
                             rx.button(
                                 rx.hstack(
-                                    rx.icon("plus", size=16),
-                                    rx.text("Herinnering Toevoegen"),
+                                    rx.icon("plus", size=16, color="White"),
+                                    rx.text("Herinnering Toevoegen", color="White"),
                                     spacing="2",
                                     align="center",
                                 ),
