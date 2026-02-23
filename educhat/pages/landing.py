@@ -1398,9 +1398,9 @@ def landing() -> rx.Component:
                 rx.box(
                     rx.button(
                         rx.hstack(
-                            rx.icon("sparkles", size=22),
-                            rx.text(tx("start_free"), font_size="18px", font_weight="700"),
-                            rx.icon("arrow-right", size=20),
+                            rx.icon("sparkles", size=22, color="White"),
+                            rx.text(tx("start_free"), font_size="18px", font_weight="700", color="White"),
+                            rx.icon("arrow-right", size=20, color="White"),
                             spacing="3",
                             align="center",
                         ),
@@ -1426,8 +1426,8 @@ def landing() -> rx.Component:
                 # Stats row
                 rx.box(
                     rx.box(
-                        rx.heading("100+", size="6", color=T.text_inverse, font_weight="700", margin_bottom="4px"),
-                        rx.text(tx("stat_students"), font_size="14px", color="rgba(255, 255, 255, 0.8)"),
+                        rx.heading("100+", size="6", color="White", font_weight="700", margin_bottom="4px"),
+                        rx.text(tx("stat_students"), font_size="14px", color="White"),
                         text_align="center",
                     ),
                     rx.box(
@@ -1437,8 +1437,8 @@ def landing() -> rx.Component:
                         display=["none", "block", "block"],
                     ),
                     rx.box(
-                        rx.heading("<5 sec", size="6", color=T.text_inverse, font_weight="700", margin_bottom="4px"),
-                        rx.text(tx("stat_response_time"), font_size="14px", color="rgba(255, 255, 255, 0.8)"),
+                        rx.heading("<5 sec", size="6", color="White", font_weight="700", margin_bottom="4px"),
+                        rx.text(tx("stat_response_time"), font_size="14px", color="White"),
                         text_align="center",
                     ),
                     rx.box(
@@ -1448,8 +1448,8 @@ def landing() -> rx.Component:
                         display=["none", "block", "block"],
                     ),
                     rx.box(
-                        rx.heading("24/7", size="6", color=T.text_inverse, font_weight="700", margin_bottom="4px"),
-                        rx.text(tx("stat_available"), font_size="14px", color="rgba(255, 255, 255, 0.8)"),
+                        rx.heading("24/7", size="6", color="White", font_weight="700", margin_bottom="4px"),
+                        rx.text(tx("stat_available"), font_size="14px", color="White"),
                         text_align="center",
                     ),
                     display="flex",
@@ -1466,7 +1466,7 @@ def landing() -> rx.Component:
                 
                 # Trust badge at bottom
                 rx.box(
-                    rx.icon("shield-check", size=18, color=T.text_inverse),
+                    rx.icon("shield-check", size=18, color="White"),
                     rx.text(
                         tx("trust_badge"),
                         font_size="14px",
