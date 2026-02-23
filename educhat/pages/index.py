@@ -126,7 +126,9 @@ def authenticated_chat() -> rx.Component:
                 on_copy=AppState.copy_message,
                 on_like=lambda idx: AppState.handle_message_feedback(idx, "like"),
                 on_dislike=lambda idx: AppState.handle_message_feedback(idx, "dislike"),
+                on_bookmark=AppState.bookmark_message,
                 on_regenerate=AppState.regenerate_response,
+                copied_message_index=AppState.copied_message_index,
             ),
             
             width="100%",

@@ -60,7 +60,7 @@ def message_action_button(
     icon: str,
     on_click=None,
     tooltip: str = "",
-    is_active: bool = False,
+    is_active=False,
     variant: str = "default",  # default, success, danger
 ) -> rx.Component:
     """Compact action button for message actions.
@@ -69,7 +69,7 @@ def message_action_button(
         icon: Lucide icon name
         on_click: Click handler
         tooltip: Tooltip text
-        is_active: Whether button is in active state
+        is_active: Whether button is in active state (may be a Reflex Var)
         variant: Color variant (default, success, danger)
     """
     variant_colors = {
@@ -85,7 +85,7 @@ def message_action_button(
             rx.icon(
                 icon,
                 size=14,
-                color=colors["color"] if is_active else T.text_tertiary,
+                color=rx.cond(is_active, colors["color"], T.text_tertiary),
             ),
             width="28px",
             height="28px",
@@ -93,10 +93,10 @@ def message_action_button(
             align_items="center",
             justify_content="center",
             border_radius=RADIUS["md"],
-            background="transparent",
+            background=rx.cond(is_active, colors["hover_bg"], "transparent"),
             cursor="pointer",
-            on_click=on_click,
             transition=TRANSITIONS["fast"],
+            on_click=on_click,
             _hover={
                 "background": colors["hover_bg"],
                 "transform": "scale(1.05)",
@@ -228,6 +228,8 @@ def bot_message(
     on_suggestion_click=None,
     is_thinking: bool = False,
     is_streaming: bool = False,
+    feedback=None,
+    is_copied=False,
 ) -> rx.Component:
     """Bot message bubble - left-aligned with card style.
     
@@ -237,6 +239,7 @@ def bot_message(
     - Action buttons (copy, like, dislike, bookmark, refresh)
     - Thinking/streaming indicators
     - Smooth animations
+    - Active state on like/dislike based on feedback value
     """
     from educhat.components.shared import contextual_follow_ups
     
@@ -319,10 +322,27 @@ def bot_message(
             rx.hstack(
                 # Action buttons
                 rx.hstack(
-                    message_action_button(icon="copy", on_click=on_copy, tooltip="Kopiëren"),
-                    message_action_button(icon="thumbs-up", on_click=on_like, tooltip="Nuttig"),
-                    message_action_button(icon="thumbs-down", on_click=on_dislike, tooltip="Niet nuttig"),
-                    message_action_button(icon="bookmark", on_click=on_bookmark, tooltip="Opslaan"),
+                    message_action_button(
+                        icon=rx.cond(is_copied, "check", "copy"),
+                        on_click=on_copy,
+                        tooltip=rx.cond(is_copied, "Gekopieerd!", "Kopiëren"),
+                        is_active=is_copied,
+                        variant="success",
+                    ),
+                    message_action_button(
+                        icon="thumbs-up",
+                        on_click=on_like,
+                        tooltip="Nuttig",
+                        is_active=rx.cond(feedback == "like", True, False),
+                        variant="success",
+                    ),
+                    message_action_button(
+                        icon="thumbs-down",
+                        on_click=on_dislike,
+                        tooltip="Niet nuttig",
+                        is_active=rx.cond(feedback == "dislike", True, False),
+                        variant="danger",
+                    ),
                     message_action_button(icon="refresh-cw", on_click=on_refresh, tooltip="Opnieuw genereren"),
                     spacing="1",
                     align="center",
@@ -378,6 +398,8 @@ def message_bubble(
     on_suggestion_click=None,
     is_thinking: bool = False,
     is_streaming: bool = False,
+    feedback=None,
+    is_copied=False,
 ) -> rx.Component:
     """Message bubble component for chat messages.
     
@@ -417,6 +439,8 @@ def message_bubble(
             on_suggestion_click,
             is_thinking,
             is_streaming,
+            feedback,
+            is_copied,
         ),
     )
 

@@ -233,7 +233,9 @@ def chat_container(
     on_copy=None,
     on_like=None,
     on_dislike=None,
+    on_bookmark=None,
     on_regenerate=None,
+    copied_message_index=-1,
 ) -> rx.Component:
     """Main chat container with messages and input.
     
@@ -249,6 +251,7 @@ def chat_container(
         on_copy: Handler for copy message action
         on_like: Handler for like message action
         on_dislike: Handler for dislike message action
+        on_bookmark: Handler for bookmark message action
         on_regenerate: Handler for regenerate response action
     """
     return rx.box(
@@ -266,10 +269,13 @@ def chat_container(
                                     content=msg["content"],
                                     is_user=msg["is_user"],
                                     timestamp=msg.get("timestamp", ""),
-                                    on_copy=lambda: on_copy(idx) if on_copy else None,
-                                    on_like=lambda: on_like(idx) if on_like else None,
-                                    on_dislike=lambda: on_dislike(idx) if on_dislike else None,
-                                    on_refresh=lambda: on_regenerate(idx) if on_regenerate else None,
+                                    feedback=msg.get("feedback", ""),
+                                    is_copied=rx.cond(copied_message_index == idx, True, False),
+                                    on_copy=on_copy(idx) if on_copy else rx.noop(),
+                                    on_like=on_like(idx) if on_like else rx.noop(),
+                                    on_dislike=on_dislike(idx) if on_dislike else rx.noop(),
+                                    on_bookmark=on_bookmark(idx) if on_bookmark else rx.noop(),
+                                    on_refresh=on_regenerate(idx) if on_regenerate else rx.noop(),
                                     show_suggestions=rx.cond(
                                         (idx == messages.length() - 1) & ~msg["is_user"],
                                         True,

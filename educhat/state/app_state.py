@@ -30,6 +30,7 @@ class AppState(AuthState):
     # UI state
     sidebar_open: bool = False  # For mobile sidebar toggle
     sidebar_collapsed: bool = False  # For desktop sidebar collapse
+    copied_message_index: int = -1  # Index of message that was just copied (-1 = none)
     search_query: str = ""  # Search query for filtering conversations
     search_expanded: bool = False  # Whether search bar is expanded
     rename_conversation_id: str = ""  # ID of conversation being renamed
@@ -844,8 +845,52 @@ class AppState(AuthState):
             message_index: Index of the message to copy
         """
         if 0 <= message_index < len(self.messages):
-            # Note: Actual clipboard copy handled by browser
-            pass
+            msg_content = self.messages[message_index].get("content", "")
+            if msg_content:
+                # Copy to clipboard via JS
+                import reflex as rx
+                yield rx.call_script(
+                    f"""
+                    navigator.clipboard.writeText({repr(msg_content)}).then(() => {{
+                        console.log('Message copied to clipboard');
+                    }}).catch(err => {{
+                        console.error('Failed to copy:', err);
+                    }});
+                    """
+                )
+                # Show checkmark on the button for 2 seconds, then reset
+                self.copied_message_index = message_index
+                yield
+                await asyncio.sleep(2)
+                self.copied_message_index = -1
+                yield
+    
+    async def bookmark_message(self, message_index: int):
+        """Bookmark/save a message for later reference.
+        
+        Args:
+            message_index: Index of the message to bookmark
+        """
+        if 0 <= message_index < len(self.messages):
+            # Toggle bookmark status
+            is_bookmarked = self.messages[message_index].get("is_bookmarked", False)
+            self.messages[message_index]["is_bookmarked"] = not is_bookmarked
+            self.messages[message_index]["bookmark_timestamp"] = datetime.now().isoformat()
+            
+            # Store bookmark in database for logged-in users
+            if self.can_save_conversations() and self.current_conversation_id:
+                try:
+                    from educhat.services.supabase_client import get_service
+                    db = get_service()
+                    messages_data = db.get_conversation_messages(self.current_conversation_id)
+                    if message_index < len(messages_data):
+                        message_id = messages_data[message_index].get("id")
+                        if message_id:
+                            db.update_message_bookmark(message_id, not is_bookmarked)
+                except Exception as e:
+                    print(f"Error saving bookmark: {e}")
+            
+            yield
     
     async def regenerate_response(self, message_index: int):
         """Regenerate AI response for the last user message.
