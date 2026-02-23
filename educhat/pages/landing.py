@@ -1358,8 +1358,8 @@ def landing() -> rx.Component:
             rx.box(
                 # Premium badge
                 rx.box(
-                    rx.icon("rocket", size=18, color=T.text_inverse),
-                    rx.text("Start Je Studiereis Vandaag", font_size="14px", font_weight="600", color=T.text_inverse),
+                    rx.icon("rocket", size=18, color="White"),
+                    rx.text("Start Je Studiereis Vandaag", font_size="14px", font_weight="600", color="White"),
                     display="flex",
                     align_items="center",
                     gap="8px",
@@ -1377,7 +1377,7 @@ def landing() -> rx.Component:
                 rx.heading(
                     tx("cta_title"),
                     size="9",
-                    color=T.text_inverse,
+                    color="white",
                     text_align="center",
                     margin_bottom="20px",
                     font_weight="800",
@@ -1386,7 +1386,7 @@ def landing() -> rx.Component:
                 rx.text(
                     tx("cta_subtitle"),
                     font_size="20px",
-                    color=T.text_inverse,
+                    color="white",
                     text_align="center",
                     max_width="700px",
                     margin_x="auto",
@@ -1470,7 +1470,7 @@ def landing() -> rx.Component:
                     rx.text(
                         tx("trust_badge"),
                         font_size="14px",
-                        color=T.text_inverse,
+                        color="White",
                         font_weight="600",
                     ),
                     display="flex",
