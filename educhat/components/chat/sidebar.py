@@ -651,12 +651,16 @@ def sidebar(
                         ),
                         # Action buttons row 1
                         rx.hstack(
-                            sidebar_action_button(
-                                icon="bell",
-                                label=tx("reminders"),
-                                on_click=AuthState.toggle_reminder_modal,
-                                icon_color=COLORS["primary_green"],
-                                hover_bg=COLORS["light_green"],
+                            rx.cond(
+                                AppState.is_authenticated,
+                                sidebar_action_button(
+                                    icon="bell",
+                                    label=tx("reminders"),
+                                    on_click=AuthState.toggle_reminder_modal,
+                                    icon_color=COLORS["primary_green"],
+                                    hover_bg=COLORS["light_green"],
+                                ),
+                                rx.fragment(),
                             ),
                             sidebar_action_button(
                                 icon="languages",

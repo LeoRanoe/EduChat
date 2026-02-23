@@ -159,7 +159,7 @@ def chat_input(
                 rx.hstack(
                     # Keyboard hint (desktop only)
                     rx.text(
-                        "Enter om te versturen",
+                        "EduChat is AI kan fouten maken.",
                         font_size="0.6875rem",
                         color=T.text_tertiary,
                         display=["none", "none", "block"],
