@@ -263,7 +263,7 @@ def landing() -> rx.Component:
                     rx.heading(
                         tx("welcome_to"),
                         rx.text(
-                            "EduChat",
+                            " EduChat",
                             background=f"linear-gradient(135deg, {COLORS['primary_green']} 0%, {COLORS['dark_green']} 100%)",
                             background_clip="text",
                             color="transparent",
