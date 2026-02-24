@@ -10,6 +10,7 @@ INSTITUTION_LOGOS = {
     "havo": "Havo.png",
     "lobo": "Lobo.png",
     "lyco": "Lyco.png",
+    "natin": "Natin.png",
     "ptc": "NEW-PTC-Logo.png",
     "unasat": "Unasat.png",
     "vanguard": "Vanguard.png",
