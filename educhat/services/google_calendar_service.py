@@ -58,14 +58,42 @@ class GoogleCalendarService:
         """
         try:
             from google.oauth2.credentials import Credentials
-            
+            import json
+
+            # Read client_id, client_secret, and token_uri from credentials.json
+            # so the saved credentials can be refreshed when the access token expires.
+            client_id = None
+            client_secret = None
+            token_uri = "https://oauth2.googleapis.com/token"
+            creds_path = self._get_credentials_path()
+            if creds_path.exists():
+                try:
+                    with open(creds_path) as f:
+                        creds_data = json.load(f)
+                    # Supports both "web" and "installed" app types
+                    app_data = creds_data.get("web") or creds_data.get("installed") or {}
+                    client_id = app_data.get("client_id")
+                    client_secret = app_data.get("client_secret")
+                    token_uri = app_data.get("token_uri", token_uri)
+                except Exception as e:
+                    print(f"[CALENDAR] Warning: Could not read credentials.json: {e}")
+
+            if not refresh_token or not client_id or not client_secret:
+                print(
+                    f"[CALENDAR] Cannot save complete credentials "
+                    f"(refresh_token={bool(refresh_token)}, "
+                    f"client_id={bool(client_id)}, "
+                    f"client_secret={bool(client_secret)}) - skipping to avoid stale token"
+                )
+                return False
+
             # Create credentials object from tokens
             creds = Credentials(
                 token=access_token,
                 refresh_token=refresh_token,
-                token_uri="https://oauth2.googleapis.com/token",
-                client_id=None,  # Not needed for token-based auth
-                client_secret=None,
+                token_uri=token_uri,
+                client_id=client_id,
+                client_secret=client_secret,
                 scopes=SCOPES
             )
             
@@ -74,7 +102,7 @@ class GoogleCalendarService:
             with open(token_path, 'wb') as token:
                 pickle.dump(creds, token)
             
-            print(f"[CALENDAR] Saved credentials to {token_path}")
+            print(f"[CALENDAR] Saved complete credentials to {token_path}")
             return True
         except Exception as e:
             print(f"[CALENDAR] Error saving credentials: {e}")
@@ -98,6 +126,21 @@ class GoogleCalendarService:
             except Exception as e:
                 print(f"[CALENDAR] Error loading token: {e}")
         
+        # Validate that credentials have ALL fields required for token refresh.
+        # Credentials saved without refresh_token OR without client_id/client_secret
+        # will appear "valid" until the access token expires, then crash on the first API call.
+        # Detect and delete these incomplete "time-bomb" tokens up front.
+        has_refresh_token = bool(getattr(creds, 'refresh_token', None))
+        has_client_id = bool(getattr(creds, 'client_id', None))
+        has_client_secret = bool(getattr(creds, 'client_secret', None))
+        if creds and not (has_refresh_token and has_client_id and has_client_secret):
+            print(f"[CALENDAR] Credentials are incomplete (refresh={has_refresh_token}, client_id={has_client_id}, client_secret={has_client_secret}) - deleting stale token file")
+            try:
+                token_path.unlink(missing_ok=True)
+            except Exception:
+                pass
+            creds = None
+
         # Refresh or get new credentials
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
@@ -110,6 +153,10 @@ class GoogleCalendarService:
                     print("[CALENDAR] Credentials refreshed successfully")
                 except Exception as e:
                     print(f"[CALENDAR] Error refreshing token: {e}")
+                    try:
+                        token_path.unlink(missing_ok=True)
+                    except Exception:
+                        pass
                     creds = None
             
             if not creds:

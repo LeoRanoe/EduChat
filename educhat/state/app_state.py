@@ -218,12 +218,13 @@ class AppState(AuthState):
         print("[INIT] Loading upcoming events...")
         await self.load_upcoming_events()
         
-        # Load and sync Google Calendar events
-        if self.is_authenticated:
+        # Load and sync Google Calendar events (only if Google Calendar is actually connected)
+        if self.is_authenticated and self.google_calendar_connected:
             print("[INIT] Syncing Google Calendar events...")
             await self.sync_calendar_events()
-            
-            # Auto-scrape school events on startup (runs in background)
+
+        # Auto-scrape school events on startup (runs in background for all authenticated users)
+        if self.is_authenticated:
             print("[INIT] Starting automatic event scraping...")
             import asyncio
             asyncio.create_task(self.auto_scrape_school_events_on_startup())

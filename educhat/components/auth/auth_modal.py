@@ -132,6 +132,7 @@ def auth_modal() -> rx.Component:
                 overflow="hidden",
                 display="flex",
                 z_index="1000",
+                class_name="auth-modal-box",
             ),
         ),
     )

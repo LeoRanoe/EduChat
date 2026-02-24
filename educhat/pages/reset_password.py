@@ -207,9 +207,19 @@ class ResetPasswordState(AuthState):
                 self.toast_type = "success"
                 self.show_toast = True
                 print("[RESET PASSWORD] ✅ Password reset successful!")
-                
+
+                # Sign out the recovery session so the user lands on the login page cleanly
+                try:
+                    from educhat.services.auth_service import get_auth_service
+                    auth_service_instance = get_auth_service()
+                    await auth_service_instance.logout()
+                except Exception as logout_err:
+                    print(f"[RESET PASSWORD] Logout after reset (non-critical): {logout_err}")
+
+                # Reset auth state so the app doesn't see the recovery session as "logged in"
+                self._clear_auth_state()
+
                 # Wait a moment then redirect to login
-                yield
                 import asyncio
                 await asyncio.sleep(2)
                 yield rx.redirect("/")

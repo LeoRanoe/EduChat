@@ -1187,6 +1187,17 @@ class AuthState(rx.State):
             db = get_service()
             events = db.get_upcoming_events(limit=10, user_id=self.user_id)
             
+            def _get_institution_name(e):
+                """Safely extract institution name whether Supabase returns a dict or list."""
+                inst = e.get("institutions")
+                if not inst:
+                    return ""
+                if isinstance(inst, list):
+                    return inst[0].get("name", "") if inst else ""
+                if isinstance(inst, dict):
+                    return inst.get("name", "")
+                return ""
+
             self.upcoming_events = [
                 {
                     "id": str(e.get("id", "")),
@@ -1194,7 +1205,7 @@ class AuthState(rx.State):
                     "description": e.get("description", ""),
                     "date": str(e.get("date", "")),
                     "type": e.get("event_type", "general"),
-                    "institution": e.get("institutions", {}).get("name", "") if e.get("institutions") else "",
+                    "institution": _get_institution_name(e),
                 }
                 for e in events
             ]
@@ -1760,9 +1771,8 @@ class AuthState(rx.State):
             
             # Authenticate with Google Calendar
             if not calendar_service.authenticate():
-                self.toast_message = "Google Calendar authenticatie mislukt"
-                self.toast_type = "error"
-                self.show_toast = True
+                # Not connected - expected for email-only users, skip silently
+                print("[CALENDAR SYNC] Google Calendar not connected - skipping sync (normal for email-only users)")
                 return
             
             total_synced = 0
@@ -1840,9 +1850,28 @@ class AuthState(rx.State):
             print(f"[CALENDAR SYNC] Error: {e}")
             import traceback
             traceback.print_exc()
-            self.toast_message = f"Fout bij synchroniseren: {str(e)[:100]}"
-            self.toast_type = "error"
-            self.show_toast = True
+            # Check if this is a Google OAuth credentials error (missing refresh token).
+            # This can happen if the token pickle on disk is incomplete (e.g. saved with
+            # only an access_token from a previous partial OAuth flow).  Delete the stale
+            # file so it won't be re-used, mark calendar as disconnected, and skip the
+            # user-facing error toast — this is not an actionable error for the user.
+            err_str = str(e)
+            if "refresh_token" in err_str or "RefreshError" in type(e).__name__ or "credentials do not contain" in err_str:
+                print("[CALENDAR SYNC] Stale/incomplete Google OAuth token - cleaning up silently")
+                self.google_calendar_connected = False
+                # Delete the bad token file so authenticate() won't load it again
+                try:
+                    from educhat.services.google_calendar_service import get_calendar_service
+                    _svc = get_calendar_service(user_id=self.user_id)
+                    bad_token = _svc._get_token_path()
+                    bad_token.unlink(missing_ok=True)
+                    print(f"[CALENDAR SYNC] Deleted stale token: {bad_token}")
+                except Exception as cleanup_err:
+                    print(f"[CALENDAR SYNC] Could not delete stale token: {cleanup_err}")
+            else:
+                self.toast_message = f"Fout bij synchroniseren: {str(e)[:100]}"
+                self.toast_type = "error"
+                self.show_toast = True
         finally:
             self.is_syncing_calendar = False
     
@@ -1888,8 +1917,13 @@ class AuthState(rx.State):
             
             if deleted_count > 0:
                 print(f"✓ Synced {deleted_count} deletions from Google Calendar")
-                
+
         except Exception as e:
+            err_str = str(e)
+            if "refresh_token" in err_str or "credentials do not contain" in err_str:
+                # Stale/invalid Google OAuth token - skip silently, already handled in sync_calendar_events
+                print("[CALENDAR SYNC] Skipping deleted-events check - Google OAuth token invalid")
+                return
             print(f"Error syncing deleted events from Google: {e}")
             import traceback
             traceback.print_exc()
@@ -1925,11 +1959,13 @@ class AuthState(rx.State):
             
             print("[AUTO-SCRAPE] Starting automatic event scraping...")
             self._last_auto_scrape_time = datetime.now()
-            
-            # Get user's institutions
+
+            # Get user's institutions (use getattr since these are defined in AppState subclass)
             user_institutions = []
-            if self.selected_institution_id and self.selected_institution_name:
-                user_institutions.append(self.selected_institution_name)
+            selected_institution_id = getattr(self, 'selected_institution_id', None)
+            selected_institution_name = getattr(self, 'selected_institution_name', None)
+            if selected_institution_id and selected_institution_name:
+                user_institutions.append(selected_institution_name)
             
             # Initialize services
             from educhat.services.event_scraper_service import EventScraperService
@@ -2057,6 +2093,7 @@ class AuthState(rx.State):
                     "datetime": date_value,
                     "start_time": start_time,
                     "description": event.get('description', ''),
+                    "location": event.get('location', ''),
                     "institution": event.get('institution_id', ''),
                     "type": event.get('type', 'event'),
                     "is_institutional": event.get('is_institutional', False),
@@ -2135,9 +2172,6 @@ class AuthState(rx.State):
             self.calendar_events = all_events
             self.upcoming_events = all_events[:10]
             self._update_selected_day_events()
-            
-            # Also check for deletions from Google Calendar
-            await self.sync_deleted_events_from_google()
             
         except Exception as e:
             print(f"Error loading calendar events: {e}")
